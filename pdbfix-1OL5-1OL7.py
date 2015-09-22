@@ -13,8 +13,10 @@ for pdbid in ['1OL5','1OL7']:
 
     fixer = PDBFixer(pdbid=pdbid)
 
-#    fixer.findMissingResidues()
-    fixer.missingResidues = {}
+    fixer.findMissingResidues()
+    for key in fixer.missingResidues.keys():
+        if key[0]==0:
+            fixer.missingResidues.pop(key)
     fixer.findMissingAtoms()
     fixer.addMissingAtoms()
 
