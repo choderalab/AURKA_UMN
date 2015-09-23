@@ -50,16 +50,17 @@ water_name = 'tip3p'
 ion_ff_name = 'ions'
 ADP_ff_name = 'ADP'
 
-solvate = True # if True, will add water molecules using simtk.openm.app.modeller
+solvate = False # if True, will add water molecules using simtk.openm.app.modeller
 padding = 11.0 * unit.angstroms
 nonbonded_cutoff = 10.0 * unit.angstroms
 nonbonded_method = app.CutoffPeriodic
+nonbonded_method = app.NoCutoff
 max_minimization_iterations = 5000
 temperature = 300.0 * unit.kelvin
 pressure = 1.0 * unit.atmospheres
 collision_rate = 5.0 / unit.picoseconds
 barostat_frequency = 50
-timestep = 2.0 * unit.femtoseconds
+timestep = 1.0 * unit.femtoseconds
 nsteps = 5000 # number of steps to take for testing
 ionicStrength = 300 * unit.millimolar
 
@@ -279,7 +280,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)
         if verbose: print "Shifting protonated ADP by %s" % str(offset)
         adp.positions -= offset
-        modeller.add(adp.topology,adp.positions)
+        #modeller.add(adp.topology,adp.positions)
 
         # Write PDB file for solute only.
         if verbose: print "Writing pdbfixer output..."
@@ -314,13 +315,27 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         # Create simulation.
         if verbose: print "Creating simulation..."
         integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
-        simulation = app.Simulation(modeller.topology, system, integrator)
+        platform = openmm.Platform.getPlatformByName('CUDA')
+        platform.setPropertyDefaultValue('CudaPrecision', 'double') # use double precision
+        simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
         simulation.context.setPositions(modeller.positions)
 
+        # Compute forces.
+        if verbose: print "Computing forces..."
+        forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
+        print forces
+        atoms = [ atom for atom in simulation.topology.atoms() ]
+        force_unit = unit.kilojoules_per_mole / unit.nanometers
+        for (index, atom) in enumerate(atoms):            
+            force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
+            if force_norm > 10.0:
+                print "%8s %8s %8d %8s %5d : %18f" % (atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
+        
         # Write modeller positions.
         if verbose: print "Writing modeller output..."
         filename = os.path.join(workdir, 'modeller.pdb')
-        positions = simulation.context.getState(getPositions=True).getPositions()
+        positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+        print abs(positions / unit.nanometers).max()
         app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
         # Minimize energy.
