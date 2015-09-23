@@ -13,6 +13,7 @@ import copy
 import numpy
 import shutil
 import tempfile
+import numpy as np
 
 import pdbfixer
 from simtk import openmm, unit
@@ -260,14 +261,24 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if verbose: print "Creating Modeller object..."
         modeller = app.Modeller(fixer.topology, fixer.positions)
 
+        # Convert positions to numpy format and remove offset
+        if verbose: print "Subtracting offset..."
+        modeller.positions = unit.Quantity(np.array(modeller.positions / unit.nanometer), unit.nanometer)
+        offset = modeller.positions[0,:]
+        if verbose: print "Shifting model by %s" % str(offset)
+        modeller.positions -= offset
+
         # Add correct ADP (with hydrogens)
+        if verbose: print "Replacing ADP with protonated ADP..."
         for residue in modeller.topology.residues():
             if residue.name == 'ADP':
                 ADP_residue = residue
         modeller.delete([ADP_residue])
         adp = md.load_mol2('ADP5.mol2')
         adp.topology = adp.top.to_openmm()
-        adp.positions = [(x,y,z) for x,y,z in adp.xyz[0]]*unit.nanometer
+        adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)
+        if verbose: print "Shifting protonated ADP by %s" % str(offset)
+        adp.positions -= offset
         modeller.add(adp.topology,adp.positions)
 
         # Write PDB file for solute only.
@@ -276,7 +287,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         outfile = open(pdb_filename, 'w')
         app.PDBFile.writeFile(modeller.topology, modeller.positions, outfile, keepIds=True)
         outfile.close()
-
 
         if solvate:
             # Solvate and create system.
