@@ -280,7 +280,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)
         if verbose: print "Shifting protonated ADP by %s" % str(offset)
         adp.positions -= offset
-        #modeller.add(adp.topology,adp.positions)
+        modeller.add(adp.topology,adp.positions)
 
         # Write PDB file for solute only.
         if verbose: print "Writing pdbfixer output..."
@@ -308,7 +308,8 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 
         # Create OpenMM system.
         if verbose: print "Creating OpenMM system..."
-        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+        #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
         if verbose: print "Adding barostat..."
         system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
 
@@ -329,7 +330,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         for (index, atom) in enumerate(atoms):            
             force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
             if force_norm > 10.0:
-                print "%8s %8s %8d %8s %5d : %18f" % (atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
+                print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
         
         # Write modeller positions.
         if verbose: print "Writing modeller output..."
