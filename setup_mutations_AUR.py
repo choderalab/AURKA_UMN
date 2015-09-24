@@ -24,10 +24,10 @@ import mdtraj as md
 #
 
 # Path to put all output in
-output_path = "output-1OL7"
+output_path = "output-AUR"
 
 # Source PDB
-pdbfilename = "1OL7-WT-pdbfixer.pdb"
+pdbfilename = "1OL7-AUR-only.pdb"
 
 print "Source PDB filename: %s" % pdbfilename
 print "Output directory for mutations: %s" % output_path
@@ -47,8 +47,8 @@ point_mutants = ['Q185C', 'Q185L','Q185M','Q185N']
 # Forcefield
 ff_name = 'amber99sbildn'
 water_name = 'tip3p'
-ion_ff_name = 'ions'
-ADP_ff_name = 'ADP'
+#ion_ff_name = 'ions'
+#ADP_ff_name = 'ADP'
 
 solvate = True # if True, will add water molecules using simtk.openm.app.modeller
 padding = 11.0 * unit.angstroms
@@ -125,7 +125,6 @@ for chain in fixer.topology.chains():
         if residue.name != 'HOH':
             key = (chain.id, residue.id, residue.name)
             residues.append(key)
-print residues
 residues = set(residues)
 
 #
@@ -170,37 +169,37 @@ mutant_codes = list()
 mutant_names.append('WT')
 mutant_codes.append([])
 
+
 # Append point mutants.
 for mutation in point_mutants:
     (original_residue_name, residue_index, mutated_residue_name) = decompose_mutation(mutation)
     #residue_index += residue_offset
     key = (chain_id_to_mutate, str(residue_index), original_residue_name)
-    print key
     if key in residues:
         mutant_names.append(mutation)
         mutant_codes.append([generate_pdbfixer_mutation_code(original_residue_name, residue_index, mutated_residue_name)])
 
 # Append all pairs of point mutants.
-for i in range(npoint_mutants):
-    for j in range(i+1, npoint_mutants):
-        mutation_i = point_mutants[i]
-        mutation_j = point_mutants[j]
-
-        (original_residue_name_i, residue_index_i, mutated_residue_name_i) = decompose_mutation(mutation_i)
-        (original_residue_name_j, residue_index_j, mutated_residue_name_j) = decompose_mutation(mutation_j)
-
-        #residue_index_i += residue_offset
-        #residue_index_j += residue_offset
-
-        key_i = (chain_id_to_mutate, str(residue_index_i), original_residue_name_i)
-        key_j = (chain_id_to_mutate, str(residue_index_j), original_residue_name_j)
-
-        if (key_i in residues) and (key_j in residues):
-            mutant_names.append(mutation_i + '+' + mutation_j)
-            mutant_codes.append([
-                    generate_pdbfixer_mutation_code(original_residue_name_i, residue_index_i, mutated_residue_name_i), 
-                    generate_pdbfixer_mutation_code(original_residue_name_j, residue_index_j, mutated_residue_name_j)
-                    ])
+#for i in range(npoint_mutants):
+#    for j in range(i+1, npoint_mutants):
+#        mutation_i = point_mutants[i]
+#        mutation_j = point_mutants[j]
+#
+#        (original_residue_name_i, residue_index_i, mutated_residue_name_i) = decompose_mutation(mutation_i)
+#        (original_residue_name_j, residue_index_j, mutated_residue_name_j) = decompose_mutation(mutation_j)
+#
+#        #residue_index_i += residue_offset
+#        #residue_index_j += residue_offset
+#
+#        key_i = (chain_id_to_mutate, str(residue_index_i), original_residue_name_i)
+#        key_j = (chain_id_to_mutate, str(residue_index_j), original_residue_name_j)
+#
+#        if (key_i in residues) and (key_j in residues):
+#            mutant_names.append(mutation_i + '+' + mutation_j)
+#            mutant_codes.append([
+#                    generate_pdbfixer_mutation_code(original_residue_name_i, residue_index_i, mutated_residue_name_i), 
+#                    generate_pdbfixer_mutation_code(original_residue_name_j, residue_index_j, mutated_residue_name_j)
+#                    ])
 
 print ""
 print "Feasible mutants:"
@@ -219,7 +218,6 @@ if not os.path.exists(output_path):
 # Create temporary directory.
 tmp_path = tempfile.mkdtemp()
 print "Working in temporary directory: %s" % tmp_path
-tmp_path = output_path
 
 # Open file to write all exceptions that occur during execution.
 exception_outfile = open(exception_filename, 'a')
@@ -260,19 +258,9 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 
         # Solvate
         if verbose: print "Loading forcefield..."
-        forcefield = app.ForceField(ff_name+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
+        forcefield = app.ForceField(ff_name+'.xml',water_name+'.xml')
         if verbose: print "Creating Modeller object..."
         modeller = app.Modeller(fixer.topology, fixer.positions)
-
-        # Add correct ADP (with hydrogens)
-        for residue in modeller.topology.residues():
-            if residue.name == 'ADP':
-                ADP_residue = residue
-        modeller.delete([ADP_residue])
-        adp = md.load_mol2('ADP7.mol2')
-        adp.topology = adp.top.to_openmm()
-        adp.positions = [(x,y,z) for x,y,z in adp.xyz[0]]*unit.nanometer
-        modeller.add(adp.topology,adp.positions)
 
         # Write PDB file for solute only.
         if verbose: print "Writing pdbfixer output..."
@@ -291,7 +279,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             # This is kind of a hack, as waters are numbered 1-9999 and then we repeat
             print "Renumbering waters..."
             for chain in modeller.topology.chains():
-                if chain.id == '4': chain.id = 'W'
+                if chain.id == '2': chain.id = 'W'
             nwaters_and_ions = 0
             for residue in modeller.topology.residues():
                 if residue.chain.id == 'W':

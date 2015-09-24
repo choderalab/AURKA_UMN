@@ -241,6 +241,10 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if len(mutant) > 0:
             try:
                 fixer.applyMutations(mutant, chain_id_to_mutate)
+                fixer.missingResidues = {}
+                fixer.findMissingAtoms()
+                fixer.addMissingAtoms()
+                fixer.addMissingHydrogens(pH)
             except Exception as e:
                 # Mutant could not be constructed.
                 print e
