@@ -237,7 +237,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
     try:
         # Create PDBFixer, retrieving PDB template
         fixer = pdbfixer.PDBFixer(filename=pdbfilename)
-        fixer.topology.createStandardBonds()
 
         # Attempt to make mutations.
         if len(mutant) > 0:
@@ -249,6 +248,21 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
                 exception_outfile.write("%s : %s" % (name, str(mutant)) + '\n')
                 exception_outfile.write(str(e) + '\n')
                 continue
+
+        #fixer.topology.createStandardBonds()
+        print "findMissingResidues..."
+        fixer.findMissingResidues()
+        print "findNonstandardResidues..."
+        fixer.findNonstandardResidues()
+        print "replaceNonstandardResidues..."
+        fixer.replaceNonstandardResidues()
+        print "findMissingAtoms..."
+        fixer.findMissingAtoms()
+        print "addMissingAtoms..."
+        fixer.addMissingAtoms()
+        print "addingmissinghydrogens..."
+        fixer.addMissingHydrogens(7.0)
+        #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         # Create directory to store files in.
         workdir = os.path.join(tmp_path, name)
@@ -316,8 +330,9 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         # Create simulation.
         if verbose: print "Creating simulation..."
         integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
-        platform = openmm.Platform.getPlatformByName('CUDA')
-        platform.setPropertyDefaultValue('CudaPrecision', 'double') # use double precision
+        #platform = openmm.Platform.getPlatformByName('CPU')
+        platform = openmm.Platform.getPlatformByName('OpenCL')
+        platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
         simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
         simulation.context.setPositions(modeller.positions)
 
