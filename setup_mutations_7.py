@@ -276,10 +276,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if verbose: print "Creating Modeller object..."
         modeller = app.Modeller(fixer.topology, fixer.positions)
 
-<<<<<<< HEAD
-=======
-
->>>>>>> upstream/master
         # Convert positions to numpy format and remove offset
         if verbose: print "Subtracting offset..."
         modeller.positions = unit.Quantity(np.array(modeller.positions / unit.nanometer), unit.nanometer)
