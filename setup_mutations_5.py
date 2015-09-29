@@ -251,7 +251,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 
         #fixer.topology.createStandardBonds()
         print "findMissingResidues..."
-        fixer.findMissingResidues()
+        fixer.missingResidues = {}
         print "findNonstandardResidues..."
         fixer.findNonstandardResidues()
         print "replaceNonstandardResidues..."
@@ -261,7 +261,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         print "addMissingAtoms..."
         fixer.addMissingAtoms()
         print "addingmissinghydrogens..."
-        fixer.addMissingHydrogens(7.0)
+        fixer.addMissingHydrogens(pH)
         #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         # Create directory to store files in.

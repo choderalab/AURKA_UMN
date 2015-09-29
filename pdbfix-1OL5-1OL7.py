@@ -24,7 +24,7 @@ for pdbid in ['1OL5','1OL7']:
     fixer.replaceNonstandardResidues()
     fixer.addMissingHydrogens(pH=7.4)
 
-    PDBFile.writeFile(fixer.topology, fixer.positions, open(pdbid+'-WT-int-pdbfixer.pdb', 'w'))
+    PDBFile.writeFile(fixer.topology, fixer.positions, open(pdbid+'-WT-int-pdbfixer.pdb', 'w'), keepIds=True)
 
     with open(pdbid+'-WT-int-pdbfixer.pdb', 'r') as fold:
         with open(pdbid+'-WT-pdbfixer.pdb', 'w') as fnew:
