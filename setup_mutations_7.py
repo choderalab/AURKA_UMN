@@ -303,23 +303,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         app.PDBFile.writeFile(modeller.topology, modeller.positions, outfile, keepIds=True)
         outfile.close()
 
-        if solvate:
-            # Solvate and create system.
-            if verbose: print "Solvating with %s..." % water_name
-            modeller.addSolvent(forcefield, padding=padding, model=water_name, ionicStrength=ionicStrength)
-
-            # Separate waters into a separate 'W' chain with renumbered residues.
-            # This is kind of a hack, as waters are numbered 1-9999 and then we repeat
-            print "Renumbering waters..."
-            for chain in modeller.topology.chains():
-                if chain.id == '4': chain.id='W'
-            nwaters_and_ions = 0
-            for residue in modeller.topology.residues():
-                if residue.chain.id == 'W':
-                    residue.id = (nwaters_and_ions % 9999) + 1
-                    nwaters_and_ions += 1
-            print "System contains %d waters and ions." % nwaters_and_ions
-
         # Create OpenMM system.
         if verbose: print "Creating OpenMM system..."
         #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
@@ -365,6 +348,84 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
             raise Exception("Potential energy is NaN after minimization.")
         if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+
+        if solvate:
+            # Write initial positions.
+            filename = os.path.join(workdir, 'minimized_vacuum.pdb')
+            positions = simulation.context.getState(getPositions=True).getPositions()
+            app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
+            del(modeller)
+            positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+            modeller = app.Modeller(simulation.topology, positions)
+
+            del(system)
+            del(integrator)
+            del(platform)
+            del(simulation)
+
+            # Solvate and create system.
+            if verbose: print "Solvating with %s..." % water_name
+            modeller.addSolvent(forcefield, padding=padding, model=water_name, ionicStrength=ionicStrength)
+
+            # Separate waters into a separate 'W' chain with renumbered residues.
+            # This is kind of a hack, as waters are numbered 1-9999 and then we repeat
+            print "Renumbering waters..."
+            for chain in modeller.topology.chains():
+                if chain.id == '4': chain.id='W'
+            nwaters_and_ions = 0
+            for residue in modeller.topology.residues():
+                if residue.chain.id == 'W':
+                    residue.id = (nwaters_and_ions % 9999) + 1
+                    nwaters_and_ions += 1
+            print "System contains %d waters and ions." % nwaters_and_ions
+
+            # Create OpenMM system.
+            if verbose: print "Creating solvated OpenMM system..."
+            #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+            system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
+            if verbose: print "Adding barostat..."
+            system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
+
+            # Create simulation.
+            if verbose: print "Creating solvated simulation..."
+            integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+            #platform = openmm.Platform.getPlatformByName('CPU')
+            platform = openmm.Platform.getPlatformByName('OpenCL')
+            platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+            simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
+            simulation.context.setPositions(modeller.positions)
+
+            # Compute forces.
+            if verbose: print "Computing forces..."
+            forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
+            print forces
+            atoms = [ atom for atom in simulation.topology.atoms() ]
+            force_unit = unit.kilojoules_per_mole / unit.nanometers
+            for (index, atom) in enumerate(atoms):
+                force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
+                if force_norm > 10.0:
+                    print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)
+
+            # Write modeller positions.
+            if verbose: print "Writing modeller output..."
+            filename = os.path.join(workdir, 'modeller_solvent.pdb')
+            positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+            print abs(positions / unit.nanometers).max()
+            app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
+            # Minimize energy.
+            if verbose: print "Minimizing energy..."
+            potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+            if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+                raise Exception("Potential energy is NaN before minimization.")
+            if verbose: print "Initial solvated potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+            simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
+            potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+            if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+                raise Exception("Potential energy is NaN after minimization.")
+            if verbose: print "Final solvated potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+
 
         # Write initial positions.
         filename = os.path.join(workdir, 'minimized.pdb')
