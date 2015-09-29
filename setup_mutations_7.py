@@ -182,26 +182,26 @@ for mutation in point_mutants:
         mutant_codes.append([generate_pdbfixer_mutation_code(original_residue_name, residue_index, mutated_residue_name)])
 
 # Append all pairs of point mutants.
-for i in range(npoint_mutants):
-    for j in range(i+1, npoint_mutants):
-        mutation_i = point_mutants[i]
-        mutation_j = point_mutants[j]
+#for i in range(npoint_mutants):
+#    for j in range(i+1, npoint_mutants):
+#        mutation_i = point_mutants[i]
+#        mutation_j = point_mutants[j]
 
-        (original_residue_name_i, residue_index_i, mutated_residue_name_i) = decompose_mutation(mutation_i)
-        (original_residue_name_j, residue_index_j, mutated_residue_name_j) = decompose_mutation(mutation_j)
+#        (original_residue_name_i, residue_index_i, mutated_residue_name_i) = decompose_mutation(mutation_i)
+#        (original_residue_name_j, residue_index_j, mutated_residue_name_j) = decompose_mutation(mutation_j)
 
         #residue_index_i += residue_offset
         #residue_index_j += residue_offset
 
-        key_i = (chain_id_to_mutate, str(residue_index_i), original_residue_name_i)
-        key_j = (chain_id_to_mutate, str(residue_index_j), original_residue_name_j)
+#        key_i = (chain_id_to_mutate, str(residue_index_i), original_residue_name_i)
+#        key_j = (chain_id_to_mutate, str(residue_index_j), original_residue_name_j)
 
-        if (key_i in residues) and (key_j in residues):
-            mutant_names.append(mutation_i + '+' + mutation_j)
-            mutant_codes.append([
-                    generate_pdbfixer_mutation_code(original_residue_name_i, residue_index_i, mutated_residue_name_i), 
-                    generate_pdbfixer_mutation_code(original_residue_name_j, residue_index_j, mutated_residue_name_j)
-                    ])
+#        if (key_i in residues) and (key_j in residues):
+#            mutant_names.append(mutation_i + '+' + mutation_j)
+#            mutant_codes.append([
+#                    generate_pdbfixer_mutation_code(original_residue_name_i, residue_index_i, mutated_residue_name_i), 
+#                    generate_pdbfixer_mutation_code(original_residue_name_j, residue_index_j, mutated_residue_name_j)
+#                    ])
 
 print ""
 print "Feasible mutants:"
