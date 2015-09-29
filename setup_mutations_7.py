@@ -13,6 +13,7 @@ import copy
 import numpy
 import shutil
 import tempfile
+import numpy as np
 
 import pdbfixer
 from simtk import openmm, unit
@@ -36,7 +37,6 @@ print "Output directory for mutations: %s" % output_path
 # PARAMETERS
 #
 
-
 chain_id_to_mutate = 'A' # chain to mutate
 pH = 7.4 # pH to model
 keep_crystallographic_water = False # keep crystallographic waters?
@@ -50,17 +50,18 @@ water_name = 'tip3p'
 ion_ff_name = 'ions'
 ADP_ff_name = 'ADP'
 
-solvate = True # if True, will add water molecules using simtk.openm.app.modeller
+solvate = False # if True, will add water molecules using simtk.openm.app.modeller
 padding = 11.0 * unit.angstroms
 nonbonded_cutoff = 10.0 * unit.angstroms
 nonbonded_method = app.CutoffPeriodic
+nonbonded_method = app.NoCutoff
 max_minimization_iterations = 5000
 temperature = 300.0 * unit.kelvin
 pressure = 1.0 * unit.atmospheres
 collision_rate = 5.0 / unit.picoseconds
 barostat_frequency = 50
-timestep = 2.0 * unit.femtoseconds
-nsteps = 100 #5000 # number of steps to take for testing
+timestep = 1.0 * unit.femtoseconds
+nsteps = 5000 # number of steps to take for testing
 ionicStrength = 300 * unit.millimolar
 
 # Verbosity level
@@ -241,16 +242,27 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if len(mutant) > 0:
             try:
                 fixer.applyMutations(mutant, chain_id_to_mutate)
-                fixer.missingResidues = {}
-                fixer.findMissingAtoms()
-                fixer.addMissingAtoms()
-                fixer.addMissingHydrogens(pH)
             except Exception as e:
                 # Mutant could not be constructed.
                 print e
                 exception_outfile.write("%s : %s" % (name, str(mutant)) + '\n')
                 exception_outfile.write(str(e) + '\n')
                 continue
+
+        #fixer.topology.createStandardBonds()
+        print "findMissingResidues..."
+        fixer.missingResidues = {}
+        print "findNonstandardResidues..."
+        fixer.findNonstandardResidues()
+        print "replaceNonstandardResidues..."
+        fixer.replaceNonstandardResidues()
+        print "findMissingAtoms..."
+        fixer.findMissingAtoms()
+        print "addMissingAtoms..."
+        fixer.addMissingAtoms()
+        print "addingmissinghydrogens..."
+        fixer.addMissingHydrogens(pH)
+        #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         # Create directory to store files in.
         workdir = os.path.join(tmp_path, name)
@@ -264,14 +276,24 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if verbose: print "Creating Modeller object..."
         modeller = app.Modeller(fixer.topology, fixer.positions)
 
+        # Convert positions to numpy format and remove offset
+        if verbose: print "Subtracting offset..."
+        modeller.positions = unit.Quantity(np.array(modeller.positions / unit.nanometer), unit.nanometer)
+        offset = modeller.positions[0,:]
+        if verbose: print "Shifting model by %s" % str(offset)
+        modeller.positions -= offset
+
         # Add correct ADP (with hydrogens)
+        if verbose: print "Replacing ADP with protonated ADP..."
         for residue in modeller.topology.residues():
             if residue.name == 'ADP':
                 ADP_residue = residue
         modeller.delete([ADP_residue])
         adp = md.load_mol2('ADP7.mol2')
         adp.topology = adp.top.to_openmm()
-        adp.positions = [(x,y,z) for x,y,z in adp.xyz[0]]*unit.nanometer
+        adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)
+        if verbose: print "Shifting protonated ADP by %s" % str(offset)
+        adp.positions -= offset
         modeller.add(adp.topology,adp.positions)
 
         # Write PDB file for solute only.
@@ -280,7 +302,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         outfile = open(pdb_filename, 'w')
         app.PDBFile.writeFile(modeller.topology, modeller.positions, outfile, keepIds=True)
         outfile.close()
-
 
         if solvate:
             # Solvate and create system.
@@ -291,7 +312,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             # This is kind of a hack, as waters are numbered 1-9999 and then we repeat
             print "Renumbering waters..."
             for chain in modeller.topology.chains():
-                if chain.id == '4': chain.id = 'W'
+                if chain.id == '4': chain.id='W'
             nwaters_and_ions = 0
             for residue in modeller.topology.residues():
                 if residue.chain.id == 'W':
@@ -301,20 +322,36 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 
         # Create OpenMM system.
         if verbose: print "Creating OpenMM system..."
-        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+        #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
         if verbose: print "Adding barostat..."
         system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
 
         # Create simulation.
         if verbose: print "Creating simulation..."
         integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
-        simulation = app.Simulation(modeller.topology, system, integrator)
+        #platform = openmm.Platform.getPlatformByName('CPU')
+        platform = openmm.Platform.getPlatformByName('OpenCL')
+        platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+        simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
         simulation.context.setPositions(modeller.positions)
 
+        # Compute forces.
+        if verbose: print "Computing forces..."
+        forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
+        print forces
+        atoms = [ atom for atom in simulation.topology.atoms() ]
+        force_unit = unit.kilojoules_per_mole / unit.nanometers
+        for (index, atom) in enumerate(atoms):            
+            force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
+            if force_norm > 10.0:
+                print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
+        
         # Write modeller positions.
         if verbose: print "Writing modeller output..."
         filename = os.path.join(workdir, 'modeller.pdb')
-        positions = simulation.context.getState(getPositions=True).getPositions()
+        positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+        print abs(positions / unit.nanometers).max()
         app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
         # Minimize energy.
@@ -328,12 +365,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
             raise Exception("Potential energy is NaN after minimization.")
         if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
-
-#        traj = md.howtoimportasystemtomdtraj?
-#        for residue in traj.topology.residues:
-#            if residue.name == 'ADP':
-#                for atom in residue.atoms:
-#                    print(atom.n_bonds)
 
         # Write initial positions.
         filename = os.path.join(workdir, 'minimized.pdb')
