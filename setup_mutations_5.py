@@ -50,7 +50,7 @@ water_name = 'tip3p'
 ion_ff_name = 'ions'
 ADP_ff_name = 'ADP'
 
-solvate = False # if True, will add water molecules using simtk.openm.app.modeller
+solvate = True # if True, will add water molecules using simtk.openm.app.modeller
 padding = 11.0 * unit.angstroms
 nonbonded_cutoff = 10.0 * unit.angstroms
 nonbonded_method = app.CutoffPeriodic
