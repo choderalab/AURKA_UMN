@@ -52,15 +52,14 @@ ADP_ff_name = 'ADP'
 
 solvate = True # if True, will add water molecules using simtk.openm.app.modeller
 padding = 11.0 * unit.angstroms
-nonbonded_cutoff = 10.0 * unit.angstroms
-nonbonded_method = app.CutoffPeriodic
-nonbonded_method = app.NoCutoff
+nonbonded_cutoff = 9.0 * unit.angstroms
+nonbonded_method = app.PME
 max_minimization_iterations = 5000
 temperature = 300.0 * unit.kelvin
 pressure = 1.0 * unit.atmospheres
 collision_rate = 5.0 / unit.picoseconds
 barostat_frequency = 50
-timestep = 1.0 * unit.femtoseconds
+timestep = 2.0 * unit.femtoseconds
 nsteps = 5000 # number of steps to take for testing
 ionicStrength = 300 * unit.millimolar
 
