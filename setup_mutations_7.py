@@ -320,15 +320,15 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         simulation.context.setPositions(modeller.positions)
 
         # Compute forces.
-        if verbose: print "Computing forces..."
-        forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
-        print forces
-        atoms = [ atom for atom in simulation.topology.atoms() ]
-        force_unit = unit.kilojoules_per_mole / unit.nanometers
-        for (index, atom) in enumerate(atoms):            
-            force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
-            if force_norm > 10.0:
-                print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
+#        if verbose: print "Computing forces..."
+#        forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
+#        print forces
+#        atoms = [ atom for atom in simulation.topology.atoms() ]
+#        force_unit = unit.kilojoules_per_mole / unit.nanometers
+#        for (index, atom) in enumerate(atoms):            
+#            force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
+#            if force_norm > 10.0:
+#                print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
         
         # Write modeller positions.
         if verbose: print "Writing modeller output..."
@@ -397,15 +397,15 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             simulation.context.setPositions(modeller.positions)
 
             # Compute forces.
-            if verbose: print "Computing forces..."
-            forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
-            print forces
-            atoms = [ atom for atom in simulation.topology.atoms() ]
-            force_unit = unit.kilojoules_per_mole / unit.nanometers
-            for (index, atom) in enumerate(atoms):
-                force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
-                if force_norm > 10.0:
-                    print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)
+#            if verbose: print "Computing forces..."
+#            forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
+#            print forces
+#            atoms = [ atom for atom in simulation.topology.atoms() ]
+#            force_unit = unit.kilojoules_per_mole / unit.nanometers
+#            for (index, atom) in enumerate(atoms):
+#                force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
+#                if force_norm > 10.0:
+#                    print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)
 
             # Write modeller positions.
             if verbose: print "Writing modeller output..."
