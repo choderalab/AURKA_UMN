@@ -361,6 +361,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             del(system)
             del(integrator)
             del(platform)
+            del(simulation.context)
             del(simulation)
             simulation = None
 
