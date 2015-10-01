@@ -304,8 +304,8 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 
         # Create OpenMM system.
         if verbose: print "Creating OpenMM system..."
-        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
-        #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
+        #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
         if verbose: print "Adding barostat..."
         system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
 
@@ -326,9 +326,53 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 #        force_unit = unit.kilojoules_per_mole / unit.nanometers
 #        for (index, atom) in enumerate(atoms):            
 #            force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
-#            if force_norm > 10.0:
+#            if force_norm > 1000000.0:
 #                print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
         
+        # Write modeller positions.
+#        if verbose: print "Writing modeller output..."
+#        filename = os.path.join(workdir, 'modeller.pdb')
+#        positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+#        print abs(positions / unit.nanometers).max()
+#        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
+        # Minimize energy.
+        if verbose: print "Minimizing energy..."
+        potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+        if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+            raise Exception("Potential energy is NaN before minimization.")
+        if verbose: print "Initial potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+        simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
+        potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+        if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+            raise Exception("Potential energy is NaN after minimization.")
+        if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+
+        del(modeller)
+        positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+        modeller = app.Modeller(simulation.topology, positions)
+
+        del(system)
+        del(integrator)
+        del(platform)
+        del(simulation.context)
+        del(simulation)
+        simulation = None
+
+        if verbose: print "Creating constrained OpenMM system..."
+        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+        if verbose: print "Adding barostat..."
+        system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
+
+        # Create simulation.
+        if verbose: print "Creating simulation..."
+        integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+        #platform = openmm.Platform.getPlatformByName('CPU')
+        platform = openmm.Platform.getPlatformByName('OpenCL')
+        platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+        simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
+        simulation.context.setPositions(modeller.positions)
+
         # Write modeller positions.
         if verbose: print "Writing modeller output..."
         filename = os.path.join(workdir, 'modeller.pdb')
@@ -347,6 +391,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
             raise Exception("Potential energy is NaN after minimization.")
         if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+
 
         if solvate:
             # Write initial positions.
