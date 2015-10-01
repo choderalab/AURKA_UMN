@@ -304,8 +304,8 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 
         # Create OpenMM system.
         if verbose: print "Creating OpenMM system..."
-        #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
-        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
+        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+        #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
         if verbose: print "Adding barostat..."
         system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
 
@@ -383,8 +383,8 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 
             # Create OpenMM system.
             if verbose: print "Creating solvated OpenMM system..."
-            #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
-            system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
+            system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+            #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
             if verbose: print "Adding barostat..."
             system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
 
