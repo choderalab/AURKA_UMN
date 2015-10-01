@@ -362,6 +362,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             del(integrator)
             del(platform)
             del(simulation)
+            simulation = None
 
             # Solvate and create system.
             if verbose: print "Solvating with %s..." % water_name
