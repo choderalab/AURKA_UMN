@@ -286,8 +286,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if verbose: print "Replacing ADP with protonated ADP..."
         for residue in modeller.topology.residues():
             if residue.name == 'ADP':
-                ADP_residue = residue
-        modeller.delete([ADP_residue])
+                modeller.delete([residue])
         adp = md.load_mol2('ADP5.mol2')
         adp.topology = adp.top.to_openmm()
         adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)
