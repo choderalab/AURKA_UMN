@@ -11,7 +11,10 @@ solvate = False
 include_ADP = False
 include_ions = False
 
-infile = "1OL5-pdbfixer.pdb"
+if include_ions:
+    infile = "1OL5-ions-pdbfixer.pdb"
+else:
+    infile = "1OL5-pdbfixer.pdb"
 
 if use_fixer:
     fixer = pdbfixer.PDBFixer(infile)
