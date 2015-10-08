@@ -5,16 +5,19 @@ import mdtraj as md
 import numpy 
 import pdbfixer
 
-use_fixer = True
-fixer_steps = True
-solvate = True
+use_fixer = False
+fixer_steps = False
+solvate = False
 include_ADP = False
 include_ions = True
 
+infile = "1OL5-pdbfixer.pdb"
+
 if use_fixer:
-    fixer = pdbfixer.PDBFixer("1OL5-pdbfixer.pdb")
+    fixer = pdbfixer.PDBFixer(infile)
 else:
-    pdb = app.PDBFile("1OL5-pdbfixer.pdb")
+    pdb = app.PDBFile(infile)
+print("loaded topology")
 
 ff = app.ForceField("amber99sbildn.xml")
 if solvate:
@@ -23,7 +26,7 @@ if include_ADP:
     ff.loadFile("ADP.xml")
 if include_ions:
     ff.loadFile("ions.xml")
-print("loaded topology and forcefield")
+print("loaded forcefield")
 
 if fixer_steps:
     print "findMissingResidues..."
@@ -43,6 +46,7 @@ if use_fixer:
     modeller = app.Modeller(fixer.topology, fixer.positions)
 else:
     modeller = app.Modeller(pdb.topology, pdb.positions)
+print("modeller built")
 
 if include_ions:
     all_clear = False
