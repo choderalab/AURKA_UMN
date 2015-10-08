@@ -468,7 +468,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         run_index_outfile.flush()
         runs += 1
 
-        print("\nRUN"+runs+" Success!\n")
+        print("\nRUN"+str(runs)+" Success!\n")
 
         # Clean up.
         del simulation.context
