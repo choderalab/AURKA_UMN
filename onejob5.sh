@@ -42,4 +42,4 @@
 cd $PBS_O_WORKDIR
 
 # start spark workers
-python /cbio/jclab/projects/behrj/AURKA_UMN/setup_mutations_5.py
+python /cbio/jclab/projects/behrj/AURKA_UMN/setup_mutations.py --pdbid 1OL5

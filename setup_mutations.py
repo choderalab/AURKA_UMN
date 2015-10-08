@@ -21,14 +21,24 @@ from simtk.openmm import app
 import mdtraj as md
 
 #
-# PARAMETERS ARE HARDCODED BECAUSE THE SCRIPT ONLY WORKS ON A SINGLE PDB (WATER CHAINS) ANYWAY
-#
+import argparse
+
+parser = argparse.ArgumentParser(description='Set up point mutants')
+parser.add_argument('--pdbid', dest='pdbid', action='store', default=None)
+args = parser.parse_args()
+if args.pdbid==None:
+    raise Exception("Must specify PDB id")
+
+print("Input PDB structure: " + args.pdbid)
+pdbid = args.pdbid
 
 # Path to put all output in
-output_path = "output-1OL7"
+output_path = "output-"+pdbid
 
 # Source PDB
-pdbfilename = "1OL7-WT-pdbfixer.pdb"
+pdbfilename = pdbid+"-WT-pdbfixer.pdb"
+
+adp_mol2 = "ADP"+pdbid[-1]+".mol2"
 
 print "Source PDB filename: %s" % pdbfilename
 print "Output directory for mutations: %s" % output_path
@@ -287,7 +297,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         for residue in modeller.topology.residues():
             if residue.name == 'ADP':
                 modeller.delete([residue])
-        adp = md.load_mol2('ADP7.mol2')
+        adp = md.load_mol2(adp_mol2)
         adp.topology = adp.top.to_openmm()
         adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)
         if verbose: print "Shifting protonated ADP by %s" % str(offset)
@@ -416,11 +426,10 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             # Separate waters into a separate 'W' chain with renumbered residues.
             # This is kind of a hack, as waters are numbered 1-9999 and then we repeat
             print "Renumbering waters..."
-            for chain in modeller.topology.chains():
-                if chain.id == '4': chain.id='W'
+            for chain in modeller.topology.chains(): water_id = chain.id
             nwaters_and_ions = 0
             for residue in modeller.topology.residues():
-                if residue.chain.id == 'W':
+                if residue.chain.id == water_id:
                     residue.id = (nwaters_and_ions % 9999) + 1
                     nwaters_and_ions += 1
             print "System contains %d waters and ions." % nwaters_and_ions
