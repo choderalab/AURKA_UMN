@@ -77,7 +77,8 @@ if solvate:
     ionicStrength = 300 * u.millimolar
     modeller.addSolvent(ff, padding=padding, model=water_name, ionicStrength=ionicStrength)
 
-system = ff.createSystem(modeller.topology,nonbondedMethod=app.PME,constraints=app.HBonds)
+#system = ff.createSystem(modeller.topology,nonbondedMethod=app.PME,constraints=app.HBonds)
+system = ff.createSystem(modeller.topology,nonbondedMethod=app.PME,constraints=None)
 integrator = mm.LangevinIntegrator(300.0*u.kelvin , 10.0 / u.picoseconds, 2.0*u.femtosecond)
 system.addForce(mm.MonteCarloBarostat(1.0 * u.atmospheres, 300.0*u.kelvin, 25))
 print("systemed")
@@ -97,6 +98,42 @@ potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnerg
 if numpy.isnan(potential_energy / u.kilocalories_per_mole):
     raise Exception("Potential energy is NaN after minimization.")
 print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / u.kilocalories_per_mole)
+positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+if numpy.isnan(positions / u.nanometers).any() : print("Everything is broken and terrible")
+
+del(modeller)
+positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+modeller = app.Modeller(simulation.topology, positions)
+
+del(system)
+del(integrator)
+del(simulation.context)
+del(simulation)
+
+# Minimize again!
+system = ff.createSystem(modeller.topology,nonbondedMethod=app.PME,constraints=app.HBonds)
+integrator = mm.LangevinIntegrator(300.0*u.kelvin , 10.0 / u.picoseconds, 2.0*u.femtosecond)
+system.addForce(mm.MonteCarloBarostat(1.0 * u.atmospheres, 300.0*u.kelvin, 25))
+print("systemed")
+
+simulation = app.Simulation(modeller.topology, system, integrator)
+simulation.context.setPositions(positions)
+print('minimizing')
+
+potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+if numpy.isnan(potential_energy / u.kilocalories_per_mole):
+    raise Exception("Potential energy is NaN before minimization.")
+if numpy.isnan(positions / u.nanometers).any() : raise Exception("Positions are NaN before minimization.")
+print "Initial potential energy : %10.3f kcal/mol" % (potential_energy / u.kilocalories_per_mole)
+simulation.minimizeEnergy()
+potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+if numpy.isnan(potential_energy / u.kilocalories_per_mole):
+    raise Exception("Potential energy is NaN after minimization.")
+print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / u.kilocalories_per_mole)
+positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+if numpy.isnan(positions / u.nanometers).any() : print("Everything is broken and terrible")
+
 
 simulation.context.setVelocitiesToTemperature(300.0*u.kelvin)
 
@@ -105,4 +142,9 @@ simulation.step(5000)
 positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
 if numpy.isnan(positions / u.nanometers).any() : print("Everything is broken and terrible")
 print("Complete!")
+
+filename = 'minimized.pdb'
+positions = simulation.context.getState(getPositions=True).getPositions()
+app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
 
