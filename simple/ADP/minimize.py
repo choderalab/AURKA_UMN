@@ -143,7 +143,7 @@ positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=
 if numpy.isnan(positions / u.nanometers).any() : print("Everything is broken and terrible")
 print("Complete!")
 
-filename = 'minimized.pdb'
+filename = 'ADP-and-protein-minimized.pdb'
 positions = simulation.context.getState(getPositions=True).getPositions()
 app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
