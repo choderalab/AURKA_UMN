@@ -537,10 +537,10 @@
   <Atom type="adp29" charge="0.2022" sigma="0.339966950842" epsilon="0.4577296"/>
   <Atom type="adp30" charge="0.0615" sigma="0.247135304412" epsilon="0.0656888"/>
   <Atom type="adp31" charge="-0.6541" sigma="0.306647338784" epsilon="0.8803136"/>
-  <Atom type="adp32" charge="0.4376" sigma="0.0" epsilon="0.0"/>
+  <Atom type="adp32" charge="0.4376" sigma="1.0" epsilon="0.1"/>
   <Atom type="adp33" charge="0.067" sigma="0.339966950842" epsilon="0.4577296"/>
   <Atom type="adp34" charge="0.0972" sigma="0.247135304412" epsilon="0.0656888"/>
   <Atom type="adp35" charge="-0.6139" sigma="0.306647338784" epsilon="0.8803136"/>
-  <Atom type="adp36" charge="0.4186" sigma="0.0" epsilon="0.0"/>
+  <Atom type="adp36" charge="0.4186" sigma="1.0" epsilon="0.1"/>
  </NonbondedForce>
 </ForceField>
