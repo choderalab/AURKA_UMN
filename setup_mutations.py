@@ -21,14 +21,24 @@ from simtk.openmm import app
 import mdtraj as md
 
 #
-# PARAMETERS ARE HARDCODED BECAUSE THE SCRIPT ONLY WORKS ON A SINGLE PDB (WATER CHAINS) ANYWAY
-#
+import argparse
+
+parser = argparse.ArgumentParser(description='Set up point mutants')
+parser.add_argument('--pdbid', dest='pdbid', action='store', default=None)
+args = parser.parse_args()
+if args.pdbid==None:
+    raise Exception("Must specify PDB id")
+
+print("Input PDB structure: " + args.pdbid)
+pdbid = args.pdbid
 
 # Path to put all output in
-output_path = "output-1OL7"
+output_path = "output-"+pdbid
 
 # Source PDB
-pdbfilename = "1OL7-WT-pdbfixer.pdb"
+pdbfilename = pdbid+"-WT-pdbfixer.pdb"
+
+adp_mol2 = "ADP"+pdbid[-1]+".mol2"
 
 print "Source PDB filename: %s" % pdbfilename
 print "Output directory for mutations: %s" % output_path
@@ -52,15 +62,14 @@ ADP_ff_name = 'ADP'
 
 solvate = True # if True, will add water molecules using simtk.openm.app.modeller
 padding = 11.0 * unit.angstroms
-nonbonded_cutoff = 10.0 * unit.angstroms
-nonbonded_method = app.CutoffPeriodic
-nonbonded_method = app.NoCutoff
+nonbonded_cutoff = 9.0 * unit.angstroms
+nonbonded_method = app.PME
 max_minimization_iterations = 5000
 temperature = 300.0 * unit.kelvin
 pressure = 1.0 * unit.atmospheres
 collision_rate = 5.0 / unit.picoseconds
 barostat_frequency = 50
-timestep = 1.0 * unit.femtoseconds
+timestep = 2.0 * unit.femtoseconds
 nsteps = 5000 # number of steps to take for testing
 ionicStrength = 300 * unit.millimolar
 
@@ -287,9 +296,8 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if verbose: print "Replacing ADP with protonated ADP..."
         for residue in modeller.topology.residues():
             if residue.name == 'ADP':
-                ADP_residue = residue
-        modeller.delete([ADP_residue])
-        adp = md.load_mol2('ADP7.mol2')
+                modeller.delete([residue])
+        adp = md.load_mol2(adp_mol2)
         adp.topology = adp.top.to_openmm()
         adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)
         if verbose: print "Shifting protonated ADP by %s" % str(offset)
@@ -327,9 +335,53 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 #        force_unit = unit.kilojoules_per_mole / unit.nanometers
 #        for (index, atom) in enumerate(atoms):            
 #            force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
-#            if force_norm > 10.0:
+#            if force_norm > 1000000.0:
 #                print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
         
+        # Write modeller positions.
+#        if verbose: print "Writing modeller output..."
+#        filename = os.path.join(workdir, 'modeller.pdb')
+#        positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+#        print abs(positions / unit.nanometers).max()
+#        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
+        # Minimize energy.
+        if verbose: print "Minimizing energy..."
+        potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+        if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+            raise Exception("Potential energy is NaN before minimization.")
+        if verbose: print "Initial potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+        simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
+        potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+        if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+            raise Exception("Potential energy is NaN after minimization.")
+        if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+
+        del(modeller)
+        positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+        modeller = app.Modeller(simulation.topology, positions)
+
+        del(system)
+        del(integrator)
+        del(platform)
+        del(simulation.context)
+        del(simulation)
+        simulation = None
+
+        if verbose: print "Creating constrained OpenMM system..."
+        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+        if verbose: print "Adding barostat..."
+        system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
+
+        # Create simulation.
+        if verbose: print "Creating simulation..."
+        integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+        #platform = openmm.Platform.getPlatformByName('CPU')
+        platform = openmm.Platform.getPlatformByName('OpenCL')
+        platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+        simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
+        simulation.context.setPositions(modeller.positions)
+
         # Write modeller positions.
         if verbose: print "Writing modeller output..."
         filename = os.path.join(workdir, 'modeller.pdb')
@@ -349,6 +401,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             raise Exception("Potential energy is NaN after minimization.")
         if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
 
+
         if solvate:
             # Write initial positions.
             filename = os.path.join(workdir, 'minimized_vacuum.pdb')
@@ -362,7 +415,9 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             del(system)
             del(integrator)
             del(platform)
+            del(simulation.context)
             del(simulation)
+            simulation = None
 
             # Solvate and create system.
             if verbose: print "Solvating with %s..." % water_name
@@ -371,19 +426,18 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             # Separate waters into a separate 'W' chain with renumbered residues.
             # This is kind of a hack, as waters are numbered 1-9999 and then we repeat
             print "Renumbering waters..."
-            for chain in modeller.topology.chains():
-                if chain.id == '4': chain.id='W'
+            for chain in modeller.topology.chains(): water_id = chain.id
             nwaters_and_ions = 0
             for residue in modeller.topology.residues():
-                if residue.chain.id == 'W':
+                if residue.chain.id == water_id:
                     residue.id = (nwaters_and_ions % 9999) + 1
                     nwaters_and_ions += 1
             print "System contains %d waters and ions." % nwaters_and_ions
 
             # Create OpenMM system.
             if verbose: print "Creating solvated OpenMM system..."
-            #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
-            system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
+            system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+            #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
             if verbose: print "Adding barostat..."
             system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
 
