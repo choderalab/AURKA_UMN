@@ -1,0 +1,6 @@
+ff = loadamberparams parm94.dat
+ffmod = loadamberparams frcmod.phos
+loadamberprep ADP.prep
+savemol2 adp adp.mol2 1
+quit
+
