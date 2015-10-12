@@ -23,7 +23,7 @@ ff = app.ForceField("amber99sbildn.xml")
 if solvate:
     ff.loadFile("tip3p.xml")
 if include_ADP:
-    ff.loadFile("ADP.xml")
+    ff.loadFile("adp.xml")
 if include_ions:
     ff.loadFile("ions.xml")
 print("loaded forcefield")
@@ -85,6 +85,11 @@ print("systemed")
 
 simulation = app.Simulation(modeller.topology, system, integrator)
 simulation.context.setPositions(modeller.positions)
+
+filename = 'ADP-and-protein-initial.pdb'
+positions = simulation.context.getState(getPositions=True).getPositions()
+app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
 print('minimizing')
 
 potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()

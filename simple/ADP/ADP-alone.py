@@ -8,7 +8,7 @@ import pdbfixer
 solvate = False
 
 ff = app.ForceField("amber99sbildn.xml")
-ff.loadFile("ADP.xml")
+ff.loadFile("adp.xml")
 if solvate:
     ff.loadFile("tip3p.xml")
 print("loaded forcefield")
@@ -68,6 +68,7 @@ with open('ADP-minimizing.pdb','w') as filename:
 
     print('production')
     for i in range(100):
+        print("\nStep "+str(i)+"\n")
         simulation.step(1)
         positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
         if numpy.isnan(positions / u.nanometers).any(): 
