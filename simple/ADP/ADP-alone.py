@@ -6,6 +6,7 @@ import numpy
 import pdbfixer
 
 solvate = False
+writePDB = False
 
 ff = app.ForceField("amber99sbildn.xml")
 ff.loadFile("adp.xml")
@@ -50,12 +51,53 @@ if numpy.isnan(potential_energy / u.kilocalories_per_mole):
     raise Exception("Potential energy is NaN before minimization.")
 if numpy.isnan(positions / u.nanometers).any() : raise Exception("Positions are NaN before minimization.")
 print "Initial potential energy : %10.3f kcal/mol" % (potential_energy / u.kilocalories_per_mole)
-with open('ADP-minimizing.pdb','w') as filename:
-    app.PDBFile.writeHeader(simulation.topology, filename)
-    for i in range(200):
-        simulation.minimizeEnergy(maxIterations=1)
-        positions = simulation.context.getState(getPositions=True).getPositions()
-        app.PDBFile.writeModel(simulation.topology, positions, file=filename, modelIndex=i, keepIds=True)
+
+if writePDB:
+    with open('ADP-minimizing.pdb','w') as filename:
+        app.PDBFile.writeHeader(simulation.topology, filename)
+        for i in range(600):
+            simulation.minimizeEnergy(maxIterations=1)
+            positions = simulation.context.getState(getPositions=True).getPositions()
+            app.PDBFile.writeModel(simulation.topology, positions, file=filename, modelIndex=i, keepIds=True)
+        potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+        if numpy.isnan(potential_energy / u.kilocalories_per_mole):
+            raise Exception("Potential energy is NaN after minimization.")
+        print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / u.kilocalories_per_mole)
+        positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+        if numpy.isnan(positions / u.nanometers).any() : print("Everything is broken and terrible")
+
+        print('Setting velocities to temp')
+        simulation.context.setVelocitiesToTemperature(300.0*u.kelvin)
+
+        print('production')
+        for i in range(100):
+            simulation.step(1)
+            positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+            if numpy.isnan(positions / u.nanometers).any(): 
+                print("The thing broke on step "+str(i))
+                forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
+                atoms = [ atom for atom in simulation.topology.atoms() ]
+                force_unit = u.kilojoules_per_mole / u.nanometers
+                for (index, atom) in enumerate(atoms):            
+                    force_norm = numpy.sqrt(((forces[index,:] / force_unit)**2).sum())
+                    if force_norm > 100.0:
+                        print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
+                break
+            try:
+                app.PDBFile.writeModel(simulation.topology, positions, file=filename, modelIndex=i+200, keepIds=True)
+            except:
+                print("The thing broke on step "+str(i))
+                forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
+                atoms = [ atom for atom in simulation.topology.atoms() ]
+                force_unit = u.kilojoules_per_mole / u.nanometers
+                for (index, atom) in enumerate(atoms):            
+                    force_norm = numpy.sqrt(((forces[index,:] / force_unit)**2).sum())
+                    if force_norm > 100.0:
+                        print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
+                break
+        app.PDBFile.writeFooter(simulation.topology, file=filename)
+else:
+    simulation.minimizeEnergy()
     potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
     if numpy.isnan(potential_energy / u.kilocalories_per_mole):
         raise Exception("Potential energy is NaN after minimization.")
@@ -67,33 +109,19 @@ with open('ADP-minimizing.pdb','w') as filename:
     simulation.context.setVelocitiesToTemperature(300.0*u.kelvin)
 
     print('production')
-    for i in range(100):
-        print("\nStep "+str(i)+"\n")
+    for i in range(1000):
         simulation.step(1)
         positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
-        if numpy.isnan(positions / u.nanometers).any(): 
+        if numpy.isnan(positions / u.nanometers).any():
             print("The thing broke on step "+str(i))
             forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
             atoms = [ atom for atom in simulation.topology.atoms() ]
             force_unit = u.kilojoules_per_mole / u.nanometers
-            for (index, atom) in enumerate(atoms):            
+            for (index, atom) in enumerate(atoms):
                 force_norm = numpy.sqrt(((forces[index,:] / force_unit)**2).sum())
                 if force_norm > 100.0:
-                    print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
+                    print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)
             break
-        try:
-            app.PDBFile.writeModel(simulation.topology, positions, file=filename, modelIndex=i+200, keepIds=True)
-        except:
-            print("The thing broke on step "+str(i))
-            forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
-            atoms = [ atom for atom in simulation.topology.atoms() ]
-            force_unit = u.kilojoules_per_mole / u.nanometers
-            for (index, atom) in enumerate(atoms):            
-                force_norm = numpy.sqrt(((forces[index,:] / force_unit)**2).sum())
-                if force_norm > 100.0:
-                    print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
-            break
-    app.PDBFile.writeFooter(simulation.topology, file=filename)
 
 print("Complete!")
 
