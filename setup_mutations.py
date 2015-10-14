@@ -58,7 +58,7 @@ point_mutants = ['Q185C', 'Q185L','Q185M','Q185N']
 ff_name = 'amber99sbildn'
 water_name = 'tip3p'
 ion_ff_name = 'ions'
-ADP_ff_name = 'ADP'
+ADP_ff_name = 'adp'
 
 solvate = True # if True, will add water molecules using simtk.openm.app.modeller
 padding = 11.0 * unit.angstroms
