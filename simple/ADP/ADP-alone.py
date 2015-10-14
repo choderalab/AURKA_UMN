@@ -8,8 +8,9 @@ import pdbfixer
 solvate = False
 writePDB = False
 
-ff = app.ForceField("amber99sbildn.xml")
-ff.loadFile("adp.xml")
+#ff = app.ForceField("amber99sbildn.xml")
+#ff.loadFile("adp.xml")
+ff = app.ForceField("adp.xml")
 if solvate:
     ff.loadFile("tip3p.xml")
 print("loaded forcefield")
