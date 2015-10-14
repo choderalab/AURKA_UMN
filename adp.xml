@@ -1,0 +1,239 @@
+<!-- Time and parameters of origin: --><!-- 2015-10-13 14:04:55.074841 --><!--  --><ForceField>
+ <AtomTypes>
+  <Type name="adp-0-O1B" class="O3" element="O" mass="15.99943"/>
+  <Type name="adp-0-PB" class="P" element="P" mass="30.9737622"/>
+  <Type name="adp-0-O2B" class="O3" element="O" mass="15.99943"/>
+  <Type name="adp-0-O3B" class="O3" element="O" mass="15.99943"/>
+  <Type name="adp-0-O3A" class="OS" element="O" mass="15.99943"/>
+  <Type name="adp-0-PA" class="P" element="P" mass="30.9737622"/>
+  <Type name="adp-0-O1A" class="O2" element="O" mass="15.99943"/>
+  <Type name="adp-0-O2A" class="O2" element="O" mass="15.99943"/>
+  <Type name="adp-0-O5*" class="OS" element="O" mass="15.99943"/>
+  <Type name="adp-0-C5*" class="CT" element="C" mass="12.01078"/>
+  <Type name="adp-0-H50" class="H1" element="H" mass="1.007947"/>
+  <Type name="adp-0-H51" class="H1" element="H" mass="1.007947"/>
+  <Type name="adp-0-C4*" class="CT" element="C" mass="12.01078"/>
+  <Type name="adp-0-H40" class="H1" element="H" mass="1.007947"/>
+  <Type name="adp-0-O4*" class="OS" element="O" mass="15.99943"/>
+  <Type name="adp-0-C1*" class="CT" element="C" mass="12.01078"/>
+  <Type name="adp-0-H10" class="H2" element="H" mass="1.007947"/>
+  <Type name="adp-0-N9" class="N*" element="N" mass="14.00672"/>
+  <Type name="adp-0-C8" class="CK" element="C" mass="12.01078"/>
+  <Type name="adp-0-H80" class="H5" element="H" mass="1.007947"/>
+  <Type name="adp-0-N7" class="NB" element="N" mass="14.00672"/>
+  <Type name="adp-0-C5" class="CB" element="C" mass="12.01078"/>
+  <Type name="adp-0-C6" class="CA" element="C" mass="12.01078"/>
+  <Type name="adp-0-N6" class="N2" element="N" mass="14.00672"/>
+  <Type name="adp-0-H60" class="H" element="H" mass="1.007947"/>
+  <Type name="adp-0-H61" class="H" element="H" mass="1.007947"/>
+  <Type name="adp-0-N1" class="NC" element="N" mass="14.00672"/>
+  <Type name="adp-0-C2" class="CQ" element="C" mass="12.01078"/>
+  <Type name="adp-0-H2" class="H5" element="H" mass="1.007947"/>
+  <Type name="adp-0-N3" class="NC" element="N" mass="14.00672"/>
+  <Type name="adp-0-C4" class="CB" element="C" mass="12.01078"/>
+  <Type name="adp-0-C3*" class="CT" element="C" mass="12.01078"/>
+  <Type name="adp-0-H30" class="H1" element="H" mass="1.007947"/>
+  <Type name="adp-0-O3*" class="OH" element="O" mass="15.99943"/>
+  <Type name="adp-0-H3*" class="HO" element="H" mass="1.007947"/>
+  <Type name="adp-0-C2*" class="CT" element="C" mass="12.01078"/>
+  <Type name="adp-0-H20" class="H1" element="H" mass="1.007947"/>
+  <Type name="adp-0-O2*" class="OH" element="O" mass="15.99943"/>
+  <Type name="adp-0-H2*" class="HO" element="H" mass="1.007947"/>
+ </AtomTypes>
+ <Residues>
+  <Residue name="adp-0">
+   <Atom name="O1B" type="adp-0-O1B"/>
+   <Atom name="PB" type="adp-0-PB"/>
+   <Atom name="O2B" type="adp-0-O2B"/>
+   <Atom name="O3B" type="adp-0-O3B"/>
+   <Atom name="O3A" type="adp-0-O3A"/>
+   <Atom name="PA" type="adp-0-PA"/>
+   <Atom name="O1A" type="adp-0-O1A"/>
+   <Atom name="O2A" type="adp-0-O2A"/>
+   <Atom name="O5*" type="adp-0-O5*"/>
+   <Atom name="C5*" type="adp-0-C5*"/>
+   <Atom name="H50" type="adp-0-H50"/>
+   <Atom name="H51" type="adp-0-H51"/>
+   <Atom name="C4*" type="adp-0-C4*"/>
+   <Atom name="H40" type="adp-0-H40"/>
+   <Atom name="O4*" type="adp-0-O4*"/>
+   <Atom name="C1*" type="adp-0-C1*"/>
+   <Atom name="H10" type="adp-0-H10"/>
+   <Atom name="N9" type="adp-0-N9"/>
+   <Atom name="C8" type="adp-0-C8"/>
+   <Atom name="H80" type="adp-0-H80"/>
+   <Atom name="N7" type="adp-0-N7"/>
+   <Atom name="C5" type="adp-0-C5"/>
+   <Atom name="C6" type="adp-0-C6"/>
+   <Atom name="N6" type="adp-0-N6"/>
+   <Atom name="H60" type="adp-0-H60"/>
+   <Atom name="H61" type="adp-0-H61"/>
+   <Atom name="N1" type="adp-0-N1"/>
+   <Atom name="C2" type="adp-0-C2"/>
+   <Atom name="H2" type="adp-0-H2"/>
+   <Atom name="N3" type="adp-0-N3"/>
+   <Atom name="C4" type="adp-0-C4"/>
+   <Atom name="C3*" type="adp-0-C3*"/>
+   <Atom name="H30" type="adp-0-H30"/>
+   <Atom name="O3*" type="adp-0-O3*"/>
+   <Atom name="H3*" type="adp-0-H3*"/>
+   <Atom name="C2*" type="adp-0-C2*"/>
+   <Atom name="H20" type="adp-0-H20"/>
+   <Atom name="O2*" type="adp-0-O2*"/>
+   <Atom name="H2*" type="adp-0-H2*"/>
+   <Bond from="0" to="1"/>
+   <Bond from="1" to="2"/>
+   <Bond from="1" to="3"/>
+   <Bond from="1" to="4"/>
+   <Bond from="4" to="5"/>
+   <Bond from="5" to="6"/>
+   <Bond from="5" to="7"/>
+   <Bond from="5" to="8"/>
+   <Bond from="8" to="9"/>
+   <Bond from="9" to="10"/>
+   <Bond from="9" to="11"/>
+   <Bond from="9" to="12"/>
+   <Bond from="12" to="13"/>
+   <Bond from="12" to="14"/>
+   <Bond from="12" to="31"/>
+   <Bond from="14" to="15"/>
+   <Bond from="15" to="16"/>
+   <Bond from="15" to="17"/>
+   <Bond from="15" to="35"/>
+   <Bond from="17" to="18"/>
+   <Bond from="17" to="30"/>
+   <Bond from="18" to="19"/>
+   <Bond from="18" to="20"/>
+   <Bond from="20" to="21"/>
+   <Bond from="21" to="22"/>
+   <Bond from="21" to="30"/>
+   <Bond from="22" to="23"/>
+   <Bond from="22" to="26"/>
+   <Bond from="23" to="24"/>
+   <Bond from="23" to="25"/>
+   <Bond from="26" to="27"/>
+   <Bond from="27" to="28"/>
+   <Bond from="27" to="29"/>
+   <Bond from="29" to="30"/>
+   <Bond from="31" to="32"/>
+   <Bond from="31" to="33"/>
+   <Bond from="31" to="35"/>
+   <Bond from="33" to="34"/>
+   <Bond from="35" to="36"/>
+   <Bond from="35" to="37"/>
+   <Bond from="37" to="38"/>
+  </Residue>
+ </Residues>
+ <HarmonicBondForce>
+  <Bond class1="CT" class2="F" length="0.138" k="307105.6"/>
+  <Bond class1="O3" class2="P" length="0.148" k="439320.0"/>
+ </HarmonicBondForce>
+ <HarmonicAngleForce>
+  <Angle class1="CT" class2="C" class3="OH" angle="2.04203522483" k="585.76"/>
+  <Angle class1="O" class2="C" class3="OH" angle="2.19911485751" k="669.44"/>
+  <Angle class1="CA" class2="CA" class3="HA" angle="2.09439510239" k="292.88"/>
+  <Angle class1="CA" class2="CA" class3="H4" angle="2.09439510239" k="292.88"/>
+  <Angle class1="CB" class2="CA" class3="HA" angle="2.09439510239" k="292.88"/>
+  <Angle class1="CB" class2="CA" class3="H4" angle="2.09439510239" k="292.88"/>
+  <Angle class1="C" class2="CA" class3="HA" angle="2.09439510239" k="292.88"/>
+  <Angle class1="CN" class2="CA" class3="HA" angle="2.09439510239" k="292.88"/>
+  <Angle class1="H5" class2="CK" class3="N*" angle="2.14762764458" k="292.88"/>
+  <Angle class1="H5" class2="CK" class3="NB" angle="2.14762764458" k="292.88"/>
+  <Angle class1="C" class2="CM" class3="HA" angle="2.08915911464" k="292.88"/>
+  <Angle class1="C" class2="CM" class3="H4" angle="2.08915911464" k="292.88"/>
+  <Angle class1="CA" class2="CM" class3="HA" angle="2.15199096771" k="292.88"/>
+  <Angle class1="CA" class2="CM" class3="H4" angle="2.15199096771" k="292.88"/>
+  <Angle class1="CM" class2="CM" class3="HA" angle="2.08915911464" k="292.88"/>
+  <Angle class1="CM" class2="CM" class3="H4" angle="2.08915911464" k="292.88"/>
+  <Angle class1="H4" class2="CM" class3="N*" angle="2.07868713913" k="292.88"/>
+  <Angle class1="H5" class2="CQ" class3="NC" angle="2.01498262143" k="292.88"/>
+  <Angle class1="CM" class2="CT" class3="HC" angle="1.91113553093" k="418.4"/>
+  <Angle class1="N*" class2="CT" class3="OS" angle="1.91113553093" k="418.4"/>
+  <Angle class1="CA" class2="CT" class3="CT" angle="1.98967534727" k="527.184"/>
+  <Angle class1="H5" class2="CR" class3="NA" angle="2.09439510239" k="292.88"/>
+  <Angle class1="H5" class2="CR" class3="NB" angle="2.09439510239" k="292.88"/>
+  <Angle class1="CC" class2="CV" class3="H4" angle="2.09439510239" k="292.88"/>
+  <Angle class1="H4" class2="CV" class3="NB" angle="2.09439510239" k="292.88"/>
+  <Angle class1="CC" class2="CW" class3="H4" angle="2.09439510239" k="292.88"/>
+  <Angle class1="H4" class2="CW" class3="NA" angle="2.09439510239" k="292.88"/>
+  <Angle class1="C*" class2="CW" class3="H4" angle="2.09439510239" k="292.88"/>
+  <Angle class1="C" class2="N" class3="H" angle="2.09439510239" k="251.04"/>
+  <Angle class1="CT" class2="N" class3="H" angle="2.06018664905" k="251.04"/>
+  <Angle class1="C" class2="N*" class3="H" angle="2.08043246838" k="251.04"/>
+  <Angle class1="CB" class2="N*" class3="H" angle="2.19562419901" k="251.04"/>
+  <Angle class1="CK" class2="N*" class3="H" angle="2.24798407657" k="251.04"/>
+  <Angle class1="CM" class2="N*" class3="H" angle="2.11533905342" k="251.04"/>
+  <Angle class1="CA" class2="N2" class3="H" angle="2.09439510239" k="292.88"/>
+  <Angle class1="CT" class2="N2" class3="H" angle="2.06646983436" k="292.88"/>
+  <Angle class1="C" class2="NA" class3="H" angle="2.03854456633" k="251.04"/>
+  <Angle class1="CA" class2="NA" class3="H" angle="2.05948851735" k="251.04"/>
+  <Angle class1="CC" class2="NA" class3="H" angle="2.09439510239" k="251.04"/>
+  <Angle class1="CR" class2="NA" class3="H" angle="2.09439510239" k="251.04"/>
+  <Angle class1="CW" class2="NA" class3="H" angle="2.09439510239" k="251.04"/>
+  <Angle class1="CN" class2="NA" class3="H" angle="2.14850030921" k="251.04"/>
+  <Angle class1="C" class2="OH" class3="HO" angle="1.97222205475" k="292.88"/>
+  <Angle class1="F" class2="CT" class3="H1" angle="1.91113553093" k="292.88"/>
+  <Angle class1="O3" class2="P" class3="O3" angle="2.09264977314" k="1171.52"/>
+  <Angle class1="OS" class2="P" class3="O2" angle="1.88896984943" k="836.8"/>
+  <Angle class1="OS" class2="P" class3="O3" angle="1.88896984943" k="836.8"/>
+ </HarmonicAngleForce>
+ <PeriodicTorsionForce>
+  <Proper class1="P" class2="OS" class3="P" class4="OS" periodicity1="1" phase1="0.0" k1="3.753048"/>
+  <Proper class1="O3" class2="P" class3="OS" class4="P" periodicity1="3" phase1="0.0" k1="-0.35564"/>
+  <Proper class1="O2" class2="P" class3="OS" class4="P" periodicity1="2" phase1="0.0" k1="-1.483228"/>
+  <Proper class1="CT" class2="OS" class3="P" class4="OS" periodicity1="1" phase1="0.0" k1="-6.52704"/>
+  <Proper class1="O2" class2="P" class3="OS" class4="CT" periodicity1="3" phase1="0.0" k1="2.466468" periodicity2="2" phase2="0.0" k2="-1.698704"/>
+  <Proper class1="H1" class2="CT" class3="OS" class4="P" periodicity1="3" phase1="0.0" k1="0.14644"/>
+  <Proper class1="OS" class2="CT" class3="N*" class4="CM" periodicity1="2" phase1="3.14159265359" k1="2.092" periodicity2="1" phase2="0.0" k2="10.46"/>
+  <Proper class1="OS" class2="CT" class3="N*" class4="CK" periodicity1="2" phase1="3.14159265359" k1="2.092" periodicity2="1" phase2="0.0" k2="10.46"/>
+  <Proper class1="OH" class2="CT" class3="CT" class4="OH" periodicity1="3" phase1="0.0" k1="0.602496" periodicity2="2" phase2="0.0" k2="4.184"/>
+  <Proper class1="OS" class2="CT" class3="CT" class4="OH" periodicity1="3" phase1="0.0" k1="0.602496" periodicity2="2" phase2="0.0" k2="4.184"/>
+  <Proper class1="OS" class2="CT" class3="CT" class4="OS" periodicity1="3" phase1="0.0" k1="0.602496" periodicity2="2" phase2="0.0" k2="4.184"/>
+  <Proper class1="CT" class2="CT" class3="C" class4="N" periodicity1="4" phase1="0.0" k1="0.4184" periodicity2="2" phase2="0.0" k2="0.29288"/>
+  <Proper class1="CT" class2="CT" class3="N" class4="C" periodicity1="4" phase1="3.14159265359" k1="2.092" periodicity2="3" phase2="3.14159265359" k2="0.6276" periodicity3="1" phase3="0.0" k3="2.21752"/>
+  <Proper class1="N" class2="CT" class3="C" class4="N" periodicity1="4" phase1="3.14159265359" k1="1.6736" periodicity2="2" phase2="3.14159265359" k2="5.6484" periodicity3="1" phase3="3.14159265359" k3="3.138"/>
+  <Proper class1="C" class2="N" class3="CT" class4="C" periodicity1="2" phase1="3.14159265359" k1="0.8368"/>
+  <Proper class1="" class2="C" class3="OH" class4="" periodicity1="2" phase1="3.14159265359" k1="3.7656"/>
+  </PeriodicTorsionForce>
+ <NonbondedForce coulomb14scale="0.833333" lj14scale="0.5">
+  <Atom type="adp-0-O1B" charge="-0.9552" sigma="0.295992190115" epsilon="0.87864"/>
+  <Atom type="adp-0-PB" charge="1.3672" sigma="0.374177461619" epsilon="0.8368"/>
+  <Atom type="adp-0-O2B" charge="-0.9552" sigma="0.295992190115" epsilon="0.87864"/>
+  <Atom type="adp-0-O3B" charge="-0.9552" sigma="0.295992190115" epsilon="0.87864"/>
+  <Atom type="adp-0-O3A" charge="-0.6346" sigma="0.300001234347" epsilon="0.71128"/>
+  <Atom type="adp-0-PA" charge="1.4929" sigma="0.374177461619" epsilon="0.8368"/>
+  <Atom type="adp-0-O1A" charge="-0.9474" sigma="0.295992190115" epsilon="0.87864"/>
+  <Atom type="adp-0-O2A" charge="-0.9474" sigma="0.295992190115" epsilon="0.87864"/>
+  <Atom type="adp-0-O5*" charge="-0.6579" sigma="0.300001234347" epsilon="0.71128"/>
+  <Atom type="adp-0-C5*" charge="0.0558" sigma="0.339966950842" epsilon="0.4577296"/>
+  <Atom type="adp-0-H50" charge="0.0679" sigma="0.247135304412" epsilon="0.0656888"/>
+  <Atom type="adp-0-H51" charge="0.0679" sigma="0.247135304412" epsilon="0.0656888"/>
+  <Atom type="adp-0-C4*" charge="0.1065" sigma="0.339966950842" epsilon="0.4577296"/>
+  <Atom type="adp-0-H40" charge="0.1174" sigma="0.247135304412" epsilon="0.0656888"/>
+  <Atom type="adp-0-O4*" charge="-0.3548" sigma="0.300001234347" epsilon="0.71128"/>
+  <Atom type="adp-0-C1*" charge="0.0394" sigma="0.339966950842" epsilon="0.4577296"/>
+  <Atom type="adp-0-H10" charge="0.2007" sigma="0.229317330049" epsilon="0.0656888"/>
+  <Atom type="adp-0-N9" charge="-0.0251" sigma="0.324999852378" epsilon="0.71128"/>
+  <Atom type="adp-0-C8" charge="0.2006" sigma="0.339966950842" epsilon="0.359824"/>
+  <Atom type="adp-0-H80" charge="0.1553" sigma="0.242146271591" epsilon="0.06276"/>
+  <Atom type="adp-0-N7" charge="-0.6073" sigma="0.324999852378" epsilon="0.71128"/>
+  <Atom type="adp-0-C5" charge="0.0515" sigma="0.339966950842" epsilon="0.359824"/>
+  <Atom type="adp-0-C6" charge="0.7009" sigma="0.339966950842" epsilon="0.359824"/>
+  <Atom type="adp-0-N6" charge="-0.9019" sigma="0.324999852378" epsilon="0.71128"/>
+  <Atom type="adp-0-H60" charge="0.4115" sigma="0.106907846177" epsilon="0.0656888"/>
+  <Atom type="adp-0-H61" charge="0.4115" sigma="0.106907846177" epsilon="0.0656888"/>
+  <Atom type="adp-0-N1" charge="-0.7615" sigma="0.324999852378" epsilon="0.71128"/>
+  <Atom type="adp-0-C2" charge="0.5875" sigma="0.339966950842" epsilon="0.359824"/>
+  <Atom type="adp-0-H2" charge="0.0473" sigma="0.242146271591" epsilon="0.06276"/>
+  <Atom type="adp-0-N3" charge="-0.6997" sigma="0.324999852378" epsilon="0.71128"/>
+  <Atom type="adp-0-C4" charge="0.3053" sigma="0.339966950842" epsilon="0.359824"/>
+  <Atom type="adp-0-C3*" charge="0.2022" sigma="0.339966950842" epsilon="0.4577296"/>
+  <Atom type="adp-0-H30" charge="0.0615" sigma="0.247135304412" epsilon="0.0656888"/>
+  <Atom type="adp-0-O3*" charge="-0.6541" sigma="0.306647338784" epsilon="0.8803136"/>
+  <Atom type="adp-0-H3*" charge="0.4376" sigma="1.0" epsilon="0.0"/>
+  <Atom type="adp-0-C2*" charge="0.067" sigma="0.339966950842" epsilon="0.4577296"/>
+  <Atom type="adp-0-H20" charge="0.0972" sigma="0.247135304412" epsilon="0.0656888"/>
+  <Atom type="adp-0-O2*" charge="-0.6139" sigma="0.306647338784" epsilon="0.8803136"/>
+  <Atom type="adp-0-H2*" charge="0.4186" sigma="1.0" epsilon="0.0"/>
+ </NonbondedForce>
+</ForceField>
