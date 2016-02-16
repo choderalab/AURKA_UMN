@@ -18,13 +18,7 @@ for index in range(5):
                 if str(residue) == 'GLN185':
                     q185 = residue
         res185 = traj.topology.residue(q185.index)
-        #min_index = min([atom.index for atom in e181.atoms])
-        #max_index = min([atom.index for atom in traj.topology.residue(q185.index+1).atoms])
-        #atom_indices = [i for i in range(min_index,max_index)]
-        # how to include relevant waters?
-        #salt_bridge = traj.atom_slice(atom_indices)
 
-        #distances, residue_pairs = md.compute_contacts(salt_bridge, contacts=[[0,4]])
         distances, residue_pairs = md.compute_contacts(traj, contacts=[[e181.index,q185.index]])
         distances_to_plot = [d[0] for d in distances]
         print(len(distances))
@@ -32,21 +26,27 @@ for index in range(5):
 
         res185atoms = [atom.index for atom in res185.atoms]
         haystack = traj.top.select("water")
-        neighbors = md.compute_neighbors(traj, 5.0, res185atoms, haystack_indices=haystack)
+        neighbors = md.compute_neighbors(traj, 0.6, res185atoms, haystack_indices=haystack)
 
         print(res185atoms)
         print(len(neighbors[0]))
-        neighbors.append(res185atoms)
         neighbor_set = set(chain.from_iterable(neighbors))
         neighbor_set = list(neighbor_set)
         #print(neighbor_set)
-        #traj.atom_slice(neighbor_set, inplace=True)
-        #hbonds = md.baker_hubbard(possible_hbonds, exclude_water=False)
+        hbonds0 = md.baker_hubbard(traj, exclude_water=False, proposed_donor_indices=res185atoms, proposed_acceptor_indices=neighbor_set)
+        print(hbonds0)
+        hbonds1 = md.baker_hubbard(traj, exclude_water=False, proposed_donor_indices=neighbor_set, proposed_acceptor_indices=res185atoms)
+        print(hbonds1)
+        if hbonds0.shape != (0,3) and hbonds1.shape != (0,3):
+            hbonds = np.array(hbonds0 + hbonds1)
+        elif hbonds0.shape == (0,3):
+            hbonds = hbonds1
+        else:
+            hbonds = hbonds0
 
-        #hbonds = md.baker_hubbard(traj, exclude_water=False)
-        #label = lambda hbond : '%s -- %s' % (possible_hbonds.topology.atom(hbond[0]), possible_hbonds.topology.atom(hbond[2]))
-        #for hbond in hbonds:
-        #    print label(hbond)
+        label = lambda hbond : '%s -- %s' % (traj.topology.atom(hbond[0]), traj.topology.atom(hbond[2]))
+        for hbond in hbonds:
+            print label(hbond)
 
         # md.compute_contacts(traj, contacts=[[0-idx,0-idx]])
             # can plot with time, all on top of each other
@@ -64,6 +64,15 @@ for index in range(5):
         # ask nick for which residues (why.)
         # make a cut-out traj of residues plus closest waters in each frame ** might need fanciness
         # john looks at code for specifying residues in hbonding 
+
+        # add to both?
+        # donor_atom_set = None
+        # acceptor_atom_set = None
+        # pass the get_donors(e0, e1, donor_atom_set)
+            # filter to make sure the atoms in the bond both belong in atom set also; if atom set != None
+            # acceptor_atom_set is not it's own thing
+        # call twice: two different sets of hydrogen bonds: first call acceptors would be waters, donors key residues; then switch
+
 
 #        hbonds = md.baker_hubbard(traj, exclude_water=False)
 #        label = lambda hbond : '%s -- %s' % (traj.topology.atom(hbond[0]), traj.topology.atom(hbond[2]))
