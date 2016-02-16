@@ -32,7 +32,6 @@ for index in range(5):
         print(len(neighbors[0]))
         neighbor_set = set(chain.from_iterable(neighbors))
         neighbor_set = list(neighbor_set)
-        #print(neighbor_set)
         hbonds0 = md.baker_hubbard(traj, exclude_water=False, proposed_donor_indices=res185atoms, proposed_acceptor_indices=neighbor_set)
         print(hbonds0)
         hbonds1 = md.baker_hubbard(traj, exclude_water=False, proposed_donor_indices=neighbor_set, proposed_acceptor_indices=res185atoms)
@@ -48,36 +47,13 @@ for index in range(5):
         for hbond in hbonds:
             print label(hbond)
 
-        # md.compute_contacts(traj, contacts=[[0-idx,0-idx]])
-            # can plot with time, all on top of each other
-            # plot distance over time
-            # store in hdf5? make plot right away? each will be a different length (list of the numpy arrays or something and then store that or pickle it)(why)
-        # hydrogen bonding: how to tell it one residue instead of looking at the whole thing
-            # ask steve how to do the slice thing
-        # how does hydrogen bonding change with and without TPX2
         # make plots of all data past t = 250ns
             # quantify how much P(salt bridge) and (1-P)
                 # P = Ntraj_frames_bound
 
         # look at trajectories : how long do waters stay in place
             # may need to account for the waters exchanging
-        # ask nick for which residues (why.)
-        # make a cut-out traj of residues plus closest waters in each frame ** might need fanciness
-        # john looks at code for specifying residues in hbonding 
 
-        # add to both?
-        # donor_atom_set = None
-        # acceptor_atom_set = None
-        # pass the get_donors(e0, e1, donor_atom_set)
-            # filter to make sure the atoms in the bond both belong in atom set also; if atom set != None
-            # acceptor_atom_set is not it's own thing
-        # call twice: two different sets of hydrogen bonds: first call acceptors would be waters, donors key residues; then switch
-
-
-#        hbonds = md.baker_hubbard(traj, exclude_water=False)
-#        label = lambda hbond : '%s -- %s' % (traj.topology.atom(hbond[0]), traj.topology.atom(hbond[2]))
-#        for hbond in hbonds:
-#            print label(hbond)
         break
 plt.legend(['RUN0','RUN1','RUN2','RUN3','RUN4'])
 plt.savefig("salt-bridge-distances.png",dpi=300)
