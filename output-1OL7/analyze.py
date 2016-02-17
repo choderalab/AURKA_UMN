@@ -5,10 +5,84 @@ import mdtraj as md
 import numpy as np
 from msmbuilder import dataset
 from itertools import chain
+import sys
+import math
+from matplotlib.pyplot import cm
+import seaborn as sns
+
+sns.set_style("whitegrid")
+sns.set_context("poster")
+
+
+
+def stat_analyze(distances, window, cutoff):
+    tmax = 0
+    ntraj = len(distances)  # number of trajectories
+
+    # Compute the maximum time
+    for n in range(ntraj):
+        if len(distances[n]) > tmax:
+            tmax = len(distances[n])
+            print 'The value you are looking for is: %d' % len(distances[n])
+    # Compute the contact fraction
+    contact_fraction = np.zeros([tmax - window], np.float64)
+    contact_fraction_stderr = np.zeros([tmax - window], np.float64)
+    for t in range(0, tmax - window):
+        # Count the number of trajectoties that are 't+sliding window' in length
+        ntraj_t = 0
+        for n in range(ntraj):
+            if len(distances[n]) >= t + window:
+                ntraj_t += 1
+        contact_fraction_n = np.zeros(ntraj_t)
+        index = 0
+        for n in range(ntraj):
+            if len(distances[n]) >= t + window:
+                contact_fraction_n[index] = (distances[n][t:(t + window)] < cutoff).mean()
+                index += 1
+        contact_fraction[t] = contact_fraction_n.mean()
+        contact_fraction_stderr[t] = contact_fraction_n.std() / np.sqrt(ntraj_t)
+
+    return contact_fraction, contact_fraction_stderr
+
+def plot(kinase, mutgroup, project):
+    RE_graph = []
+    KE_graph = []
+    for index in Mut_group[mutgroup]:
+        trajectories = dataset.MDTrajDataset(
+            "/cbio/jclab/projects/fah/fah-data/munged2/no-solvent/%s/run%d-clone*.h5" % (project, index))
+        for i, traj in enumerate(trajectories):
+            if i == 0:
+                [RE, KE] = shukla_coords(traj, KER_hbond[kinase])
+                RE_graph = list(RE[:, 0])
+                KE_graph = list(KE[:, 0])
+            else:
+                [RE, KE] = shukla_coords(traj, KER_hbond[kinase])
+                np.hstack((RE_graph, RE[:, 0]))
+                np.hstack((KE_graph, KE[:, 0]))
+
+    # y_max = max(KE)
+    # x_max = max(RE)
+    ax = plt.gca()
+    ax.set_xlim(0, 20)
+    ax.set_ylim(0, 20)
+    plt.hexbin(RE_graph, KE_graph, gridsize=36, cmap='jet')
+    plt.xlabel('d(E2195-R2430) ($\AA$)')
+    plt.ylabel('d(K2187-E2195) ($\AA$)')
+    plt.colorbar()
+    plt.title('%s sims - %s' % (mutgroup, project))
+
+    plt.savefig('Hexbin_%s_%s_%s.png' % (kinase, project, mutgroup), dpi=500)
+    plt.close()
+
+
 
 project = '11411'
-fig = plt.figure()
+
+sliding_window = 40
+cutoff_dist = 3
+
 for index in range(5):
+    SB_total = []
     trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone*.h5" % (project, index))
     for i,traj in enumerate(trajectories):
         if i == 0:
@@ -20,8 +94,7 @@ for index in range(5):
         res185 = traj.topology.residue(q185.index)
 
         distances, residue_pairs = md.compute_contacts(traj, contacts=[[e181.index,q185.index]])
-        distances_to_plot = [d[0] for d in distances]
-        plt.plot(distances)
+        SB_total.append(distances[:,0])
 
         res185atoms = [atom.index for atom in res185.atoms]
         haystack = traj.top.select("water")
@@ -32,10 +105,20 @@ for index in range(5):
         # using wernet_nilsson because the output is hbonds per frame
         hbonds0 = md.wernet_nilsson(traj, exclude_water=False, proposed_donor_indices=res185atoms, proposed_acceptor_indices=neighbor_set)
         hbonds1 = md.wernet_nilsson(traj, exclude_water=False, proposed_donor_indices=neighbor_set, proposed_acceptor_indices=res185atoms)
+        hbonds = list()
+        for frame, bondlist in enumerate(hbonds0):
+            try:
+                hbonds.append(np.concatenate((bondlist,hbonds1[frame])))
+            except Exception as e:
+                print('hbonds0')
+                print(bondlist)
+                print(bondlist.shape)
+                print('hbonds1')
+                print(hbonds1[frame])
+                print(hbonds1[frame].shape)
+                raise(e)
 
-        # this is wrong now -- want to match up corresponding frames!
-        hbonds = np.array(hbonds0 + hbonds1)
-
+        # this is only for funs
         label = lambda hbond : '%s -- %s' % (traj.topology.atom(hbond[0]), traj.topology.atom(hbond[2]))
         for index, frame in enumerate(hbonds):
             if len(frame) > 0:
@@ -49,9 +132,8 @@ for index in range(5):
 
         # look at trajectories : how long do waters stay in place
             # may need to account for the waters exchanging
-
-        break
+        
+    SB_fraction, SB_stderr = stat_analyze(SB_total, sliding_window, cutoff_dist)
+    np.save('./data/%s_%s_SB_fraction_3.npy' % (project, index), SB_fraction)
+    np.save('./data/%s_%s_SB_stderr_3.npy' % (project, index), SB_stderr)
     break
-plt.legend(['RUN0','RUN1','RUN2','RUN3','RUN4'])
-plt.savefig("salt-bridge-distances.png",dpi=300)
-plt.close(fig)
