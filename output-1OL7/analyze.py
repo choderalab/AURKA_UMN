@@ -44,37 +44,6 @@ def stat_analyze(distances, window, cutoff):
 
     return contact_fraction, contact_fraction_stderr
 
-def plot(kinase, mutgroup, project):
-    RE_graph = []
-    KE_graph = []
-    for index in Mut_group[mutgroup]:
-        trajectories = dataset.MDTrajDataset(
-            "/cbio/jclab/projects/fah/fah-data/munged2/no-solvent/%s/run%d-clone*.h5" % (project, index))
-        for i, traj in enumerate(trajectories):
-            if i == 0:
-                [RE, KE] = shukla_coords(traj, KER_hbond[kinase])
-                RE_graph = list(RE[:, 0])
-                KE_graph = list(KE[:, 0])
-            else:
-                [RE, KE] = shukla_coords(traj, KER_hbond[kinase])
-                np.hstack((RE_graph, RE[:, 0]))
-                np.hstack((KE_graph, KE[:, 0]))
-
-    # y_max = max(KE)
-    # x_max = max(RE)
-    ax = plt.gca()
-    ax.set_xlim(0, 20)
-    ax.set_ylim(0, 20)
-    plt.hexbin(RE_graph, KE_graph, gridsize=36, cmap='jet')
-    plt.xlabel('d(E2195-R2430) ($\AA$)')
-    plt.ylabel('d(K2187-E2195) ($\AA$)')
-    plt.colorbar()
-    plt.title('%s sims - %s' % (mutgroup, project))
-
-    plt.savefig('Hexbin_%s_%s_%s.png' % (kinase, project, mutgroup), dpi=500)
-    plt.close()
-
-
 
 project = '11411'
 
