@@ -55,6 +55,7 @@ for index in range(5):
             # may need to account for the waters exchanging
 
         break
+    break
 plt.legend(['RUN0','RUN1','RUN2','RUN3','RUN4'])
 plt.savefig("salt-bridge-distances.png",dpi=300)
 plt.close(fig)
