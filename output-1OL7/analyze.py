@@ -21,53 +21,67 @@ sns.set_context("poster")
             # may need to account for the waters exchanging
 
 
-def bond_analyze(distances, window, cutoff, verbose=True):
+def bond_analyze(HBonds, window, verbose=False):
 
     # input is different though so this isn't going to work the same...?
     tmax = 0
-    ntraj = len(distances)  # number of trajectories
+    ntraj = len(HBonds)  # number of trajectories
     if verbose:
-        print("Number of trajectories in this array of bonds: %s " % ntraj)
-        print("Type of array of bonds: %s" % type(distances))
+        print("\nNumber of trajectories in this array of bonds: %s " % ntraj)
+        print("Type of array of bonds: %s" % type(HBonds))
 
     # Compute the maximum time
     for n in range(ntraj):
-        if len(distances[n]) > tmax:
-            tmax = len(distances[n])
+        if len(HBonds[n]) > tmax:
+            tmax = len(HBonds[n])
     if verbose:
         print("Maximum trajectory length: %s frames" % tmax)
     # Compute the contact fraction
     contact_fraction = np.zeros([tmax - window], np.float64)
     contact_fraction_stderr = np.zeros([tmax - window], np.float64)
-    for t in range(0, tmax - window):
+    for frame in range(0, tmax - window): # frame is an index, not an object
         # Count the number of trajectoties that are 't+sliding window' in length
         ntraj_t = 0
         for n in range(ntraj):
-            if len(distances[n]) >= t + window:
+            if len(HBonds[n]) >= frame + window:
                 ntraj_t += 1
         contact_fraction_n = np.zeros(ntraj_t)
         index = 0
-        for n in range(ntraj):
+        printed_type = False
+        for traj in range(ntraj): # traj is an index, not trajectory
+            hbonds_traj = HBonds[traj]
+            num_hbonds_in_frame_in_traj = hbonds_traj[frame].shape[0]
             if verbose:
-                print("Entry 0 in trajectory %s of bonds:" % n)
-                print(distances[n][0])
-                print("Type of trajectory of bonds:")
-                print(type(distances[n]))
-                print("Type of an entry within trajectory of bonds:")
-                print(type(distances[n][0]))
-            if len(distances[n]) >= t + window:
-                contact_fraction_n[index] = (distances[n][t:(t + window)] < cutoff).mean()
+                print("Number of hbonds in this frame of this traj: %s" % num_hbonds_in_frame_in_traj)
+            if verbose and num_hbonds_in_frame_in_traj>0 and not printed_type:
+                print("Type of entry representing an hbond in traj of bonds: %s" % type(hbonds_traj[frame][0]))
+                printed_type = True
+            if len(hbonds_traj) >= frame + window:
+                local_frame_ids = range(frame,frame+window)
+                shapes = list()
+                for local_id in local_frame_ids:
+                    shapes.append(hbonds_traj[local_id].shape[0])
+                if verbose and frame < 5 and traj==0:
+                    print("These are the number of rows that the thing is coming up with:")
+                    print(shapes)
+                    print("These are the frames it is checking:")
+                    print(local_frame_ids)
+                np_shapes = np.asarray(shapes, dtype=int)
                 if verbose:
-                    print("Contact fraction %s for %s" % (index,n)) # why tf does index exist instead of using n
+                    print("The ndarray version of shapes:")
+                    print(np_shapes)
+                contact_fraction_n[index] = np_shapes.mean()
+                if verbose:
+                    print("Contact fraction frame %s for trajectory %s" % (index,traj)) # why tf does index exist instead of using n
                     print(contact_fraction_n[index])
                 index += 1
-        contact_fraction[t] = contact_fraction_n.mean()
-        contact_fraction_stderr[t] = contact_fraction_n.std() / np.sqrt(ntraj_t)
+        contact_fraction[frame] = contact_fraction_n.mean()
+        contact_fraction_stderr[frame] = contact_fraction_n.std() / np.sqrt(ntraj_t)
 
     return contact_fraction, contact_fraction_stderr
 
 
-def distance_analyze(distances, window):
+def distance_analyze(distances, window, verbose=False):
     tmax = 0
     ntraj = len(distances)  # number of trajectories
 
@@ -87,6 +101,13 @@ def distance_analyze(distances, window):
         contact_fraction_n = np.zeros(ntraj_t)
         index = 0
         for n in range(ntraj):
+            if verbose and t==0 and n==0:
+                print("Entry 0 in trajectory %s of distances:" % n)
+                print(distances[n][0])
+                print("Type of trajectory of distances:")
+                print(type(distances[n]))
+                print("Type of an entry within trajectory of distances:")
+                print(type(distances[n][0]))
             if len(distances[n]) >= t + window:
                 contact_fraction_n[index] = (distances[n][t:(t + window)]).mean()
                 index += 1
@@ -97,8 +118,8 @@ def distance_analyze(distances, window):
 
 project = '11411'
 
+verbose = False
 sliding_window = 10
-cutoff_dist = 30 # it is literally always within 3 what should this actually be
 # or like this isn't quite what i want, i need a mean distance not a mean number of distances (?)
 
 fig = plt.figure()
@@ -131,7 +152,14 @@ for index in range(5):
         hbonds = list()
         for frame, bondlist in enumerate(hbonds0):
             try:
+                if verbose:
+                    print("hbonds in hbond0: %s" % bondlist.shape[0])
+                    print("hbonds in hbond1: %s" % hbonds1[frame].shape[0])
                 hbonds.append(np.concatenate((bondlist,hbonds1[frame])))
+                num_hbonds0 = bondlist.shape[0]
+                num_hbonds1 = hbonds1[frame].shape[0]
+                num_hbonds = hbonds[frame].shape[0]
+                assert num_hbonds == num_hbonds0 + num_hbonds1
             except Exception as e:
                 print('hbonds0')
                 print(bondlist)
@@ -141,36 +169,31 @@ for index in range(5):
                 print(hbonds1[frame].shape)
                 raise(e)
 
-        HB_total.append(hbonds) # the whole thing or part of it, like [:,0] above?
+        HB_total.append(hbonds)
 
+        # this is for funs
         label = lambda hbond : '%s -- %s' % (traj.topology.atom(hbond[0]), traj.topology.atom(hbond[2]))
         for index, frame in enumerate(hbonds):
             if len(frame) > 0:
                 break
         for hbond in hbonds[index]:
             print label(hbond)
-        # for debugging
-        if i > 1:
-            break
 
         # end loop for each trajectory in a given run
 
     SB_fraction, SB_stderr = distance_analyze(SB_total, sliding_window)
-    HB_fraction, HB_stderr = bond_analyze(HB_total, sliding_window, cutoff_dist)
-#    np.save('./data/%s_%s_SB_fraction_3.npy' % (project, index), SB_fraction)
-#    np.save('./data/%s_%s_SB_stderr_3.npy' % (project, index), SB_stderr)
-#    np.save('./data/%s_%s_HB_fraction_3.npy' % (project, index), HB_fraction)
-#    np.save('./data/%s_%s_HB_stderr_3.npy' % (project, index), HB_stderr)
-#    np.save('./data/%s_%s_HBonds.npy' % (project, index), HB_total)
-#    np.save('./data/%s_%s_SB_total.npy' % (project, index), SB_total)
+    HB_fraction, HB_stderr = bond_analyze(HB_total, sliding_window)
+    np.save('./data/%s_%s_SB_fraction_3.npy' % (project, index), SB_fraction)
+    np.save('./data/%s_%s_SB_stderr_3.npy' % (project, index), SB_stderr)
+    np.save('./data/%s_%s_HB_fraction_3.npy' % (project, index), HB_fraction)
+    np.save('./data/%s_%s_HB_stderr_3.npy' % (project, index), HB_stderr)
+    np.save('./data/%s_%s_HBonds.npy' % (project, index), HB_total)
+    np.save('./data/%s_%s_SB_total.npy' % (project, index), SB_total)
     plt.fill_between(range(len(SB_fraction)),SB_fraction-SB_stderr, SB_fraction+SB_stderr)
     plt.plot(SB_fraction)
     # end loop for each run
 
-    # for debugging
-    break
 
-# don't save - debugging
-#plt.legend(['RUN0','RUN1','RUN2','RUN3','RUN4'])
-#plt.savefig("salt-bridge-distances.png",dpi=300)
+plt.legend(['RUN0','RUN1','RUN2','RUN3','RUN4'])
+plt.savefig("salt-bridge-distances.png",dpi=300)
 plt.close(fig)
