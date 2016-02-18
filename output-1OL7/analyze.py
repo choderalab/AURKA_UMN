@@ -23,7 +23,6 @@ sns.set_context("poster")
 
 def bond_analyze(HBonds, window, verbose=False):
 
-    # input is different though so this isn't going to work the same...?
     tmax = 0
     ntraj = len(HBonds)  # number of trajectories
     if verbose:
@@ -50,13 +49,13 @@ def bond_analyze(HBonds, window, verbose=False):
         printed_type = False
         for traj in range(ntraj): # traj is an index, not trajectory
             hbonds_traj = HBonds[traj]
-            num_hbonds_in_frame_in_traj = hbonds_traj[frame].shape[0]
-            if verbose:
-                print("Number of hbonds in this frame of this traj: %s" % num_hbonds_in_frame_in_traj)
-            if verbose and num_hbonds_in_frame_in_traj>0 and not printed_type:
-                print("Type of entry representing an hbond in traj of bonds: %s" % type(hbonds_traj[frame][0]))
-                printed_type = True
             if len(hbonds_traj) >= frame + window:
+                num_hbonds_in_frame_in_traj = hbonds_traj[frame].shape[0]
+                if verbose:
+                    print("Number of hbonds in this frame of this traj: %s" % num_hbonds_in_frame_in_traj)
+                if verbose and num_hbonds_in_frame_in_traj>0 and not printed_type:
+                    print("Type of entry representing an hbond in traj of bonds: %s" % type(hbonds_traj[frame][0]))
+                    printed_type = True
                 local_frame_ids = range(frame,frame+window)
                 shapes = list()
                 for local_id in local_frame_ids:
