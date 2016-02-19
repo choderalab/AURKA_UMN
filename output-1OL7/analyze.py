@@ -45,7 +45,7 @@ def bond_analyze(HBonds, window, verbose=False):
             if len(HBonds[n]) >= frame + window:
                 ntraj_t += 1
         contact_fraction_n = np.zeros(ntraj_t)
-        index = 0
+        frame_id = 0
         printed_type = False
         for traj in range(ntraj): # traj is an index, not trajectory
             hbonds_traj = HBonds[traj]
@@ -69,11 +69,11 @@ def bond_analyze(HBonds, window, verbose=False):
                 if verbose:
                     print("The ndarray version of shapes:")
                     print(np_shapes)
-                contact_fraction_n[index] = np_shapes.mean()
+                contact_fraction_n[frame_id] = np_shapes.mean()
                 if verbose:
-                    print("Contact fraction frame %s for trajectory %s" % (index,traj)) # why tf does index exist instead of using n
-                    print(contact_fraction_n[index])
-                index += 1
+                    print("Contact fraction frame %s for trajectory %s" % (frame_id,traj)) # why tf does index exist instead of using n
+                    print(contact_fraction_n[frame_id])
+                frame_id += 1
         contact_fraction[frame] = contact_fraction_n.mean()
         contact_fraction_stderr[frame] = contact_fraction_n.std() / np.sqrt(ntraj_t)
 
@@ -98,7 +98,7 @@ def distance_analyze(distances, window, verbose=False):
             if len(distances[n]) >= t + window:
                 ntraj_t += 1
         contact_fraction_n = np.zeros(ntraj_t)
-        index = 0
+        frame_id = 0
         for n in range(ntraj):
             if verbose and t==0 and n==0:
                 print("Entry 0 in trajectory %s of distances:" % n)
@@ -108,8 +108,8 @@ def distance_analyze(distances, window, verbose=False):
                 print("Type of an entry within trajectory of distances:")
                 print(type(distances[n][0]))
             if len(distances[n]) >= t + window:
-                contact_fraction_n[index] = (distances[n][t:(t + window)]).mean()
-                index += 1
+                contact_fraction_n[frame_id] = (distances[n][t:(t + window)]).mean()
+                frame_id += 1
         contact_fraction[t] = contact_fraction_n.mean()
         contact_fraction_stderr[t] = contact_fraction_n.std() / np.sqrt(ntraj_t)
 
@@ -117,13 +117,15 @@ def distance_analyze(distances, window, verbose=False):
 
 project = '11411'
 
-verbose = False
+verbose = True
 sliding_window = 10
 # or like this isn't quite what i want, i need a mean distance not a mean number of distances (?)
 
 fig = plt.figure()
 
 for index in range(5):
+    if verbose:
+        print("Loading RUN%s..." % index)
     SB_total = []
     HB_total = []
     trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone*.h5" % (project, index))
@@ -151,9 +153,6 @@ for index in range(5):
         hbonds = list()
         for frame, bondlist in enumerate(hbonds0):
             try:
-                if verbose:
-                    print("hbonds in hbond0: %s" % bondlist.shape[0])
-                    print("hbonds in hbond1: %s" % hbonds1[frame].shape[0])
                 hbonds.append(np.concatenate((bondlist,hbonds1[frame])))
                 num_hbonds0 = bondlist.shape[0]
                 num_hbonds1 = hbonds1[frame].shape[0]
@@ -172,27 +171,45 @@ for index in range(5):
 
         # this is for funs
         label = lambda hbond : '%s -- %s' % (traj.topology.atom(hbond[0]), traj.topology.atom(hbond[2]))
-        for index, frame in enumerate(hbonds):
+        for frame_id, frame in enumerate(hbonds):
             if len(frame) > 0:
                 break
-        for hbond in hbonds[index]:
+        for hbond in hbonds[frame_id]:
             print label(hbond)
 
         # end loop for each trajectory in a given run
 
     SB_fraction, SB_stderr = distance_analyze(SB_total, sliding_window)
     HB_fraction, HB_stderr = bond_analyze(HB_total, sliding_window)
+    if verbose:
+        print("Saving Salt Bridge fraction...")
     np.save('./data/%s_%s_SB_fraction_3.npy' % (project, index), SB_fraction)
+    if verbose:
+        print("Saving Salt Bridge standard error...")
     np.save('./data/%s_%s_SB_stderr_3.npy' % (project, index), SB_stderr)
+    if verbose:
+        print("Saving Hydrogen Bonding fraction...")
     np.save('./data/%s_%s_HB_fraction_3.npy' % (project, index), HB_fraction)
+    if verbose:
+        print("Saving Hydrogen Bonding standard error...")
     np.save('./data/%s_%s_HB_stderr_3.npy' % (project, index), HB_stderr)
+    if verbose:
+        print("Saving total Hydrogen Bonding data...")
     np.save('./data/%s_%s_HBonds.npy' % (project, index), HB_total)
+    if verbose:
+        print("Saving total Salt Bridge data...")
     np.save('./data/%s_%s_SB_total.npy' % (project, index), SB_total)
+    if verbose:
+        print("Adding RUN%s to Salt Bridge plot..." % index)
     plt.fill_between(range(len(SB_fraction)),SB_fraction-SB_stderr, SB_fraction+SB_stderr)
     plt.plot(SB_fraction)
     # end loop for each run
 
 
 plt.legend(['RUN0','RUN1','RUN2','RUN3','RUN4'])
+if verbose:
+    print("Saving Plot...")
 plt.savefig("salt-bridge-distances.png",dpi=300)
 plt.close(fig)
+if verbose:
+    print("Complete!")
