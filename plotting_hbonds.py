@@ -67,7 +67,7 @@ for run in range(5):
         plt.xlabel('frame')
         plt.ylabel('hydrogen atom')
         plt.title('Hydrogen bonds in AURKA %s %s clone%s' % (mutant['RUN%s' % run], system[project], clone_id))
-        plt.savefig("/cbio/jclab/home/behrj/UMN_hbonds/AURKA-%s-RUN%s-clone%s-ALL-HBonds.png" % (project, run, clone_id),dpi=300)
+        plt.savefig("%s/hbonds/AURKA-%s-RUN%s-clone%s-ALL-HBonds.png" % (project_dir, project, run, clone_id),dpi=300)
         plt.close()
 
         significant_count = 0
@@ -95,7 +95,7 @@ for run in range(5):
         plt.xlabel('frame')
         plt.ylabel('hydrogen atom')
         plt.title('Significant (more than 1percent) hydrogen bonds in AURKA %s %s clone%s' % (mutant['RUN%s' % run], system[project], clone_id))
-        plt.savefig("/cbio/jclab/home/behrj/UMN_hbonds/AURKA-%s-RUN%s-clone%s-significant-HBonds.png" % (project, run, clone_id),dpi=300)
+        plt.savefig("%s/hbonds/AURKA-%s-RUN%s-clone%s-significant-HBonds.png" % (project_dir, project, run, clone_id),dpi=300)
         plt.close()
 
         del(hydrogen)

@@ -76,7 +76,7 @@ for i, project in enumerate(projects):
         plt.plot(SB_fraction[:len(SB_fraction)], color=colors[index][i]['line'])
         if (i==1 and index==0) or (i==0 and index!=0):
             plt.legend(['with TPX2','without TPX2'])
-            plt.savefig("/cbio/jclab/home/behrj/AURKA-salt-bridge-with-without-TPX2-RUN%s" % index,dpi=300)
+            plt.savefig("./plots/AURKA-salt-bridge-with-without-TPX2-RUN%s" % index,dpi=300)
 
         plt.figure(index+10)
         plt.title('Hydrogen bonds on residue 185 for AURKA %s' % mutant['RUN%s' % index])
@@ -84,17 +84,17 @@ for i, project in enumerate(projects):
         plt.plot(HB_fraction[:len(SB_fraction)], color=colors[index][i]['line'])
         if (i==1 and index==0) or (i==0 and index!=0):
             plt.legend(['with TPX2','without TPX2'])
-            plt.savefig("/cbio/jclab/home/behrj/AURKA-hydrogen-bonds-with-without-TPX2-RUN%s" % index,dpi=300)
+            plt.savefig("./plots/AURKA-hydrogen-bonds-with-without-TPX2-RUN%s" % index,dpi=300)
 
         # temporary: 11411 is currently running
         if i==1:
             break
     plt.figure(2*i+1)
     plt.legend([mutant['RUN0'],mutant['RUN1'],mutant['RUN2'],mutant['RUN3'],mutant['RUN4']])
-    plt.savefig("/cbio/jclab/home/behrj/AURKA-salt-bridge-distances-%s-all-runs.png" % project,dpi=300)
+    plt.savefig("./plots/AURKA-salt-bridge-distances-%s-all-runs.png" % project,dpi=300)
     plt.close(fig1)
     plt.figure(2*i+2)
     plt.legend([mutant['RUN0'],mutant['RUN1'],mutant['RUN2'],mutant['RUN3'],mutant['RUN4']])
-    plt.savefig("/cbio/jclab/home/behrj/AURKA-hydrogen-bonds-%s-all-runs.png" % project,dpi=300)
+    plt.savefig("./plots/AURKA-hydrogen-bonds-%s-all-runs.png" % project,dpi=300)
     plt.close(fig2)
 
