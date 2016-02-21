@@ -9,6 +9,7 @@ import sys
 import math
 from matplotlib.pyplot import cm
 import seaborn as sns
+import os
 
 sns.set_style("whitegrid")
 sns.set_context("poster")
@@ -54,6 +55,8 @@ for i, project in enumerate(projects):
     fig2 = plt.figure(2*i+2)
     plt.title('Hydrogen bonds on residue 185 AURKA %s' % system[project])
     for index in range(5):
+        if not os.path.exists('%s/data/%s_%s_SB_fraction_3.npy' % (project_dir, project, index)):
+            continue
         plt.figure(2*i+1)
         SB_fraction = np.load('%s/data/%s_%s_SB_fraction_3.npy' % (project_dir, project, index))
         SB_stderr = np.load('%s/data/%s_%s_SB_stderr_3.npy' % (project_dir, project, index))
@@ -74,7 +77,7 @@ for i, project in enumerate(projects):
         plt.title('Salt bridge minimum distance for AURKA %s' % mutant['RUN%s' % index])
         plt.fill_between(range(len(SB_fraction)),SB_fraction-SB_stderr, SB_fraction+SB_stderr,color=colors[index][i]['fill'])
         plt.plot(SB_fraction[:len(SB_fraction)], color=colors[index][i]['line'])
-        if (i==1 and index==0) or (i==0 and index!=0):
+        if i==1:
             plt.legend(['with TPX2','without TPX2'])
             plt.savefig("./plots/AURKA-salt-bridge-with-without-TPX2-RUN%s" % index,dpi=300)
 
@@ -82,13 +85,10 @@ for i, project in enumerate(projects):
         plt.title('Hydrogen bonds on residue 185 for AURKA %s' % mutant['RUN%s' % index])
         plt.fill_between(range(len(HB_fraction)),HB_fraction-HB_stderr, HB_fraction+HB_stderr, color=colors[index][i]['fill'])
         plt.plot(HB_fraction[:len(SB_fraction)], color=colors[index][i]['line'])
-        if (i==1 and index==0) or (i==0 and index!=0):
+        if i==1:
             plt.legend(['with TPX2','without TPX2'])
             plt.savefig("./plots/AURKA-hydrogen-bonds-with-without-TPX2-RUN%s" % index,dpi=300)
 
-        # temporary: 11411 is currently running
-        if i==1:
-            break
     plt.figure(2*i+1)
     plt.legend([mutant['RUN0'],mutant['RUN1'],mutant['RUN2'],mutant['RUN3'],mutant['RUN4']])
     plt.savefig("./plots/AURKA-salt-bridge-distances-%s-all-runs.png" % project,dpi=300)
