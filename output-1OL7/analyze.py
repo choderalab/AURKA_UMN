@@ -9,6 +9,7 @@ import sys
 import math
 from matplotlib.pyplot import cm
 import seaborn as sns
+import os
 
 sns.set_style("whitegrid")
 sns.set_context("poster")
@@ -169,36 +170,32 @@ for index in range(5):
 
         HB_total.append(hbonds)
 
-        # this is for funs
-        label = lambda hbond : '%s -- %s' % (traj.topology.atom(hbond[0]), traj.topology.atom(hbond[2]))
-        for frame_id, frame in enumerate(hbonds):
-            if len(frame) > 0:
-                break
-        for hbond in hbonds[frame_id]:
-            print label(hbond)
-
-        # end loop for each trajectory in a given run
-
     SB_fraction, SB_stderr = distance_analyze(SB_total, sliding_window)
     HB_fraction, HB_stderr = bond_analyze(HB_total, sliding_window)
     if verbose:
         print("Saving Salt Bridge fraction...")
-    np.save('./data/%s_%s_SB_fraction_3.npy' % (project, index), SB_fraction)
+    if not os.path.exists('./data/%s_%s_SB_fraction_3.npy' % (project, index)):
+        np.save('./data/%s_%s_SB_fraction_3.npy' % (project, index), SB_fraction)
     if verbose:
         print("Saving Salt Bridge standard error...")
-    np.save('./data/%s_%s_SB_stderr_3.npy' % (project, index), SB_stderr)
+    if not os.path.exists('./data/%s_%s_SB_stderr_3.npy' % (project, index)):
+        np.save('./data/%s_%s_SB_stderr_3.npy' % (project, index), SB_stderr)
     if verbose:
         print("Saving Hydrogen Bonding fraction...")
-    np.save('./data/%s_%s_HB_fraction_3.npy' % (project, index), HB_fraction)
+    if not os.path.exists('./data/%s_%s_HB_fraction_3.npy' % (project, index)):
+        np.save('./data/%s_%s_HB_fraction_3.npy' % (project, index), HB_fraction)
     if verbose:
         print("Saving Hydrogen Bonding standard error...")
-    np.save('./data/%s_%s_HB_stderr_3.npy' % (project, index), HB_stderr)
+    if not os.path.exists('./data/%s_%s_HB_stderr_3.npy' % (project, index)):
+        np.save('./data/%s_%s_HB_stderr_3.npy' % (project, index), HB_stderr)
     if verbose:
         print("Saving total Hydrogen Bonding data...")
-    np.save('./data/%s_%s_HBonds.npy' % (project, index), HB_total)
+    if not os.path.exists('./data/%s_%s_HBonds.npy' % (project, index)):
+        np.save('./data/%s_%s_HBonds.npy' % (project, index), HB_total)
     if verbose:
         print("Saving total Salt Bridge data...")
-    np.save('./data/%s_%s_SB_total.npy' % (project, index), SB_total)
+    if not os.path.exists('./data/%s_%s_SB_total.npy' % (project, index)):
+        np.save('./data/%s_%s_SB_total.npy' % (project, index), SB_total)
     if verbose:
         print("Adding RUN%s to Salt Bridge plot..." % index)
     plt.fill_between(range(len(SB_fraction)),SB_fraction-SB_stderr, SB_fraction+SB_stderr)
