@@ -40,6 +40,7 @@ bin_x = np.arange(offset/4,500,10) - 0.25
 bin_y = np.arange(7) - 0.5
 
 def plot_2dhist(residue, x_axis, hbond_count, run, project):
+    print('Now plotting residue %s from %s RUN%s' % (residue, project, run))
     fig1 = plt.figure()
     plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],cmap=plt.get_cmap('jet'))
     plt.title('AURKA %s number of hydrogen bonds on residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project]))
@@ -64,10 +65,12 @@ def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
                     pass
             else:
                 try:
-                    reference_waters = [bond[2] for bond in compare_to[clone][index]]
+                    reference_donors = [bond[0] for bond in compare_to[clone][index]]
+                    reference_acceptors = [bond[2] for bond in compare_to[clone][index]]
                     count = 0
                     for bond in traj[index]:
-                        if bond[2] in reference_waters:
+                        if (bond[2] in reference_donors or bond[0] in reference_donors or
+                            bond[2] in reference_acceptors or bond[0] in reference_acceptors):
                             count += 1
                     hbond_count[clone][index-offset] = count
                 except:
@@ -86,7 +89,7 @@ for i, project in enumerate(projects):
                 continue
             HB_total[residue] = np.load('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue))
 
-    count_and_plot_res_bonds(reference, HB_total[reference])
-    for key in HB_total.keys():
-        if key != reference:
-            count_and_plot_res_bonds(key, HB_total[key], compare_to=HB_total[reference])
+        count_and_plot_res_bonds(reference, HB_total[reference])
+        for key in HB_total.keys():
+            if key != reference:
+                count_and_plot_res_bonds(key, HB_total[key], compare_to=HB_total[reference])
