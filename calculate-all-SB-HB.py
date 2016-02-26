@@ -98,9 +98,7 @@ for project in projects:
             HB_185_total.append(find_hbonds_for_this_traj(traj, res185, haystack, sidechain=True))
             HB_181_total.append(find_hbonds_for_this_traj(traj, e181, haystack, sidechain=True))
             HB_274_total.append(find_hbonds_for_this_traj(traj, d274, haystack, backbone=True))
-            HB_275_total.append(find_hbonds_for_this_traj(traj, f275, haystack, backbone=True)
-
-
+            HB_275_total.append(find_hbonds_for_this_traj(traj, f275, haystack, backbone=True))
         np.save('%s/data/%s_%s_181_HBonds.npy' % (project_dir, project, run), HB_181_total)
         np.save('%s/data/%s_%s_185_HBonds.npy' % (project_dir, project, run), HB_185_total)
         np.save('%s/data/%s_%s_274_HBonds.npy' % (project_dir, project, run), HB_274_total)
