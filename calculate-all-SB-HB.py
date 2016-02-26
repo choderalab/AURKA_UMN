@@ -86,7 +86,7 @@ for project in projects:
                     raise(e)
             HB_185_total.append(hbonds)
 
-            res181atoms = [atom.index for atom in res181.atoms]
+            res181atoms = [atom.index for atom in e181.atoms]
             hbonds0 = md.wernet_nilsson(traj, exclude_water=False, proposed_donor_indices=res181atoms, proposed_acceptor_indices=neighbor_set)
             hbonds1 = md.wernet_nilsson(traj, exclude_water=False, proposed_donor_indices=neighbor_set, proposed_acceptor_indices=res181atoms)
             hbonds = list()
@@ -103,7 +103,7 @@ for project in projects:
                     raise(e)
             HB_181_total.append(hbonds)
 
-            res275atoms = [atom.index for atom in res275.atoms]
+            res275atoms = [atom.index for atom in f275.atoms]
             hbonds0 = md.wernet_nilsson(traj, exclude_water=False, proposed_donor_indices=res275atoms, proposed_acceptor_indices=neighbor_set)
             hbonds1 = md.wernet_nilsson(traj, exclude_water=False, proposed_donor_indices=neighbor_set, proposed_acceptor_indices=res275atoms)
             hbonds = list()
