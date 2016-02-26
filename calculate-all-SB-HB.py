@@ -28,7 +28,7 @@ def find_hbonds_for_this_traj(traj, residue, haystack, sidechain=False, backbone
         residue_atoms = [atom.index for atom in residue.atoms if atom.is_backbone]
     else:
         residue_atoms = [atom.index for atom in residue.atoms]
-    neighbor_set = find_neighbor_set(traj, residue, haystack)
+    neighbor_set = find_neighbor_set(traj, residue_atoms, haystack)
     hbonds0 = md.wernet_nilsson(traj, exclude_water=False, proposed_donor_indices=residue_atoms, proposed_acceptor_indices=neighbor_set)
     hbonds1 = md.wernet_nilsson(traj, exclude_water=False, proposed_donor_indices=neighbor_set, proposed_acceptor_indices=residue_atoms)
     hbonds = list()
