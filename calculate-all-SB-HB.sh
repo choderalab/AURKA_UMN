@@ -21,7 +21,7 @@
 #PBS -V
 #
 # job name (default = name of script file)
-#PBS -N AURKA_7_analysis
+#PBS -N AURKA_analysis
 #
 # specify email for notifications
 #PBS -M julie.behr@choderalab.org
