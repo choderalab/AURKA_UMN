@@ -48,7 +48,7 @@ def plot_2dhist(residue, x_axis, hbond_count, run, project):
     plt.colorbar()
     plt.axis([offset/4,500,-0.5,6.5])
     if residue != reference:
-        residue = residue+'-possible-W1-W2'
+        residue = str(residue)+'-possible-W1-W2'
     plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (residue, project, run),dpi=300)
     plt.close(fig1)
 
@@ -57,7 +57,7 @@ def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
     x_axis = np.zeros((50,2000-offset))
     for clone, traj in enumerate(HB_res_total):
         for index in range(offset,2000):
-            if compare_to==None:
+            if compare_to is None:
                 try:
                     hbond_count[clone][index-offset] = traj[index].shape[0]
                 except:
@@ -87,5 +87,6 @@ for i, project in enumerate(projects):
             HB_total[residue] = np.load('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue))
 
     count_and_plot_res_bonds(reference, HB_total[reference])
-    for key in HB_total.keys() if key != reference:
-        count_and_plot_res_bonds(key, HB_total[key], compare_to=HB_total[reference])
+    for key in HB_total.keys():
+        if key != reference:
+            count_and_plot_res_bonds(key, HB_total[key], compare_to=HB_total[reference])
