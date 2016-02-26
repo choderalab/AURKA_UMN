@@ -48,6 +48,8 @@ for entry in run_index.split('\n'):
     except:
         pass
 
+time_x = np.arange(0,2000)*0.25 # output written every 250 ps
+
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
     fig1 = plt.figure(2*i+1)
@@ -64,36 +66,42 @@ for i, project in enumerate(projects):
         HB_stderr = np.load('%s/data/%s_%s_HB_stderr_3.npy' % (project_dir, project, index))
         HB_total = np.load('%s/data/%s_%s_HBonds.npy' % (project_dir, project, index))
         SB_total = np.load('%s/data/%s_%s_SB_total.npy' % (project_dir, project, index))
-        plt.fill_between(range(len(SB_fraction)),SB_fraction-SB_stderr, SB_fraction+SB_stderr,color=colors[index][i]['fill'])
-        plt.plot(SB_fraction[:len(SB_fraction)], color=colors[index][i]['line'])
-        plt.axis([0,2000,0.30,0.60])
+        plt.fill_between(time_x[:len(SB_fraction)],SB_fraction-SB_stderr, SB_fraction+SB_stderr,color=colors[index][i]['fill'])
+        plt.plot(time_x[:len(SB_stderr)],SB_fraction[:len(SB_stderr)], color=colors[index][i]['line'])
+        plt.axis([0,500,0.30,0.60])
 
         plt.figure(2*i+2)
-        plt.fill_between(range(len(HB_fraction)),HB_fraction-HB_stderr, HB_fraction+HB_stderr, color=colors[index][i]['fill'])
-        plt.plot(HB_fraction[:len(SB_fraction)], color=colors[index][i]['line'])
-        plt.axis([0,2000,1.5,5.5])
+        plt.fill_between(time_x[:len(HB_fraction)],HB_fraction-HB_stderr, HB_fraction+HB_stderr, color=colors[index][i]['fill'])
+        plt.plot(time_x[:len(HB_stderr)],HB_fraction[:len(HB_stderr)], color=colors[index][i]['line'])
+        plt.axis([0,500,1.5,5.5])
         
         plt.figure(index+5)
         plt.title('Salt bridge minimum distance for AURKA %s' % mutant['RUN%s' % index])
-        plt.fill_between(range(len(SB_fraction)),SB_fraction-SB_stderr, SB_fraction+SB_stderr,color=colors[index][i]['fill'])
-        plt.plot(SB_fraction[:len(SB_fraction)], color=colors[index][i]['line'])
+        plt.fill_between(time_x[:len(SB_fraction)],SB_fraction-SB_stderr, SB_fraction+SB_stderr,color=colors[index][i]['fill'])
+        plt.plot(time_x[:len(SB_stderr)],SB_fraction[:len(SB_stderr)], color=colors[index][i]['line'])
         if i==1:
+            plt.xlabel('t (nanoseconds)')
+            plt.ylabel('r (nanometers)')
             plt.legend(['with TPX2','without TPX2'])
             plt.savefig("./plots/AURKA-salt-bridge-with-without-TPX2-RUN%s" % index,dpi=300)
 
         plt.figure(index+10)
         plt.title('Hydrogen bonds on residue 185 for AURKA %s' % mutant['RUN%s' % index])
-        plt.fill_between(range(len(HB_fraction)),HB_fraction-HB_stderr, HB_fraction+HB_stderr, color=colors[index][i]['fill'])
-        plt.plot(HB_fraction[:len(SB_fraction)], color=colors[index][i]['line'])
+        plt.fill_between(time_x[:len(HB_fraction)],HB_fraction-HB_stderr, HB_fraction+HB_stderr, color=colors[index][i]['fill'])
+        plt.plot(time_x[:len(HB_stderr)],HB_fraction[:len(HB_stderr)], color=colors[index][i]['line'])
         if i==1:
+            plt.xlabel('t (nanoseconds)')
             plt.legend(['with TPX2','without TPX2'])
             plt.savefig("./plots/AURKA-hydrogen-bonds-with-without-TPX2-RUN%s" % index,dpi=300)
 
     plt.figure(2*i+1)
+    plt.xlabel('t (nanoseconds)')
+    plt.ylabel('r (nanometers)')
     plt.legend([mutant['RUN0'],mutant['RUN1'],mutant['RUN2'],mutant['RUN3'],mutant['RUN4']])
     plt.savefig("./plots/AURKA-salt-bridge-distances-%s-all-runs.png" % project,dpi=300)
     plt.close(fig1)
     plt.figure(2*i+2)
+    plt.xlabel('t (nanoseconds)')
     plt.legend([mutant['RUN0'],mutant['RUN1'],mutant['RUN2'],mutant['RUN3'],mutant['RUN4']])
     plt.savefig("./plots/AURKA-hydrogen-bonds-%s-all-runs.png" % project,dpi=300)
     plt.close(fig2)
