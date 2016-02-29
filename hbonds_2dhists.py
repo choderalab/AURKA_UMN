@@ -39,7 +39,7 @@ for entry in run_index.split('\n'):
 bin_x = np.arange(offset/4,500,10) - 0.25
 bin_y = np.arange(7) - 0.5
 
-def plot_2dhist(residue, x_axis, hbond_count, run, project, compare_to=None):
+def plot_2dhist(residue, x_axis, hbond_count, run, project):
     print('Now plotting residue %s from %s RUN%s' % (residue, project, run))
     fig1 = plt.figure()
     plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],cmap=plt.get_cmap('jet'))
@@ -48,8 +48,8 @@ def plot_2dhist(residue, x_axis, hbond_count, run, project, compare_to=None):
     plt.xlabel('t (nanoseconds)')
     plt.colorbar()
     plt.axis([offset/4,500,-0.5,6.5])
-    if compare_to is not None:
-        residue = residue+'-possible-W1-W2'
+    if residue != reference:
+        residue = str(residue)+'-possible-W1-W2'
     plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (residue, project, run),dpi=300)
     plt.close(fig1)
 
@@ -58,17 +58,19 @@ def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
     x_axis = np.zeros((50,2000-offset))
     for clone, traj in enumerate(HB_res_total):
         for index in range(offset,2000):
-            if compare_to==None:
+            if compare_to is None:
                 try:
                     hbond_count[clone][index-offset] = traj[index].shape[0]
                 except:
                     pass
             else:
                 try:
-                    reference_waters = [bond[2] for bond in compare_to[clone][index]]
+                    reference_donors = [bond[0] for bond in compare_to[clone][index]]
+                    reference_acceptors = [bond[2] for bond in compare_to[clone][index]]
                     count = 0
                     for bond in traj[index]:
-                        if bond[2] in reference_waters:
+                        if (bond[2] in reference_donors or bond[0] in reference_donors or
+                            bond[2] in reference_acceptors or bond[0] in reference_acceptors):
                             count += 1
                     hbond_count[clone][index-offset] = count
                 except:
@@ -76,7 +78,7 @@ def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
             x_axis[clone][index-offset] = index*0.25
     x_axis = x_axis.flatten()
     hbond_count = hbond_count.flatten()
-    plot_2dhist(residue, x_axis, hbond_count, run, project, compare_to=compare_to)
+    plot_2dhist(residue, x_axis, hbond_count, run, project)
 
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
