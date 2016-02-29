@@ -8,7 +8,7 @@ from matplotlib.pyplot import cm
 import seaborn as sns
 import os
 
-sns.set_style("whitegrid")
+sns.set_style("white")
 sns.set_context("poster")
 
         # make plots of all data past t = 250ns
