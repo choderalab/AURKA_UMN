@@ -50,7 +50,7 @@ def plot_2dhist(residue, x_axis, hbond_count, run, project):
     plt.axis([offset/4,500,-0.5,6.5])
     if residue != reference:
         residue = str(residue)+'-possible-W1-W2'
-    plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (residue, project, run),dpi=300)
+    plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-combined-RUN%s" % (residue, project, run),dpi=300)
     plt.close(fig1)
 
 def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
