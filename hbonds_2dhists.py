@@ -20,6 +20,9 @@ sns.set_context("poster")
 
 offset = 400
 
+residues_with_H = [185,181,274,275]
+reference = 185
+
 projects = ['11410','11411']
 project_dirs = {'11410':'./output-1OL5','11411':'./output-1OL7'}
 system = {'11410':'with TPX2','11411':'without TPX2'}
@@ -37,6 +40,7 @@ bin_x = np.arange(offset/4,500,10) - 0.25
 bin_y = np.arange(7) - 0.5
 
 def plot_2dhist(residue, x_axis, hbond_count, run, project):
+    print('Now plotting residue %s from %s RUN%s' % (residue, project, run))
     fig1 = plt.figure()
     plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],cmap=plt.get_cmap('jet'))
     plt.title('AURKA %s number of hydrogen bonds on residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project]))
@@ -44,26 +48,46 @@ def plot_2dhist(residue, x_axis, hbond_count, run, project):
     plt.xlabel('t (nanoseconds)')
     plt.colorbar()
     plt.axis([offset/4,500,-0.5,6.5])
+    if residue != reference:
+        residue = str(residue)+'-possible-W1-W2'
     plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (residue, project, run),dpi=300)
     plt.close(fig1)
+
+def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
+    hbond_count = np.zeros((50,2000-offset)) - 1
+    x_axis = np.zeros((50,2000-offset))
+    for clone, traj in enumerate(HB_res_total):
+        for index in range(offset,2000):
+            if compare_to is None:
+                try:
+                    hbond_count[clone][index-offset] = traj[index].shape[0]
+                except:
+                    pass
+            else:
+                try:
+                    reference_donors = [bond[0] for bond in compare_to[clone][index]]
+                    reference_acceptors = [bond[2] for bond in compare_to[clone][index]]
+                    count = 0
+                    for bond in traj[index]:
+                        if (bond[2] in reference_donors or bond[0] in reference_donors or
+                            bond[2] in reference_acceptors or bond[0] in reference_acceptors):
+                            count += 1
+                    hbond_count[clone][index-offset] = count
+                except:
+                    pass
+            x_axis[clone][index-offset] = index*0.25
+    x_axis = x_axis.flatten()
+    hbond_count = hbond_count.flatten()
+    plot_2dhist(residue, x_axis, hbond_count, run, project)
 
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
     for run in range(5):
-        for residue in [181,185,274,275]:
+        HB_total = dict()
+        for residue in residues_with_H:
             if not os.path.exists('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue)):
                 continue
-            HB_total = np.load('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue))
+            HB_total[residue] = np.load('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue))
 
-            hbond_count = np.zeros((50,2000-offset)) - 1
-            x_axis = np.zeros((50,2000-offset))
-            for clone, traj in enumerate(HB_total):
-                for index in range(offset,2000):
-                    try:
-                        hbond_count[clone][index-offset] = traj[index].shape[0]
-                    except:
-                        pass
-                    x_axis[clone][index-offset] = index*0.25
-            x_axis = x_axis.flatten()
-            hbond_count = hbond_count.flatten()
-            plot_2dhist(residue, x_axis, hbond_count, run, project)
+        for key in HB_total.keys():
+            count_and_plot_res_bonds(key, HB_total[key])
