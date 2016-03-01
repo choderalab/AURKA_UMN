@@ -41,17 +41,22 @@ bin_y = np.arange(7) - 0.5
 
 def plot_2dhist(residue, x_axis, hbond_count, weights, run, project):
     fig1 = plt.figure()
-    plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],weights=weights[hbond_count > -1],cmap=plt.get_cmap('jet'))
-    plt.title('AURKA %s number of hydrogen bonds on residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project]))
+    plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],
+               bins=[bin_x,bin_y],weights=weights[hbond_count > -1],
+               cmap=plt.get_cmap('jet'))
+    plt.title('AURKA %s number of hydrogen bonds on residue %s over time %s'
+              % (mutant['RUN%s' % run], residue, system[project]))
     plt.ylabel('number of hydrogen bonds')
     plt.xlabel('t (nanoseconds)')
     plt.colorbar()
     plt.axis([offset/4,500,-0.5,6.5])
     if residue != reference:
         residue = str(residue)+'-possible-W1-W2'
-    plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (residue, project, run),dpi=300)
+    plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s"
+                % (residue, project, run),dpi=300)
     plt.close(fig1)
-    print('Saved ./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s.png' % (residue, project, run))
+    print('Saved ./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s.png'
+          % (residue, project, run))
 
 def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
     hbond_count = np.zeros((50,2000-offset)) - 1
