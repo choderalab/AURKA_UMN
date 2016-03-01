@@ -68,8 +68,13 @@ def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
                     pass
             else:
                 try:
-                    reference_donors = [bond[0] for bond in compare_to[clone][index]]
-                    reference_acceptors = [bond[2] for bond in compare_to[clone][index]]
+                    reference_donors = [bond[0] for bond in frame in compare_to[clone][index-2:index+3]]
+                    print('Compare to:')
+                    print(compare_to[clone][index-2:index+3])
+                    print('reference donors:')
+                    print(reference_donors)
+                    reference_acceptors = [bond[2] for bond in frame in compare_to[clone][index-2:index+3]]
+                    reference_waters = [frame in compare_to[clone][index-2:index+3]]
                     count = 0
                     for bond in traj[index]:
                         if (bond[2] in reference_donors or bond[0] in reference_donors or
