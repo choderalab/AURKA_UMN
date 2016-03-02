@@ -31,16 +31,21 @@ for entry in run_index.split('\n'):
     except:
         pass
 
-def plot_2dhist(bridge, x_axis, minimum_distance, run, project):
+offset = 400
+bin_x = np.arange(offset/4,500,10) - 0.25
+bin_y = np.arange(20) * 0.02 + 0.25
+
+def plot_2dhist(bridge, x_axis, minimum_distance, weights, run, project):
     fig1 = plt.figure()
-    plt.hist2d(x_axis[minimum_distance > 0],minimum_distance[minimum_distance > 0],bins=[100,20],cmap=plt.get_cmap('jet'))
+    plt.hist2d(x_axis[minimum_distance > 0],minimum_distance[minimum_distance > 0],bins=[bin_x,bin_y],weights=weights[minimum_distance > 0],cmap=plt.get_cmap('jet'))
     plt.title('AURKA %s minimum %s salt bridge distance over time %s' % (mutant['RUN%s' % run], bridge, system[project]))
     plt.ylabel('distance r (nanometers) between residues %s and %s' % (bridge.split('-')[0], bridge.split('-')[1]))
     plt.xlabel('t (nanoseconds)')
     plt.colorbar()
-    plt.axis([0,500,0.25,0.65])
+    plt.axis([offset/4,500,0.25,0.65])
     plt.savefig("./plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-RUN%s" % (bridge, project, run),dpi=300)
     plt.close(fig1)
+    print('Saved ./plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-RUN%s.png' % (bridge, project, run))
 
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
@@ -52,13 +57,19 @@ for i, project in enumerate(projects):
 
             minimum_distance = np.zeros((50,2000))
             x_axis = np.zeros((50,2000))
+            weights = np.zeros((50,2000-offset))
+            column_count = np.zeros(bin_x.shape)
             for clone, traj in enumerate(SB_total):
-                for index in range(2000):
+                for index in range(offset, 2000):
                     try:
-                        minimum_distance[clone][index] = traj[index]
+                        minimum_distance[clone][index-offset] = traj[index]
+                        column_count[(index-offset-0.25)/40] += 1
                     except:
                         pass
                     x_axis[clone][index] = index*0.25
+            for clone, traj in enumerate(SB_total):
+                for index in range(offset,2000):
+                    weights[clone][index-offset] = 1.00 / column_count[(index-offset-0.25)/40]
             x_axis = x_axis.flatten()
             minimum_distance = minimum_distance.flatten()
             plot_2dhist(bridge, x_axis, minimum_distance, run, project)

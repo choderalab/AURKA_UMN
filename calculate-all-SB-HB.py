@@ -88,8 +88,8 @@ for project in projects:
                         f275 = residue
             res185 = traj.topology.residue(q185.index)
 
-            distances_181_185, residue_pairs = md.compute_contacts(traj, contacts=[[e181.index,q185.index]])
-            distances_181_162, residue_pairs = md.compute_contacts(traj, contacts=[[e181.index,k162.index]])
+            distances_181_185, residue_pairs = md.compute_contacts(traj, contacts=[[e181.index,q185.index]],scheme='sidechain-heavy')
+            distances_181_162, residue_pairs = md.compute_contacts(traj, contacts=[[e181.index,k162.index]],scheme='sidechain-heavy')
             SB_eq_total.append(distances_181_185[:,0])
             SB_ek_total.append(distances_181_162[:,0])
 

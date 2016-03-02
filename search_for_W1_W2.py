@@ -8,7 +8,7 @@ from matplotlib.pyplot import cm
 import seaborn as sns
 import os
 
-sns.set_style("whitegrid")
+sns.set_style("white")
 sns.set_context("poster")
 
         # make plots of all data past t = 250ns
@@ -39,28 +39,36 @@ for entry in run_index.split('\n'):
 bin_x = np.arange(offset/4,500,10) - 0.25
 bin_y = np.arange(7) - 0.5
 
-def plot_2dhist(residue, x_axis, hbond_count, run, project):
-    print('Now plotting residue %s from %s RUN%s' % (residue, project, run))
+def plot_2dhist(residue, x_axis, hbond_count, weights, run, project):
     fig1 = plt.figure()
-    plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],cmap=plt.get_cmap('jet'))
-    plt.title('AURKA %s number of hydrogen bonds on residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project]))
+    plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],
+               bins=[bin_x,bin_y],weights=weights[hbond_count > -1],
+               cmap=plt.get_cmap('jet'))
+    plt.title('AURKA %s number of hydrogen bonds on residue %s over time %s'
+              % (mutant['RUN%s' % run], residue, system[project]))
     plt.ylabel('number of hydrogen bonds')
     plt.xlabel('t (nanoseconds)')
     plt.colorbar()
     plt.axis([offset/4,500,-0.5,6.5])
     if residue != reference:
         residue = str(residue)+'-possible-W1-W2'
-    plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (residue, project, run),dpi=300)
+    plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s"
+                % (residue, project, run),dpi=300)
     plt.close(fig1)
+    print('Saved ./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s.png'
+          % (residue, project, run))
 
 def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
     hbond_count = np.zeros((50,2000-offset)) - 1
     x_axis = np.zeros((50,2000-offset))
+    weights = np.zeros((50,2000-offset))
+    column_count = np.zeros(bin_x.shape)
     for clone, traj in enumerate(HB_res_total):
         for index in range(offset,2000):
             if compare_to is None:
                 try:
                     hbond_count[clone][index-offset] = traj[index].shape[0]
+                    column_count[(index-offset-0.25)/40] += 1
                 except:
                     pass
             else:
@@ -73,12 +81,17 @@ def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
                             bond[2] in reference_acceptors or bond[0] in reference_acceptors):
                             count += 1
                     hbond_count[clone][index-offset] = count
+                    column_count[(index-offset-0.25)/40] += 1
                 except:
                     pass
             x_axis[clone][index-offset] = index*0.25
+    for clone, traj in enumerate(HB_res_total):
+        for index in range(offset,2000):
+            weights[clone][index-offset] = 1.00 / column_count[(index-offset-0.25)/40]
     x_axis = x_axis.flatten()
     hbond_count = hbond_count.flatten()
-    plot_2dhist(residue, x_axis, hbond_count, run, project)
+    weights = weights.flatten()
+    plot_2dhist(residue, x_axis, hbond_count, weights, run, project)
 
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
