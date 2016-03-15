@@ -40,11 +40,17 @@ for entry in run_index.split('\n'):
 bin_x = np.arange(OFFSET/4,510,10) - 0.25
 bin_y = np.arange(8) - 0.5
 
-def water_set(topology, frame):
+def water_set(topology, frame, hydrogens=False):
     waters = set()
+
     [[waters.add(atom) for atom in [bond[0],bond[2]]
               if topology.top.atom(atom).residue.is_water]
-             for bond in frame] 
+             for bond in frame]
+    if not hydrogens:
+        return waters
+    oxygens = list(waters)
+    [[waters.add(atom.index) for atom in topology.top.atom(oatom).residue.atoms]
+     for oatom in oxygens]
     return waters
 
 def plot_2dhist(x_axis, hbond_count, weights, title, filename):
@@ -113,6 +119,7 @@ def find_W2(HB_total, WB_total, W1_hbond_count, W1s):
                 continue
             if this_frame.shape[0] == 0:
                 hbond_count[clone][index-OFFSET] = 0
+                W1_hbond_count[clone][index-OFFSET] = 0
                 continue
             waters = water_set(topology, this_frame)
             reference = W1s[clone][index-OFFSET]
@@ -137,24 +144,39 @@ def find_hbonds_between_waters(HB_total):
 
     for clone, traj in enumerate(HB_res_total):
         if clone%50 == 0:
+            print('Now loading trajectories for RUN%s' % str(clone/50))
             trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone*.h5" % (project, clone/50))
             topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
         trajectory = trajectories[clone%50]
-        waters = set()
-        for index in range(OFFSET,2000):
-            try:
-                frame_274 = traj[index]
-                frame_185 = HB_total[185][clone][index]
-                frame_181 = HB_total[181][clone][index]
-            except:
+        old_chunk = OFFSET
+        hbonds = None
+        print('Finding RUN%s clone%s hbonds' % (str(clone/50),str(clone%50)))
+        for chunk in range(OFFSET+100,2100,100):
+            if chunk > 2000:
                 break
-            waters_frame = water_set(topology, frame_274)
-            waters_frame = waters_frame.union(water_set(topology, frame_185))
-            waters_frame = waters_frame.union(water_set(topology, frame_181))
-            waters = waters.union(waters_frame)
-        hbonds = md.wernet_nilsson(trajectory, exclude_water=False, proposed_donor_indices=waters, proposed_acceptor_indices=waters)
-        WB_total.append(hbonds)        
-        print('hbonds for %s RUN%s added' % (clone%50, clone/50))
+            waters = set()
+            chunk_frames = range(old_chunk,chunk)
+            for index in chunk_frames:
+                try:
+                    frame_274 = traj[index]
+                    frame_185 = HB_total[185][clone][index]
+                except:
+                    chunk_frames = range(old_chunk,index)
+                    break
+                waters = waters.union(water_set(topology, frame_274, hydrogens=True))
+                waters = waters.union(water_set(topology, frame_185, hydrogens=True))
+            hbond_chunk = md.wernet_nilsson(trajectory[chunk_frames], exclude_water=False, proposed_donor_indices=waters, proposed_acceptor_indices=waters)
+            if hbonds is None:
+                hbonds = hbond_chunk
+            else:
+                try:
+                    hbonds.extend(hbond_chunk)
+                except Exception as e:
+                    print(len(hbonds))
+                    print(len(hbond_chunk))
+                    raise(e)
+            old_chunk = chunk
+        WB_total.append(hbonds)
     np.save('%s/data/%s_%s_IntraWater.npy' % (project_dir, project, 0),WB_total)
     return WB_total
 
