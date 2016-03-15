@@ -53,6 +53,16 @@ def water_set(topology, frame, hydrogens=False):
      for oatom in oxygens]
     return waters
 
+def find_other_waters(frame, first_waters):
+    waters = set()
+
+    for bond in frame:
+        if bond[0] in first_waters:
+            waters.add(bond[2])
+        if bond[2] in first_waters:
+            waters.add(bond[0])
+    return waters
+
 def plot_2dhist(x_axis, hbond_count, weights, title, filename):
     fig1 = plt.figure()
     plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],weights=weights[hbond_count > -1],cmap=plt.get_cmap('jet'))
@@ -81,9 +91,6 @@ def find_W1(HB_total, WB_total):
                 this_frame = traj[index]
                 column_count[(index-OFFSET-0.25)/40] += 1
             except:
-                continue
-            if this_frame.shape[0] == 0:
-                hbond_count[clone][index-OFFSET] = 0
                 continue
             waters = water_set(topology, this_frame)
             W1s[clone][index-OFFSET] = waters
@@ -123,7 +130,14 @@ def find_W2(HB_total, WB_total, W1_hbond_count, W1s):
                 continue
             waters = water_set(topology, this_frame)
             reference = W1s[clone][index-OFFSET]
-            W2s[clone][index-OFFSET] = reference.intersection(waters)
+            try:
+                W2s[clone][index-OFFSET] = reference.intersection(waters)
+            except Exception as e:
+                print(clone)
+                print(index)
+                print(waters)
+                print(reference)
+                raise(e)
             hbond_count[clone][index-OFFSET] = len(W2s[clone][index-OFFSET])
             W1_hbond_count[clone][index-OFFSET] = len(W2s[clone][index-OFFSET])
     for clone, traj in enumerate(WB_total):
