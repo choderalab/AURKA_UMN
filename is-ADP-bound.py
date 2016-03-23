@@ -64,6 +64,9 @@ def save_adp_status(distances, hbonds, project_dir):
                 this_dist = distance[index]
                 #hbond_count = hbonds[clone][index].shape[0]
                 hbond_dist = hbonds[clone][index]
+                if clone == 0:
+                    print(this_dist)
+                    print(hbond_dist)
                 length = index + 1.0
             except:
                 adp_active[clone][index] = False
@@ -108,18 +111,12 @@ for project in projects:
                 for atom in e211.atoms:
                     if atom.is_backbone and str(atom.element) == 'oxygen':
                         e211_backbone_carbonyl = atom
-                        print('e211 atom')
-                        print(type(e211_backbone_carbonyl))
-                        print(e211_backbone_carbonyl.index)
                         found = True
                 assert found
                 found = False
                 for atom in a213.atoms:
                     if atom.is_backbone and str(atom.element) == 'nitrogen':
                         a213_backbone_amide = atom
-                        print('a213 atom')
-                        print(type(a213_backbone_amide))
-                        print(a213_backbone_amide.index)
                         found = True
                 assert found
                 adp_nitrogens = dict()
@@ -136,25 +133,19 @@ for project in projects:
                     else:
                         continue
                     adp_nitrogens[nitrogen].append(atom)
-                foundn1 = False
+                foundn4 = False
                 foundn3 = False
                 for key, value in adp_nitrogens.items():
-                    if len(value) == 3:
-                        if 'hydrogen' in [str(atom.element) for atom in value]:
-                            nh2_group = key
-                            print('nh2 nitrogen')
-                            print(type(nh2_group))
-                            print(nh2_group.index)
-                            foundn3 = True
-                        elif all([str(atom.element) == 'carbon' for atom in value]):
-                            n1_adp = key
-                            print('N1 nitrogen')
-                            print(type(n1_adp))
-                            print(n1_adp.index)
-                            foundn1 = True
-                        else:
-                            raise(Exception('I messed up :('))
-                assert foundn1
+                    if len(value) == 3 and 'hydrogen' in [str(atom.element) for atom in value]:
+                        nh2_group = key
+                        foundn3 = True
+                for key, value in adp_nitrogens.items():
+                    if key == nh2_group:
+                        continue
+                    if any([atom in adp_nitrogens[nh2_group] for atom in value]):
+                        n4_adp = key
+                        foundn4 = True
+                assert foundn4
                 assert foundn3
 #            distances, residue_pairs = md.compute_contacts(traj, contacts=[[a213.index,adp.index]],scheme='active-adp')
 #            SB_a213_total.append(distances[:,0])
@@ -162,7 +153,7 @@ for project in projects:
 #            HB_e211_total.append(distances[:,0])
             atom_pair_A = np.zeros((1,2))
             atom_pair_A[0,0] = a213_backbone_amide.index
-            atom_pair_A[0,1] = n1_adp.index
+            atom_pair_A[0,1] = n4_adp.index
             atom_pair_E = np.zeros((1,2))
             atom_pair_E[0,0] = e211_backbone_carbonyl.index
             atom_pair_E[0,1] = nh2_group.index
