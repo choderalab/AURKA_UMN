@@ -64,9 +64,6 @@ def save_adp_status(distances, hbonds, project_dir):
                 this_dist = distance[index]
                 #hbond_count = hbonds[clone][index].shape[0]
                 hbond_dist = hbonds[clone][index]
-                if clone == 0:
-                    print(this_dist)
-                    print(hbond_dist)
                 length = index + 1.0
             except:
                 adp_active[clone][index] = False
@@ -78,7 +75,7 @@ def save_adp_status(distances, hbonds, project_dir):
             else:
                 adp_active[clone][index] = False
         print(count/length)
-    #np.save('%s/is-ADP-bound.npy' % project_dir, adp_active)
+    np.save('%s/is-ADP-bound.npy' % project_dir, adp_active)
 
 try:
     this_project = int(sys.argv[1]) # 1 - 10

@@ -59,9 +59,12 @@ for i, project in enumerate(projects):
             if not os.path.exists('%s/data/%s_%s_%s_SB_total.npy' % (project_dir, project, run, bridge)):
                 continue
             SB_total = np.load('%s/data/%s_%s_%s_SB_total.npy' % (project_dir, project, run, bridge))
+            ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir)
 
             for clone, traj in enumerate(SB_total):
                 for index in range(offset,2000):
+                    if not ADP_bound[clone][index]:
+                        continue
                     try:
                         minimum_distance[run*50+clone][index-offset] = traj[index]
                         column_count[(index-offset-0.25)/40] += 1

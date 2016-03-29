@@ -1,3 +1,10 @@
+"""
+Identify how many hydrogen bonds are forming on residues 181, 185, 274, and 275
+in each frame.
+Creates one 2D hist per residue per project
+
+Can be modified to consider only hydrogen bonds with molecules also bound to 185
+"""
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -20,8 +27,8 @@ sns.set_context("poster")
 
 offset = 400
 
-#residues_with_H = [185,181,274,275]
-residues_with_H = [181]
+residues_with_H = [185,181,274,275]
+#residues_with_H = [181]
 reference = 185
 
 projects = ['11410','11411']
@@ -43,46 +50,51 @@ bin_y = np.arange(11) - 0.5
 def plot_2dhist(residue, x_axis, hbond_count, weights, run, project):
     fig1 = plt.figure()
     plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],weights=weights[hbond_count > -1],cmap=plt.get_cmap('jet'))
-    plt.title('Waters interacting with AURKA %s residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project]))
-    plt.ylabel('number of water molecules')
+    plt.title('AURKA %s number of hydrogen bonds on residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project]))
+    plt.ylabel('number of hydrogen bonds')
     plt.xlabel('t (nanoseconds)')
     plt.colorbar()
     plt.axis([offset/4,500,-0.5,9.5])
-    plt.savefig("./plots/AURKA-%s-waters-hist2d-entire-traj-%s-combined-RUN%s" % (residue, project, run),dpi=300)
+    plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-combined-RUN%s" % (residue, project, run),dpi=300)
     plt.close(fig1)
-    print('Saved ./plots/AURKA-%s-waters-hist2d-entire-traj-%s-combined-RUN%s.png' % (residue, project, run))
+    print('Saved ./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-combined-RUN%s.png' % (residue, project, run))
 
-def count_and_plot_res_waters(residue, HB_res_total,compare_to=None):
+def count_and_plot_res_bonds(residue, HB_res_total, ADP_bound, compare_to=None):
     hbond_count = np.zeros((5*50,2000-offset)) - 1
     x_axis = np.zeros((5*50,2000-offset))
     weights = np.zeros((5*50,2000-offset))
     column_count = np.zeros(bin_x.shape)
+    unbound = 0
+    bound = 0
     for clone, traj in enumerate(HB_res_total):
         for index in range(offset,2000):
             x_axis[clone][index-offset] = index*0.25
-            try:
-                hbonds_frame = traj[index]
-            except:
-                continue
+#            if not ADP_bound[clone][index]:
+#                unbound+=1
+#                continue
             if compare_to is None:
-                count = set()
-                for bond in hbonds_frame:
-                    if abs(bond[0] - bond[1]) <= 2:
-                        count.add(bond[0])
-                    else:
-                        count.add(bond[2])
-                hbond_count[clone][index-offset] = len(count)
-                column_count[(index-offset-0.25)/40] += 1
+                try:
+                    hbond_count[clone][index-offset] = traj[index].shape[0]
+                    column_count[(index-offset-0.25)/40] += 1
+                    bound+=1
+                except:
+                    pass
             else:
-                reference_donors = [bond[0] for bond in compare_to[clone][index]]
-                reference_acceptors = [bond[2] for bond in compare_to[clone][index]]
-                count = 0
-                for bond in hbonds_frame:
-                    if (bond[2] in reference_donors or bond[0] in reference_donors or
-                        bond[2] in reference_acceptors or bond[0] in reference_acceptors):
-                        count += 1
-                hbond_count[clone][index-offset] = count
-                column_count[(index-offset-0.25)/40] += 1
+                try:
+                    reference_donors = [bond[0] for bond in compare_to[clone][index]]
+                    reference_acceptors = [bond[2] for bond in compare_to[clone][index]]
+                    count = 0
+                    for bond in traj[index]:
+                        if (bond[2] in reference_donors or bond[0] in reference_donors or
+                            bond[2] in reference_acceptors or bond[0] in reference_acceptors):
+                            count += 1
+                    hbond_count[clone][index-offset] = count
+                    column_count[(index-offset-0.25)/40] += 1
+                    bound+=1
+                except:
+                    pass
+    print('%s frames found unbound' % unbound)
+    print('%s frames found bound' % bound)
     for clone, traj in enumerate(HB_res_total):
         for index in range(offset,2000):
             weights[clone][index-offset] = 1.00 / column_count[(index-offset-0.25)/40]
@@ -94,6 +106,7 @@ def count_and_plot_res_waters(residue, HB_res_total,compare_to=None):
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
     HB_total = dict()
+    ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir)
     for residue in residues_with_H:
         for run in range(5):
             if not os.path.exists('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue)):
@@ -105,4 +118,4 @@ for i, project in enumerate(projects):
                 HB_total[residue] = np.concatenate((HB_total[residue], new_run))
 
     for key in HB_total.keys():
-        count_and_plot_res_waters(key, HB_total[key])
+        count_and_plot_res_bonds(key, HB_total[key], ADP_bound)
