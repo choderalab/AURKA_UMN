@@ -32,10 +32,10 @@ residues_with_H = [185,181,274,275]
 reference = 185
 
 projects = ['11410','11411']
-project_dirs = {'11410':'./output-1OL5','11411':'./output-1OL7'}
+project_dirs = {'11410':'../output-1OL5','11411':'../output-1OL7'}
 system = {'11410':'with TPX2','11411':'without TPX2'}
 
-with open('./output-1OL7/run-index.txt','r') as fi:
+with open('../output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
 mutant = dict()
 for entry in run_index.split('\n'):
@@ -55,28 +55,24 @@ def plot_2dhist(residue, x_axis, hbond_count, weights, run, project):
     plt.xlabel('t (nanoseconds)')
     plt.colorbar()
     plt.axis([offset/4,500,-0.5,9.5])
-    plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-combined-RUN%s" % (residue, project, run),dpi=300)
+    plt.savefig("../plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-combined-RUN%s" % (residue, project, run),dpi=300)
     plt.close(fig1)
-    print('Saved ./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-combined-RUN%s.png' % (residue, project, run))
+    print('Saved ../plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-combined-RUN%s.png' % (residue, project, run))
 
 def count_and_plot_res_bonds(residue, HB_res_total, ADP_bound, compare_to=None):
     hbond_count = np.zeros((5*50,2000-offset)) - 1
     x_axis = np.zeros((5*50,2000-offset))
     weights = np.zeros((5*50,2000-offset))
     column_count = np.zeros(bin_x.shape)
-    unbound = 0
-    bound = 0
     for clone, traj in enumerate(HB_res_total):
         for index in range(offset,2000):
             x_axis[clone][index-offset] = index*0.25
-#            if not ADP_bound[clone][index]:
-#                unbound+=1
-#                continue
+            if not ADP_bound[clone][index]:
+                continue
             if compare_to is None:
                 try:
                     hbond_count[clone][index-offset] = traj[index].shape[0]
                     column_count[(index-offset-0.25)/40] += 1
-                    bound+=1
                 except:
                     pass
             else:
@@ -90,11 +86,8 @@ def count_and_plot_res_bonds(residue, HB_res_total, ADP_bound, compare_to=None):
                             count += 1
                     hbond_count[clone][index-offset] = count
                     column_count[(index-offset-0.25)/40] += 1
-                    bound+=1
                 except:
                     pass
-    print('%s frames found unbound' % unbound)
-    print('%s frames found bound' % bound)
     for clone, traj in enumerate(HB_res_total):
         for index in range(offset,2000):
             weights[clone][index-offset] = 1.00 / column_count[(index-offset-0.25)/40]

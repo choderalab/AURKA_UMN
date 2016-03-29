@@ -1,3 +1,6 @@
+"""
+Plot minimum distances between 181-185 and 181-162
+"""
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -19,10 +22,10 @@ sns.set_context("poster")
             # may need to account for the waters exchanging
 
 projects = ['11410','11411']
-project_dirs = {'11410':'./output-1OL5','11411':'./output-1OL7'}
+project_dirs = {'11410':'../output-1OL5','11411':'../output-1OL7'}
 system = {'11410':'with TPX2','11411':'without TPX2'}
 
-with open('./output-1OL7/run-index.txt','r') as fi:
+with open('../output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
 mutant = dict()
 for entry in run_index.split('\n'):
@@ -44,12 +47,13 @@ def plot_2dhist(bridge, x_axis, minimum_distance, weights, run, project):
     plt.xlabel('t (nanoseconds)')
     plt.colorbar()
     plt.axis(axis[bridge])
-    plt.savefig("./plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s" % (bridge, project, run),dpi=300)
+    plt.savefig("../plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s" % (bridge, project, run),dpi=300)
     plt.close(fig1)
-    print('Saved ./plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s.png' % (bridge, project, run))
+    print('Saved ../plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s.png' % (bridge, project, run))
 
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
+    ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir)
     for bridge in ['181-185','181-162']:
         minimum_distance = np.zeros((5*50,2000-offset))
         x_axis = np.zeros((5*50,2000-offset))
@@ -63,6 +67,7 @@ for i, project in enumerate(projects):
 
             for clone, traj in enumerate(SB_total):
                 for index in range(offset,2000):
+                    x_axis[run*50+clone][index-offset] = index*0.25
                     if not ADP_bound[clone][index]:
                         continue
                     try:
@@ -70,7 +75,6 @@ for i, project in enumerate(projects):
                         column_count[(index-offset-0.25)/40] += 1
                     except:
                         pass
-                    x_axis[run*50+clone][index-offset] = index*0.25
         for clone, traj in enumerate(SB_total):
             for index in range(offset,2000):
                 weights[clone][index-offset] = 1.00 / column_count[(index-offset-0.25)/40]

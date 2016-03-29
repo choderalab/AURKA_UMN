@@ -1,3 +1,10 @@
+"""
+Attempt to identify W1 and W2 via definitions
+W1 is bound to 274 and another water
+W2 is bound to W1 and 181 (should also be 185)
+
+Plot 2D hists: W1 per frame, W2 per frame, per project
+"""
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -25,10 +32,10 @@ residues_with_H = [185,181,274,275]
 reference = 185
 
 projects = ['11410','11411']
-project_dirs = {'11410':'./output-1OL5','11411':'./output-1OL7'}
+project_dirs = {'11410':'../output-1OL5','11411':'../output-1OL7'}
 system = {'11410':'with TPX2','11411':'without TPX2'}
 
-with open('./output-1OL7/run-index.txt','r') as fi:
+with open('../output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
 mutant = dict()
 for entry in run_index.split('\n'):
@@ -75,7 +82,7 @@ def plot_2dhist(x_axis, hbond_count, weights, title, filename):
     plt.close(fig1)
     print('Saved %s' % filename)
 
-def find_W1(HB_total, WB_total):
+def find_W1(HB_total, WB_total, ADP_bound):
     HB_res_total = HB_total[274]
     W1s = np.empty((5*50,2000-OFFSET),dtype=set)
     hbond_count = np.zeros((5*50,2000-OFFSET)) - 1
@@ -87,6 +94,8 @@ def find_W1(HB_total, WB_total):
             topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
         for index in range(OFFSET,2000):
             x_axis[clone][index-OFFSET] = index*0.25
+            if not ADP_bound[clone][index]:
+                continue
             try:
                 this_frame = traj[index]
                 column_count[(index-OFFSET-0.25)/40] += 1
@@ -98,15 +107,15 @@ def find_W1(HB_total, WB_total):
     for clone, traj in enumerate(HB_res_total):
         for index in range(OFFSET,2000):
             weights[clone][index-OFFSET] = 1.00 / column_count[(index-OFFSET-0.25)/40]
-    hbond_count = find_W2(HB_total, WB_total, hbond_count, W1s)
+    hbond_count = find_W2(HB_total, WB_total, hbond_count, W1s, ADP_bound)
     x_axis = x_axis.flatten()
     hbond_count = hbond_count.flatten()
     weights = weights.flatten()
     title = 'Possible W1 identified on AURKA %s over time %s' % (mutant['RUN%s' % 0], system[project])
-    filename = "./plots/W1-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
+    filename = "../plots/W1-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
     plot_2dhist(x_axis, hbond_count, weights, title, filename)
 
-def find_W2(HB_total, WB_total, W1_hbond_count, W1s):
+def find_W2(HB_total, WB_total, W1_hbond_count, W1s, ADP_bound):
     W2s = np.empty((5*50,2000-OFFSET),dtype=set)
     hbond_count = np.zeros((5*50,2000-OFFSET)) - 1
     x_axis = np.zeros((5*50,2000-OFFSET))
@@ -119,6 +128,8 @@ def find_W2(HB_total, WB_total, W1_hbond_count, W1s):
             topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
         for index in range(OFFSET,2000):
             x_axis[clone][index-OFFSET] = index*0.25
+            if not ADP_bound[clone][index]:
+                continue
             try:
                 this_frame = traj[index]
                 column_count[(index-OFFSET-0.25)/40] += 1
@@ -147,7 +158,7 @@ def find_W2(HB_total, WB_total, W1_hbond_count, W1s):
     hbond_count = hbond_count.flatten()
     weights = weights.flatten()
     title = 'Possible W2 identified on AURKA %s over time %s' % (mutant['RUN%s' % 0], system[project])
-    filename = "./plots/W2-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
+    filename = "../plots/W2-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
     plot_2dhist(x_axis, hbond_count, weights, title, filename)
     return W1_hbond_count
 
@@ -198,6 +209,7 @@ def find_hbonds_between_waters(HB_total):
 
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
+    ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir)
     HB_total = dict()
     for residue in residues_with_H:
         for run in range(5):
@@ -212,4 +224,4 @@ for i, project in enumerate(projects):
         WB_total = find_hbonds_between_waters(HB_total)
     else:
         WB_total = np.load('%s/data/%s_%s_IntraWater.npy' % (project_dir, project, 0))
-    find_W1(HB_total, WB_total)
+    find_W1(HB_total, WB_total, ADP_bound)

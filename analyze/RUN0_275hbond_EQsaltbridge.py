@@ -1,3 +1,8 @@
+"""
+Creates two separate plots of salt bridge distances between residues 181 and 185
+based on whether or not a water is bound to F275 in that frame
+(salt bridge is more likely to form when F275 is bound elsewhere)
+"""
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -24,10 +29,10 @@ residues_with_H = [275]
 bridges = ['181-185']
 
 projects = ['11410','11411']
-project_dirs = {'11410':'./output-1OL5','11411':'./output-1OL7'}
+project_dirs = {'11410':'../output-1OL5','11411':'../output-1OL7'}
 system = {'11410':'with TPX2','11411':'without TPX2'}
 
-with open('./output-1OL7/run-index.txt','r') as fi:
+with open('../output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
 mutant = dict()
 for entry in run_index.split('\n'):
@@ -53,21 +58,24 @@ def plot_bridge_2dhist(bridge, x_axis, minimum_distance, weights, run, project, 
     plt.colorbar()
     plt.axis(axis[bridge])
     if has_bonds:
-        filename = "./plots/AURKA-275bonds-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s" % (bridge, project, run)
+        filename = "../plots/AURKA-275bonds-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s" % (bridge, project, run)
     else:
-        filename = "./plots/AURKA-no-bonds-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s" % (bridge, project, run)
+        filename = "../plots/AURKA-no-bonds-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s" % (bridge, project, run)
     plt.savefig(filename,dpi=300)
     plt.close(fig1)
     print('Saved %s' % filename)
 
 
-def count_res_bonds_plot_bridges(residue, HB_res_total, project, compare_to=None):
+def count_res_bonds_plot_bridges(residue, HB_res_total, project, ADP_bound, compare_to=None):
     hbond_count = np.zeros((5*50,2000-offset)) - 1
     x_axis = np.zeros((5*50,2000-offset))
     weights = np.zeros((5*50,2000-offset))
     column_count = np.zeros(bin_x.shape)
     for clone, traj in enumerate(HB_res_total):
         for index in range(offset,2000):
+            x_axis[clone][index-offset] = index*0.25
+            if not ADP_bound[clone][index]:
+                continue
             if compare_to is None:
                 try:
                     hbond_count[clone][index-offset] = traj[index].shape[0]
@@ -87,13 +95,12 @@ def count_res_bonds_plot_bridges(residue, HB_res_total, project, compare_to=None
                     column_count[(index-offset-0.25)/40] += 1
                 except:
                     pass
-            x_axis[clone][index-offset] = index*0.25
     for clone, traj in enumerate(HB_res_total):
         for index in range(offset,2000):
             weights[clone][index-offset] = 1.00 / column_count[(index-offset-0.25)/40]
-    build_bridges(hbond_count, project)
+    build_bridges(hbond_count, project, ADP_bound)
 
-def build_bridges(hbond_count, project):
+def build_bridges(hbond_count, project, ADP_bound):
     project_dir = project_dirs[project]
     for bridge in bridges:
         x_axis = np.zeros((5*50,2000-offset))
@@ -111,6 +118,8 @@ def build_bridges(hbond_count, project):
             for clone, traj in enumerate(SB_total):
                 for index in range(offset,2000):
                     x_axis[run*50+clone][index-offset] = index*0.25
+                    if not ADP_bound[clone][index]:
+                        continue
                     try:
                         frame_distance = traj[index]
                     except:
@@ -137,6 +146,7 @@ def build_bridges(hbond_count, project):
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
     HB_total = dict()
+    ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir)
     for residue in residues_with_H:
         for run in range(5):
             if not os.path.exists('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue)):
@@ -148,4 +158,4 @@ for i, project in enumerate(projects):
                 HB_total[residue] = np.concatenate((HB_total[residue], new_run))
 
     for key in HB_total.keys():
-        count_res_bonds_plot_bridges(key, HB_total[key], project)
+        count_res_bonds_plot_bridges(key, HB_total[key], project, ADP_bound)
