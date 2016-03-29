@@ -42,4 +42,4 @@
 cd $PBS_O_WORKDIR
 
 # start spark workers
-python /cbio/jclab/projects/behrj/AURKA_UMN/calculate-all-SB-HB.py $PBS_ARRAYID
+python /cbio/jclab/projects/behrj/AURKA_UMN/analyze/calculate-all-SB-HB.py $PBS_ARRAYID
