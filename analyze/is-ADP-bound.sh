@@ -42,4 +42,4 @@
 cd $PBS_O_WORKDIR
 
 # start spark workers
-python /cbio/jclab/projects/behrj/AURKA_UMN/is-ADP-bound.py $PBS_ARRAYID
+python /cbio/jclab/projects/behrj/AURKA_UMN/analyze/is-ADP-bound.py $PBS_ARRAYID

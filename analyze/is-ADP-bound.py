@@ -1,3 +1,6 @@
+"""
+Create true/false filter for whether ADP is bound in a given frame
+"""
 import numpy as np
 import sys
 import math
@@ -69,7 +72,7 @@ def save_adp_status(distances, hbonds, project_dir):
                 adp_active[clone][index] = False
                 continue
             #if this_dist < 4.5 and hbond_count > 0:
-            if this_dist < .45 and hbond_dist < .35:
+            if this_dist < .45 and hbond_dist < .32:
                 adp_active[clone][index] = True
                 count += 1.0
             else:

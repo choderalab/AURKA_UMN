@@ -25,7 +25,6 @@ residues_with_H = [185,181,274,275]
 reference = 185
 
 projects = ['11410','11411']
-projects = ['11411']
 project_dirs = {'11410':'/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5','11411':'/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7'}
 system = {'11410':'with TPX2','11411':'without TPX2'}
 

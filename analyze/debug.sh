@@ -42,4 +42,4 @@
 cd $PBS_O_WORKDIR
 
 # start spark workers
-python /cbio/jclab/projects/behrj/AURKA_UMN/debug-waters.py
+python /cbio/jclab/projects/behrj/AURKA_UMN/analyze/debug-waters.py
