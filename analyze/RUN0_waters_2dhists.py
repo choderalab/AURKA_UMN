@@ -104,6 +104,9 @@ def count_and_plot_res_waters(residue, HB_res_total, ADP_bound = None, compare_t
                 waters = find_other_waters(hbonds_frame, reference)
                 hbond_count[clone][index-offset] = len(waters)
                 column_count[(index-offset-0.25)/40] += 1
+            #if residue == 181 and index%10 == 0 and index-offset < 200 and hbond_count[clone][index-offset] > 4:
+            #    print('PROJECT %s: FOUND A CLONE WITH TOO MANY WATERS: CLONE %s AT FRAME %s' % (project, clone, index))
+            #    return
     print('%s frames found unbound' % unbound)
     print('%s frames found bound' % bound)
     for clone, traj in enumerate(HB_res_total):

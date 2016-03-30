@@ -21,6 +21,39 @@ for entry in run_index.split('\n'):
     except:
         pass
 
+DIST_FOR_HBOND = True
+
+def find_hbondsdists_for_this_traj(traj, residue, haystack, sidechain=False, backbone=False):
+    if sidechain:
+        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_sidechain and (str(atom.element)==oxygen or str(atom.element)==nitrogen))]
+    elif backbone:
+        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_backbone and (str(atom.element)==oxygen or str(atom.element)==nitrogen))]
+    else:
+        residue_atoms = [atom.index for atom in residue.atoms if (str(atom.element)==oxygen or str(atom.element)==nitrogen)]
+
+    contact_size = (len(haystack)*len(residue_atoms),2)
+    contacts = np.zeros(contact_size)
+    index = 0
+    for resatom in residue_atoms:
+        for water in haystack:
+            contacts[index][0] = resatom
+            contacts[index][1] = water
+            index+=1
+    distances = md.compute_contacts(traj, contacts=contacts)
+    hbonds = list()
+    for frame in distances:
+        num_bonds = len(frame[frame < 0.35])
+        local_hbonds = np.zeros((num_bonds,3))
+        bond_index = 0
+        for index, little_dist in enumerate(frame):
+            if little_dist < 0.35:
+                local_hbonds[bond_index][0] = contacts[index][0]
+                local_hbonds[bond_index][1] = little_dist
+                local_hbonds[bond_index][2] = contacts[index][1]
+                bond_index+=1
+        hbonds.append(local_hbonds)
+    return hbonds
+
 def find_hbonds_for_this_traj(traj, residue, haystack, sidechain=False, backbone=False):
     if sidechain:
         residue_atoms = [atom.index for atom in residue.atoms if atom.is_sidechain]
@@ -93,16 +126,31 @@ for project in projects:
             SB_eq_total.append(distances_181_185[:,0])
             SB_ek_total.append(distances_181_162[:,0])
 
-            haystack = traj.top.select("water")
+            if DIST_FOR_HBOND:
+                haystack = traj.top.select("water and name O")
+            else:
+                haystack = traj.top.select("water")
 
-            HB_185_total.append(find_hbonds_for_this_traj(traj, res185, haystack, sidechain=True))
-            HB_181_total.append(find_hbonds_for_this_traj(traj, e181, haystack, sidechain=True))
-            HB_274_total.append(find_hbonds_for_this_traj(traj, d274, haystack, backbone=True))
-            HB_275_total.append(find_hbonds_for_this_traj(traj, f275, haystack, backbone=True))
-        np.save('%s/data/%s_%s_181_HBonds.npy' % (project_dir, project, run), HB_181_total)
-        np.save('%s/data/%s_%s_185_HBonds.npy' % (project_dir, project, run), HB_185_total)
-        np.save('%s/data/%s_%s_274_HBonds.npy' % (project_dir, project, run), HB_274_total)
-        np.save('%s/data/%s_%s_275_HBonds.npy' % (project_dir, project, run), HB_275_total)
+            if DIST_FOR_HBOND:
+                HB_185_total.append(find_hbondsdists_for_this_traj(traj, res185, haystack, sidechain=True))
+                HB_181_total.append(find_hbondsdists_for_this_traj(traj, e181, haystack, sidechain=True))
+                HB_274_total.append(find_hbondsdists_for_this_traj(traj, d274, haystack, backbone=True))
+                HB_275_total.append(find_hbondsdists_for_this_traj(traj, f275, haystack, backbone=True))
+            else:
+                HB_185_total.append(find_hbonds_for_this_traj(traj, res185, haystack, sidechain=True))
+                HB_181_total.append(find_hbonds_for_this_traj(traj, e181, haystack, sidechain=True))
+                HB_274_total.append(find_hbonds_for_this_traj(traj, d274, haystack, backbone=True))
+                HB_275_total.append(find_hbonds_for_this_traj(traj, f275, haystack, backbone=True))
+        if DIST_FOR_HBOND:
+            np.save('%s/data/%s_%s_181_distHBonds.npy' % (project_dir, project, run), HB_181_total)
+            np.save('%s/data/%s_%s_185_distHBonds.npy' % (project_dir, project, run), HB_185_total)
+            np.save('%s/data/%s_%s_274_distHBonds.npy' % (project_dir, project, run), HB_274_total)
+            np.save('%s/data/%s_%s_275_distHBonds.npy' % (project_dir, project, run), HB_275_total)
+        else:
+            np.save('%s/data/%s_%s_181_HBonds.npy' % (project_dir, project, run), HB_181_total)
+            np.save('%s/data/%s_%s_185_HBonds.npy' % (project_dir, project, run), HB_185_total)
+            np.save('%s/data/%s_%s_274_HBonds.npy' % (project_dir, project, run), HB_274_total)
+            np.save('%s/data/%s_%s_275_HBonds.npy' % (project_dir, project, run), HB_275_total)
         np.save('%s/data/%s_%s_181-185_SB_total.npy' % (project_dir, project, run), SB_eq_total)
         np.save('%s/data/%s_%s_181-162_SB_total.npy' % (project_dir, project, run), SB_ek_total)
 
