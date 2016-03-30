@@ -34,6 +34,7 @@ for project in projects:
     project_dir = project_dirs[project]
     run = 0
     for residue in residues:
+        Save_waters = list()
         HB_total = np.load('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue))
 
         for clone_id, hbonds_traj in enumerate(HB_total):
@@ -47,8 +48,8 @@ for project in projects:
                 residue_atoms[residue] = [atom.index for atom in res.atoms]
                 print('Indices of atoms in this residue:')
                 print(residue_atoms[residue])
-            if os.path.exists("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-significant-waters.png" % (project_dir, project, run, clone_id, residue)):
-                continue
+            #if os.path.exists("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-significant-waters.png" % (project_dir, project, run, clone_id, residue)):
+            #    continue
             tracking_waters = dict()
             for frame_id, frame in enumerate(hbonds_traj):
                 if frame.shape[0] > 0:
@@ -99,5 +100,5 @@ for project in projects:
             plt.savefig("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-significant-waters.png" % (project_dir, project, run, clone_id, residue),dpi=300)
             plt.close()
 
-            #np.save("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-significant-waters" % (project_dir, project, run, clone_id, residue), ???)
-
+            Save_waters.append([significant_waters.keys()])
+        np.save("%s/hbonds/AURKA-%s-RUN%s-%s-significant-waters.npy" % (project_dir, project, run, residue), Save_waters)

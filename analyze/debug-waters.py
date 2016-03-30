@@ -1,16 +1,10 @@
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import math
-from matplotlib.pyplot import cm
-import seaborn as sns
 import os
 import mdtraj as md
-
-sns.set_style("white")
-sns.set_context("poster")
 
         # make plots of all data past t = 250ns
             # quantify how much P(salt bridge) and (1-P)
@@ -36,9 +30,6 @@ for entry in run_index.split('\n'):
         mutant[entry.split(' ')[0]] = entry.split(' ')[1]
     except:
         pass
-
-bin_x = np.arange(OFFSET/4,510,10) - 0.25
-bin_y = np.arange(8) - 0.5
 
 def water_set(topology, frame, hydrogens=False):
     waters = set()

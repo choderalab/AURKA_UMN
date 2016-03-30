@@ -1,18 +1,10 @@
 """
 Plot minimum distances between 181-185 and 181-162
 """
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import math
-from matplotlib.pyplot import cm
-import seaborn as sns
-import os
-
-sns.set_style("whitegrid")
-sns.set_context("poster")
+import plot_function
 
         # make plots of all data past t = 250ns
             # quantify how much P(salt bridge) and (1-P)
@@ -34,28 +26,20 @@ for entry in run_index.split('\n'):
     except:
         pass
 
-offset = 400
-bin_x = np.arange(offset/4,510,10) - 0.25
-bin_y = {'181-185': np.arange(21) * 0.03 + 0.25, '181-162': np.arange(20) * 0.02 + 0.25}
-axis = {'181-185': [offset/4,500,0.25,0.85], '181-162':[offset/4,500,0.25,0.63]}
+offset = plot_function.OFFSET
+bin_x = plot_function.BIN_X
 
 def plot_2dhist(bridge, x_axis, minimum_distance, weights, run, project):
-    fig1 = plt.figure()
-    plt.hist2d(x_axis[minimum_distance > 0],minimum_distance[minimum_distance > 0],bins=[bin_x,bin_y[bridge]],weights=weights[minimum_distance > 0],cmap=plt.get_cmap('jet'))
-    plt.title('AURKA %s minimum %s salt bridge distance over time %s' % (mutant['RUN%s' % run], bridge, system[project]))
-    plt.ylabel('distance r (nanometers) between residues %s and %s' % (bridge.split('-')[0], bridge.split('-')[1]))
-    plt.xlabel('t (nanoseconds)')
-    plt.colorbar()
-    plt.axis(axis[bridge])
-    plt.savefig("../plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s" % (bridge, project, run),dpi=300)
-    plt.close(fig1)
-    print('Saved ../plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s.png' % (bridge, project, run))
+    title = 'AURKA %s minimum %s salt bridge distance over time %s' % (mutant['RUN%s' % run], bridge, system[project])
+    filename = "../plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-combined-RUN%s" % (bridge, project, run)
+    ylabel = 'distance r (nanometers) between residues %s and %s' % (bridge.split('-')[0], bridge.split('-')[1])
+    plot_function.plot_2dhist(bridge, x_axis, minimum_distance, weights, title, ylabel, filename)
 
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
     ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir)
     for bridge in ['181-185','181-162']:
-        minimum_distance = np.zeros((5*50,2000-offset))
+        minimum_distance = np.zeros((5*50,2000-offset)) - 1
         x_axis = np.zeros((5*50,2000-offset))
         weights = np.zeros((5*50,2000-offset))
         column_count = np.zeros(bin_x.shape)

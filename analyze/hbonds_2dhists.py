@@ -1,15 +1,8 @@
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import math
-from matplotlib.pyplot import cm
-import seaborn as sns
 import os
-
-sns.set_style("white")
-sns.set_context("poster")
+import plot_function
 
         # make plots of all data past t = 250ns
             # quantify how much P(salt bridge) and (1-P)
@@ -18,7 +11,7 @@ sns.set_context("poster")
         # look at trajectories : how long do waters stay in place
             # may need to account for the waters exchanging
 
-offset = 400
+offset = plot_function.OFFSET
 
 residues_with_H = [185,181,274,275]
 reference = 185
@@ -36,22 +29,14 @@ for entry in run_index.split('\n'):
     except:
         pass
 
-bin_x = np.arange(offset/4,500,10) - 0.25
-bin_y = np.arange(7) - 0.5
-
 def plot_2dhist(residue, x_axis, hbond_count, weights, run, project):
-    fig1 = plt.figure()
-    plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],weights=weights[hbond_count > -1],cmap=plt.get_cmap('jet'))
-    plt.title('AURKA %s number of hydrogen bonds on residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project]))
-    plt.ylabel('number of hydrogen bonds')
-    plt.xlabel('t (nanoseconds)')
-    plt.colorbar()
-    plt.axis([offset/4,500,-0.5,6.5])
-    plt.savefig("./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (residue, project, run),dpi=300)
-    plt.close(fig1)
-    print('Saved ./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s.png' % (residue, project, run))
+    title = 'AURKA %s number of hydrogen bonds on residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project])
+    filename = "./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (residue, project, run)
+    ylabel = 'number of hydrogen bonds'
+    plot_function.plot_2dhist(residue, x_axis, hbond_count, weights, title, ylabel, filename)
 
 def count_and_plot_res_bonds(residue, HB_res_total,compare_to=None):
+    bin_x = plot_function.BIN_X
     hbond_count = np.zeros((50,2000-offset)) - 1
     x_axis = np.zeros((50,2000-offset))
     weights = np.zeros((50,2000-offset))

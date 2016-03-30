@@ -5,19 +5,12 @@ W2 is bound to W1 and 181 (should also be 185)
 
 Plot 2D hists: W1 per frame, W2 per frame, per project
 """
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import math
-from matplotlib.pyplot import cm
-import seaborn as sns
 import os
 import mdtraj as md
-
-sns.set_style("white")
-sns.set_context("poster")
+import plot_function
 
         # make plots of all data past t = 250ns
             # quantify how much P(salt bridge) and (1-P)
@@ -26,7 +19,7 @@ sns.set_context("poster")
         # look at trajectories : how long do waters stay in place
             # may need to account for the waters exchanging
 
-OFFSET = 400
+OFFSET = plot_function.OFFSET
 
 residues_with_H = [185,181,274,275]
 reference = 185
@@ -43,9 +36,6 @@ for entry in run_index.split('\n'):
         mutant[entry.split(' ')[0]] = entry.split(' ')[1]
     except:
         pass
-
-bin_x = np.arange(OFFSET/4,510,10) - 0.25
-bin_y = np.arange(8) - 0.5
 
 def water_set(topology, frame, hydrogens=False):
     waters = set()
@@ -71,18 +61,12 @@ def find_other_waters(frame, first_waters):
     return waters
 
 def plot_2dhist(x_axis, hbond_count, weights, title, filename):
-    fig1 = plt.figure()
-    plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],weights=weights[hbond_count > -1],cmap=plt.get_cmap('jet'))
-    plt.title(title)
-    plt.ylabel('number of waters found')
-    plt.xlabel('t (nanoseconds)')
-    plt.colorbar()
-    plt.axis([OFFSET/4,500,-0.5,6.5])
-    plt.savefig(filename,dpi=300)
-    plt.close(fig1)
-    print('Saved %s' % filename)
+    key = 'W1W2'
+    ylabel = 'number of waters found'
+    plot_function(key, x_axis, hbond_count, weights, title, ylabel, filename)
 
 def find_W1(HB_total, WB_total, ADP_bound):
+    bin_x = plot_function.BIN_X
     HB_res_total = HB_total[274]
     W1s = np.empty((5*50,2000-OFFSET),dtype=set)
     hbond_count = np.zeros((5*50,2000-OFFSET)) - 1
@@ -116,6 +100,7 @@ def find_W1(HB_total, WB_total, ADP_bound):
     plot_2dhist(x_axis, hbond_count, weights, title, filename)
 
 def find_W2(HB_total, WB_total, W1_hbond_count, W1s, ADP_bound):
+    bin_x = plot_function.BIN_X
     W2s = np.empty((5*50,2000-OFFSET),dtype=set)
     hbond_count = np.zeros((5*50,2000-OFFSET)) - 1
     x_axis = np.zeros((5*50,2000-OFFSET))

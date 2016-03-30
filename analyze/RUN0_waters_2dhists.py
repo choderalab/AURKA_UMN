@@ -4,21 +4,15 @@ saves 2D histogram (1 per residue per project)
 
 Can be modified to only consider certain trajectory of waters (for instance, 
 identify how many unique waters that interact with Q185 also interact with E181)
-"""
 
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+Can be modified to filter out ADP-unbound frames or not
+"""
 import numpy as np
 import sys
 import math
-from matplotlib.pyplot import cm
-import seaborn as sns
 import os
 import mdtraj as md
-
-sns.set_style("white")
-sns.set_context("poster")
+import plot_function
 
         # make plots of all data past t = 250ns
             # quantify how much P(salt bridge) and (1-P)
@@ -27,7 +21,7 @@ sns.set_context("poster")
         # look at trajectories : how long do waters stay in place
             # may need to account for the waters exchanging
 
-offset = 400
+offset = plot_function.OFFSET
 
 residues_with_H = [185,181,274,275]
 #residues_with_H = [181]
@@ -46,8 +40,7 @@ for entry in run_index.split('\n'):
     except:
         pass
 
-bin_x = np.arange(offset/4,510,10) - 0.25
-bin_y = np.arange(11) - 0.5
+USE_ADP = False
 
 def water_set(topology, frame, hydrogens=False):
     waters = set()
@@ -73,18 +66,16 @@ def find_other_waters(frame, first_waters):
     return waters
 
 def plot_2dhist(residue, x_axis, hbond_count, weights, run, project):
-    fig1 = plt.figure()
-    plt.hist2d(x_axis[hbond_count > -1],hbond_count[hbond_count > -1],bins=[bin_x,bin_y],weights=weights[hbond_count > -1],cmap=plt.get_cmap('jet'))
-    plt.title('Waters interacting with AURKA %s residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project]))
-    plt.ylabel('number of water molecules')
-    plt.xlabel('t (nanoseconds)')
-    plt.colorbar()
-    plt.axis([offset/4,500,-0.5,9.5])
-    plt.savefig("../plots/AURKA-%s-waters-hist2d-entire-traj-%s-combined-RUN%s" % (residue, project, run),dpi=300)
-    plt.close(fig1)
-    print('Saved ../plots/AURKA-%s-waters-hist2d-entire-traj-%s-combined-RUN%s.png' % (residue, project, run))
+    title = 'Waters interacting with AURKA %s residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project])
+    if USE_ADP:
+        filename = "../plots/AURKA-%s-waters-hist2d-entire-traj-%s-combined-RUN%s_ADPfiltered" % (residue, project, run)
+    else:
+        filename = "../plots/AURKA-%s-waters-hist2d-entire-traj-%s-combined-RUN%s_nofilter" % (residue, project, run)
+    ylabel = 'number of water molecules'
+    plot_function.plot_2dhist(residue, x_axis, hbond_count, weights, title, ylabel, filename)
 
-def count_and_plot_res_waters(residue, HB_res_total, ADP_bound, compare_to=None):
+def count_and_plot_res_waters(residue, HB_res_total, ADP_bound = None, compare_to=None):
+    bin_x = plot_function.BIN_X
     hbond_count = np.zeros((5*50,2000-offset)) - 1
     x_axis = np.zeros((5*50,2000-offset))
     weights = np.zeros((5*50,2000-offset))
@@ -96,7 +87,7 @@ def count_and_plot_res_waters(residue, HB_res_total, ADP_bound, compare_to=None)
             topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, run))
         for index in range(offset,2000):
             x_axis[clone][index-offset] = index*0.25
-            if not ADP_bound[clone][index]:
+            if USE_ADP and not ADP_bound[clone][index]:
                 unbound += 1
                 continue
             try:
@@ -126,7 +117,10 @@ def count_and_plot_res_waters(residue, HB_res_total, ADP_bound, compare_to=None)
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
     HB_total = dict()
-    ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir)
+    if USE_ADP:
+        ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir)
+    else:
+        ADP_bound = None
     for residue in residues_with_H:
         for run in range(5):
             if not os.path.exists('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue)):
