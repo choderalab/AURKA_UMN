@@ -35,70 +35,71 @@ for project in projects:
     run = 0
     for residue in residues:
         Save_waters = list()
-        HB_total = np.load('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue))
+        for fake_run in range(5):
+            HB_total = np.load('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, fake_run, residue))
 
-        for clone_id, hbonds_traj in enumerate(HB_total):
-            num_frames = len(hbonds_traj)
-            if clone_id == 0:
-                topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, run))
-                for res in topology.top.residues:
-                    if str(res) == res_names[residue]+str(residue):
-                        print(str(res))
-                        break
-                residue_atoms[residue] = [atom.index for atom in res.atoms]
-                print('Indices of atoms in this residue:')
-                print(residue_atoms[residue])
+            for clone_id, hbonds_traj in enumerate(HB_total):
+                num_frames = len(hbonds_traj)
+                if clone_id == 0:
+                    topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, fake_run))
+                    for res in topology.top.residues:
+                        if str(res) == res_names[residue]+str(residue):
+                            print(str(res))
+                            break
+                    residue_atoms[residue] = [atom.index for atom in res.atoms]
+                    print('Indices of atoms in this residue:')
+                    print(residue_atoms[residue])
             #if os.path.exists("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-significant-waters.png" % (project_dir, project, run, clone_id, residue)):
             #    continue
-            tracking_waters = dict()
-            for frame_id, frame in enumerate(hbonds_traj):
-                if frame.shape[0] > 0:
-                    for bond_num, bond_in_frame in enumerate(frame):
-                        this_water = [atom for atom in [bond_in_frame[0],bond_in_frame[2]]
-                                           if topology.top.atom(atom).residue.is_water]
-                        assert len(this_water) == 1
-                        this_water = this_water[0]
-                        if not tracking_waters.has_key(this_water):
-                            tracking_waters[this_water] = [frame_id]
-                        else:
-                            tracking_waters[this_water].append(frame_id)
+                tracking_waters = dict()
+                for frame_id, frame in enumerate(hbonds_traj):
+                    if frame.shape[0] > 0:
+                        for bond_num, bond_in_frame in enumerate(frame):
+                            this_water = [atom for atom in [bond_in_frame[0],bond_in_frame[2]]
+                                               if topology.top.atom(atom).residue.is_water]
+                            assert len(this_water) == 1
+                            this_water = this_water[0]
+                            if not tracking_waters.has_key(this_water):
+                                tracking_waters[this_water] = [frame_id]
+                            else:
+                                tracking_waters[this_water].append(frame_id)
 
-            print('%s waters are tracked' % len(tracking_waters))
+                print('%s waters are tracked' % len(tracking_waters))
 
-            for key in tracking_waters.keys():
-                tracking_waters[key] = np.asarray(tracking_waters[key])
+                for key in tracking_waters.keys():
+                    tracking_waters[key] = np.asarray(tracking_waters[key])
 
-            plt.figure()
-            significant_waters = dict()
-            for water_id, (this_water, water_bonds) in enumerate(tracking_waters.items()):
-                try:
+                plt.figure()
+                significant_waters = dict()
+                for water_id, (this_water, water_bonds) in enumerate(tracking_waters.items()):
+                    try:
+                        y_axis = np.ones(len(water_bonds)) * (water_id + 1)
+                        plt.plot(water_bonds*0.25, y_axis, '.')
+                    except Exception as e:
+                        print(clone_id)
+                        print(this_water)
+                        print('Failed to plot %s RUN%s clone%s water %s' % (project, fake_run, clone_id, water_id))
+                        #raise(e)
+                        print(str(e))
+                        continue
+                    if len(water_bonds) >= num_frames * 0.01:
+                        significant_waters[this_water] = water_bonds
+                plt.xlabel('t (nanoseconds)')
+                plt.ylabel('water molecule')
+                plt.title('Hydrogen bonds in AURKA %s %s clone%s' % (mutant['RUN%s' % run], system[project], clone_id+50*fake_run))
+                plt.savefig("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-ALL-waters.png" % (project_dir, project, fake_run, clone_id, residue),dpi=300)
+                plt.close()
+
+                print('Number of significant waters: %s' % len(significant_waters))
+                plt.figure()
+                for water_id, (this_water, water_bonds) in enumerate(significant_waters.items()):
                     y_axis = np.ones(len(water_bonds)) * (water_id + 1)
                     plt.plot(water_bonds*0.25, y_axis, '.')
-                except Exception as e:
-                    print(clone_id)
-                    print(this_water)
-                    print('Failed to plot %s RUN%s clone%s water %s' % (project, run, clone_id, water_id))
-                    #raise(e)
-                    print(str(e))
-                    continue
-                if len(water_bonds) >= num_frames * 0.01:
-                    significant_waters[this_water] = water_bonds
-            plt.xlabel('t (nanoseconds)')
-            plt.ylabel('water molecule')
-            plt.title('Hydrogen bonds in AURKA %s %s clone%s' % (mutant['RUN%s' % run], system[project], clone_id))
-            plt.savefig("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-ALL-waters.png" % (project_dir, project, run, clone_id, residue),dpi=300)
-            plt.close()
+                plt.xlabel('t (nanoseconds)')
+                plt.ylabel('water molecule')
+                plt.title('Significant (more than 1percent) hydrogen bonds in %s AURKA %s %s clone%s' % (mutant['RUN%s' % run], residue, system[project], clone_id+50*fake_run))
+                plt.savefig("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-significant-waters.png" % (project_dir, project, fake_run, clone_id, residue),dpi=300)
+                plt.close()
 
-            print('Number of significant waters: %s' % len(significant_waters))
-            plt.figure()
-            for water_id, (this_water, water_bonds) in enumerate(significant_waters.items()):
-                y_axis = np.ones(len(water_bonds)) * (water_id + 1)
-                plt.plot(water_bonds*0.25, y_axis, '.')
-            plt.xlabel('t (nanoseconds)')
-            plt.ylabel('water molecule')
-            plt.title('Significant (more than 1percent) hydrogen bonds in %s AURKA %s %s clone%s' % (mutant['RUN%s' % run], system[project], clone_id, residue))
-            plt.savefig("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-significant-waters.png" % (project_dir, project, run, clone_id, residue),dpi=300)
-            plt.close()
-
-            Save_waters.append([significant_waters.keys()])
+                Save_waters.append(significant_waters.keys())
         np.save("%s/hbonds/AURKA-%s-RUN%s-%s-significant-waters.npy" % (project_dir, project, run, residue), Save_waters)
