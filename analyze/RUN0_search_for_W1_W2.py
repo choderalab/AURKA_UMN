@@ -27,10 +27,10 @@ residues_with_H = [185,181,274,275]
 reference = 185
 
 projects = ['11410','11411']
-project_dirs = {'11410':'../output-1OL5','11411':'../output-1OL7'}
+project_dirs = {'11410':'/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5','11411':'/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7'}
 system = {'11410':'with TPX2','11411':'without TPX2'}
 
-with open('../output-1OL7/run-index.txt','r') as fi:
+with open('/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
 mutant = dict()
 for entry in run_index.split('\n'):
@@ -97,7 +97,7 @@ def find_W1(HB_total, ADP_bound):
     hbond_count = hbond_count.flatten()
     weights = weights.flatten()
     title = 'Possible W1 identified on AURKA %s over time %s' % (mutant['RUN%s' % 0], system[project])
-    filename = "../plots/W1-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
+    filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/W1-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
     plot_2dhist(x_axis, hbond_count, weights, title, filename)
 
 def find_W2(HB_total, ADP_bound):
@@ -138,7 +138,7 @@ def find_W2(HB_total, ADP_bound):
     hbond_count = hbond_count.flatten()
     weights = weights.flatten()
     title = 'Possible W2 identified on AURKA %s over time %s' % (mutant['RUN%s' % 0], system[project])
-    filename = "../plots/W2-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
+    filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/W2-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
     plot_2dhist(x_axis, hbond_count, weights, title, filename)
 
 def find_hbonds_between_waters(HB_total):
