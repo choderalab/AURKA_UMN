@@ -25,11 +25,11 @@ DIST_FOR_HBOND = True
 
 def find_hbondsdists_for_this_traj(traj, residue, haystack, sidechain=False, backbone=False):
     if sidechain:
-        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_sidechain and (str(atom.element)==oxygen or str(atom.element)==nitrogen))]
+        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_sidechain and (str(atom.element)=='oxygen' or str(atom.element)=='nitrogen'))]
     elif backbone:
-        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_backbone and (str(atom.element)==oxygen or str(atom.element)==nitrogen))]
+        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_backbone and (str(atom.element)=='oxygen' or str(atom.element)=='nitrogen'))]
     else:
-        residue_atoms = [atom.index for atom in residue.atoms if (str(atom.element)==oxygen or str(atom.element)==nitrogen)]
+        residue_atoms = [atom.index for atom in residue.atoms if (str(atom.element)=='oxygen' or str(atom.element)=='nitrogen')]
 
     contact_size = (len(haystack)*len(residue_atoms),2)
     contacts = np.zeros(contact_size)
@@ -39,7 +39,7 @@ def find_hbondsdists_for_this_traj(traj, residue, haystack, sidechain=False, bac
             contacts[index][0] = resatom
             contacts[index][1] = water
             index+=1
-    distances = md.compute_contacts(traj, contacts=contacts)
+    distances = md.compute_distances(traj, contacts)
     hbonds = list()
     for frame in distances:
         num_bonds = len(frame[frame < 0.35])
