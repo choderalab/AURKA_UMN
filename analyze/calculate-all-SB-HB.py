@@ -42,7 +42,10 @@ def find_hbondsdists_for_this_traj(traj, residue, haystack, sidechain=False, bac
     distances = md.compute_distances(traj, contacts)
     hbonds = list()
     for frame in distances:
-        num_bonds = len(frame[frame < 0.35])
+        num_bonds = 0
+        for index, little_dist in enumerate(frame):
+            if little_dist < 0.35:
+                num_bonds+=1
         local_hbonds = np.zeros((num_bonds,3))
         bond_index = 0
         for index, little_dist in enumerate(frame):
@@ -79,7 +82,7 @@ def find_hbonds_for_this_traj(traj, residue, haystack, sidechain=False, backbone
     return hbonds
 
 def find_neighbor_set(traj, residue, haystack):
-    neighbors = md.compute_neighbors(traj, 0.3, residue, haystack_indices=haystack)
+    neighbors = md.compute_neighbors(traj, 0.4, residue, haystack_indices=haystack)
     neighbor_set = set(chain.from_iterable(neighbors))
     return list(neighbor_set)
 
@@ -132,9 +135,13 @@ for project in projects:
                 haystack = traj.top.select("water")
 
             if DIST_FOR_HBOND:
+                print('185')
                 HB_185_total.append(find_hbondsdists_for_this_traj(traj, res185, haystack, sidechain=True))
+                print('181')
                 HB_181_total.append(find_hbondsdists_for_this_traj(traj, e181, haystack, sidechain=True))
+                print('274')
                 HB_274_total.append(find_hbondsdists_for_this_traj(traj, d274, haystack, backbone=True))
+                print('275')
                 HB_275_total.append(find_hbondsdists_for_this_traj(traj, f275, haystack, backbone=True))
             else:
                 HB_185_total.append(find_hbonds_for_this_traj(traj, res185, haystack, sidechain=True))

@@ -52,7 +52,7 @@ def find_hbonds_for_this_traj(traj, residue, haystack, sidechain=False, backbone
     return hbonds
 
 def find_neighbor_set(traj, residue, haystack):
-    neighbors = md.compute_neighbors(traj, 0.3, residue, haystack_indices=haystack)
+    neighbors = md.compute_neighbors(traj, 0.4, residue, haystack_indices=haystack)
     neighbor_set = set(chain.from_iterable(neighbors))
     return list(neighbor_set)
 

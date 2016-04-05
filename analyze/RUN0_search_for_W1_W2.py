@@ -3,7 +3,7 @@ DIFFERENT FROM SEARCH: ALL WATERS, CHANGED DEFS
 
 Attempt to identify W1 and W2 via definitions
 W1 is bound to 274 (future: and ADP)
-W2 is bound to 275 and 181
+W2 is bound to 185 and 181
 
 Plot 2D hists: W1 per frame, W2 per frame, per project
 """
@@ -42,9 +42,9 @@ for entry in run_index.split('\n'):
 def water_set(topology, frame, hydrogens=False):
     waters = set()
 
-    [[waters.add(atom) for atom in [bond[0],bond[2]]
-              if topology.top.atom(atom).residue.is_water]
-             for bond in frame]
+    [[waters.add(int(atom)) for atom in [bond[0],bond[2]]
+      if topology.top.atom(int(atom)).residue.is_water]
+     for bond in frame]
     if not hydrogens:
         return waters
     oxygens = list(waters)
@@ -56,16 +56,16 @@ def find_other_waters(frame, first_waters):
     waters = set()
 
     for bond in frame:
-        if bond[0] in first_waters:
-            waters.add(bond[2])
-        if bond[2] in first_waters:
-            waters.add(bond[0])
+        if int(bond[0]) in first_waters:
+            waters.add(int(bond[2]))
+        if int(bond[2]) in first_waters:
+            waters.add(int(bond[0]))
     return waters
 
 def plot_2dhist(x_axis, hbond_count, weights, title, filename):
     key = 'W1W2'
     ylabel = 'number of waters found'
-    plot_function(key, x_axis, hbond_count, weights, title, ylabel, filename)
+    plot_function.plot_2dhist(key, x_axis, hbond_count, weights, title, ylabel, filename)
 
 def find_W1(HB_total, ADP_bound):
     bin_x = plot_function.BIN_X
@@ -76,6 +76,8 @@ def find_W1(HB_total, ADP_bound):
     weights = np.zeros((5*50,2000-OFFSET))
     column_count = np.zeros(bin_x.shape)
     for clone, traj in enumerate(HB_res_total):
+        #if clone%50 == 0:
+            #water_to_adp = np.load('%s/data/%s_%s_adp-hbond-water.npy' % (project_dir, project, clone/50))
         if clone == 0:
             topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
         for index in range(OFFSET,2000):
@@ -88,6 +90,8 @@ def find_W1(HB_total, ADP_bound):
             except:
                 continue
             waters = water_set(topology, this_frame)
+            #adp_waters = water_set(topology, water_to_adp[clone%50][index])
+            #waters = waters.intersection(adp_waters)
             W1s[clone][index-OFFSET] = waters
             hbond_count[clone][index-OFFSET] = len(waters)
     for clone, traj in enumerate(HB_res_total):
@@ -108,8 +112,7 @@ def find_W2(HB_total, ADP_bound):
     weights = np.zeros((5*50,2000-OFFSET))
     column_count = np.zeros(bin_x.shape)
 
-    # Make W2 anything that is bound to a W1
-    for clone, traj in enumerate(HB_total[275]):
+    for clone, traj in enumerate(HB_total[185]):
         if clone == 0:
             topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
         for index in range(OFFSET,2000):
@@ -123,7 +126,6 @@ def find_W2(HB_total, ADP_bound):
                 continue
             if this_frame.shape[0] == 0:
                 hbond_count[clone][index-OFFSET] = 0
-                W1_hbond_count[clone][index-OFFSET] = 0
                 continue
             waters = water_set(topology, this_frame)
             frame_181 = HB_total[181][clone][index]
@@ -131,7 +133,7 @@ def find_W2(HB_total, ADP_bound):
             waters = waters.intersection(waters_181)
             W2s[clone][index-OFFSET] = waters            
             hbond_count[clone][index-OFFSET] = len(W2s[clone][index-OFFSET])
-    for clone, traj in enumerate(HB_total[275]):
+    for clone, traj in enumerate(HB_total[185]):
         for index in range(OFFSET,2000):
             weights[clone][index-OFFSET] = 1.00 / column_count[(index-OFFSET-0.25)/40]
     x_axis = x_axis.flatten()
