@@ -30,18 +30,26 @@ def same_water_present(x, y):
     if len(x.intersection(y)) > 0: return 1.0
     return 0.0
 
-from correlation import unnormalizedFluctuationCorrelationFunction
 from correlation import unnormalizedFluctuationCorrelationFunctionMultiple
+from correlation import integrate_autocorrelation_function
 
 dt = 0.250 # ns
 Tmax = 1800 # max number of frames to go out to
 nskip = 20 # frame interval to evaluate C(t)
 
-#C_t = unnormalizedFluctuationCorrelationFunction(data[0,:], N_max=Tmax, dot_product_function=same_water_present)
 [tvec, C_W1_t, N_W1_t] = unnormalizedFluctuationCorrelationFunctionMultiple(W1, N_max=Tmax, dot_product_function=same_water_present, nskip=nskip)
 [tvec, C_W2_t, N_W2_t] = unnormalizedFluctuationCorrelationFunctionMultiple(W2, N_max=Tmax, dot_product_function=same_water_present, nskip=nskip)
 [tvec, C_W1TPX_t, N_W1TPX_t] = unnormalizedFluctuationCorrelationFunctionMultiple(W1TPX, N_max=Tmax, dot_product_function=same_water_present, nskip=nskip)
 [tvec, C_W2TPX_t, N_W2TPX_t] = unnormalizedFluctuationCorrelationFunctionMultiple(W2TPX, N_max=Tmax, dot_product_function=same_water_present, nskip=nskip)
+
+def normalize(C_t):
+    return (C_t - C_t[-1]) / (C_t[0] - C_t[-1])
+
+tau_W1 = dt * integrate_autocorrelation_function(normalize(C_W1_t), tvec)
+tau_W2 = dt * integrate_autocorrelation_function(normalize(C_W2_t), tvec)
+tau_W1TPX = dt * integrate_autocorrelation_function(normalize(C_W1TPX_t), tvec)
+tau_W2TPX = dt * integrate_autocorrelation_function(normalize(C_W1TPX_t), tvec)
+
 tvec = dt * tvec
 
 np.save('C_W1_t.npy', C_W1_t)
@@ -55,6 +63,12 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn
 
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
+
 # Unnormalized fluctuation autocorrelation functions
 plt.plot(tvec, C_W1_t, 'k-', tvec, C_W2_t, 'k--');
 plt.hold(True)
@@ -67,9 +81,6 @@ plt.axis([0, 450, -0.05, 1]);
 plt.savefig('unnormalized-water-autocorrelation.pdf');
 
 # Normalized fluctuation autocorrelation functions
-def normalize(C_t):
-    return (C_t - C_t[-1]) / (C_t[0] - C_t[-1])
-
 plt.clf()
 
 plt.plot(tvec, normalize(C_W1_t), 'k-', tvec, normalize(C_W2_t), 'k--');
@@ -77,7 +88,7 @@ plt.hold(True)
 plt.plot(tvec, normalize(C_W1TPX_t), 'r-', tvec, normalize(C_W2TPX_t), 'r--');
 plt.ylabel('C(t)');
 plt.xlabel('time / ns')
-plt.legend(['W1 -TPX2', 'W2 -TPX2', 'W1 +TPX2', 'W2 +TPX2'])
+plt.legend(['W1 -TPX2 ($\\tau$ = %.1f ns)' % tau_W1, 'W2 -TPX2 ($\\tau$ = %.1f ns)' % tau_W2, 'W1 +TPX2 ($\\tau$ = %.1f ns)' % tau_W1TPX, 'W2 +TPX2 ($\\tau$ = %.1f ns)' % tau_W2TPX])
 plt.axis([0, 450, -0.05, 1]);
 
 plt.savefig('normalized-water-autocorrelation.pdf');

@@ -20,126 +20,47 @@ LongWarning = "Warning on use of the timeseries module: If the inherent timescal
 
 #=============================================================================================
 
-
-def statisticalInefficiency(A_n, B_n=None, fast=False, mintime=3, fft=False):
-    """Compute the (cross) statistical inefficiency of (two) timeseries.
-
-    Parameters
-    ----------
-    A_n : np.ndarray, float
-        A_n[n] is nth value of timeseries A.  Length is deduced from vector.
-    B_n : np.ndarray, float, optional, default=None
-        B_n[n] is nth value of timeseries B.  Length is deduced from vector.
-        If supplied, the cross-correlation of timeseries A and B will be estimated instead of the
-        autocorrelation of timeseries A.  
-    fast : bool, optional, default=False
-        f True, will use faster (but less accurate) method to estimate correlation
-        time, described in Ref. [1] (default: False).  This is ignored
-        when B_n=None and fft=True.
-    mintime : int, optional, default=3
-        minimum amount of correlation function to compute (default: 3)
-        The algorithm terminates after computing the correlation time out to mintime when the
-        correlation function first goes negative.  Note that this time may need to be increased
-        if there is a strong initial negative peak in the correlation function.
-    fft : bool, optional, default=False
-        If fft=True and B_n=None, then use the fft based approach, as
-        implemented in statisticalInefficiency_fft().
-
-    Returns
-    -------
-    g : np.ndarray,
-        g is the estimated statistical inefficiency (equal to 1 + 2 tau, where tau is the correlation time).
-        We enforce g >= 1.0.
-
-    Notes
-    -----
-    The same timeseries can be used for both A_n and B_n to get the autocorrelation statistical inefficiency.
-    The fast method described in Ref [1] is used to compute g.
-
-    References
-    ----------
-    [1] J. D. Chodera, W. C. Swope, J. W. Pitera, C. Seok, and K. A. Dill. Use of the weighted
-        histogram analysis method for the analysis of simulated and parallel tempering simulations.
-        JCTC 3(1):26-41, 2007.
-
-    Examples
-    --------
-
-    Compute statistical inefficiency of timeseries data with known correlation time.  
-
-    >>> from pymbar.testsystems import correlated_timeseries_example
-    >>> A_n = correlated_timeseries_example(N=100000, tau=5.0)
-    >>> g = statisticalInefficiency(A_n, fast=True)
-
+def integrate_autocorrelation_function(C_n, tvec):
+    """Integrate a normalized fluctuation autocorrelation function to get an integrated correlation time.
     """
 
-    # Create numpy copies of input arguments.
-    A_n = np.array(A_n)
-
-    if fft and B_n is None:
-        return statisticalInefficiency_fft(A_n, mintime=mintime)    
-
-    if B_n is not None:
-        B_n = np.array(B_n)
-    else:
-        B_n = np.array(A_n)
-
-    # Get the length of the timeseries.
-    N = A_n.size
-
-    # Be sure A_n and B_n have the same dimensions.
-    if(A_n.shape != B_n.shape):
-        raise ParameterError('A_n and B_n must have same dimensions.')
-
-    # Initialize statistical inefficiency estimate with uncorrelated value.
-    g = 1.0
-
-    # Compute mean of each timeseries.
-    mu_A = A_n.mean()
-    mu_B = B_n.mean()
-
-    # Make temporary copies of fluctuation from mean.
-    dA_n = A_n.astype(np.float64) - mu_A
-    dB_n = B_n.astype(np.float64) - mu_B
-
-    # Compute estimator of covariance of (A,B) using estimator that will ensure C(0) = 1.
-    sigma2_AB = (dA_n * dB_n).mean()  # standard estimator to ensure C(0) = 1
-
-    # Trap the case where this covariance is zero, and we cannot proceed.
-    if(sigma2_AB == 0):
-        raise ParameterError('Sample covariance sigma_AB^2 = 0 -- cannot compute statistical inefficiency')
+    mintime = 3
 
     # Accumulate the integrated correlation time by computing the normalized correlation time at
     # increasing values of t.  Stop accumulating if the correlation function goes negative, since
     # this is unlikely to occur unless the correlation function has decayed to the point where it
     # is dominated by noise and indistinguishable from zero.
-    t = 1
-    increment = 1
-    while (t < N - 1):
 
-        # compute normalized fluctuation correlation function at time t
-        C = np.sum(dA_n[0:(N - t)] * dB_n[t:N] + dB_n[0:(N - t)] * dA_n[t:N]) / (2.0 * float(N - t) * sigma2_AB)
+    T = tvec.max()
+    N = len(C_n)
+    g = 1.0
+    for n in range(N):
+        C = C_n[n]
+        t = tvec[n]
+
         # Terminate if the correlation function has crossed zero and we've computed the correlation
         # function at least out to 'mintime'.
-        if (C <= 0.0) and (t > mintime):
+        if (C <= 0.0) and (n > mintime):
             break
 
-        # Accumulate contribution to the statistical inefficiency.
-        g += 2.0 * C * (1.0 - float(t) / float(N)) * float(increment)
+        if n == 0:
+            increment = tvec[0]
+        else:
+            increment = tvec[n] - tvec[n-1]
 
-        # Increment t and the amount by which we increment t.
-        t += increment
-
-        # Increase the interval if "fast mode" is on.
-        if fast:
-            increment += 1
+        # Accumulate contribution to the statistical inefficiency.        
+        g += 2.0 * C * (1.0 - float(t) / float(T)) * float(increment)
 
     # g must be at least unity
     if (g < 1.0):
         g = 1.0
 
-    # Return the computed statistical inefficiency.
-    return g
+    # g = 1 + 2*tau
+    # tau = (g - 1)/2
+    tau = (g - 1.0) / 2.0
+
+    # Return the computed correlation time tau.
+    return tau
 #=============================================================================================
 
 
@@ -298,24 +219,7 @@ def statisticalInefficiencyMultiple(A_kn, fast=False, return_correlation_functio
 
     # Return the computed statistical inefficiency.
     return g
-#=============================================================================================
-
-
-def integratedAutocorrelationTime(A_n, B_n=None, fast=False, mintime=3):
-    """Estimate the integrated autocorrelation time."""
-
-    g = statisticalInefficiency(A_n, B_n, fast, mintime)
-    tau = (g - 1.0) / 2.0
-    return tau
-#=============================================================================================
-
-
-def integratedAutocorrelationTimeMultiple(A_kn, fast=False):
-    """Estimate the integrated autocorrelation time from multiple timeseries."""
-
-    g = statisticalInefficiencyMultiple(A_kn, fast, False)
-    tau = (g - 1.0) / 2.0
-    return tau
+    
 #=============================================================================================
 
 def unnormalizedFluctuationCorrelationFunction(A_n, B_n=None, N_max=None, dot_product_function=None):
