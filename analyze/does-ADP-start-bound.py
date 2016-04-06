@@ -26,6 +26,8 @@ for entry in run_index.split('\n'):
 
 overwrite = False
 
+which_pdb = 'system'
+
 OFFSET = plot_function.OFFSET
 OFFSET = 0
 
@@ -95,7 +97,7 @@ for project in projects:
     for run in runs:
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
-        traj = md.load("%s/RUN%s/minimized.pdb" % (project_dir, run))
+        traj = md.load("%s/RUN%s/%s.pdb" % (project_dir, run, which_pdb))
         for residue in traj.topology.residues:
             if str(residue) == 'GLU211':
                 e211 = residue
