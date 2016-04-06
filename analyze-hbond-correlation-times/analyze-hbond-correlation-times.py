@@ -10,9 +10,15 @@ import numpy as np
 
 W1_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5/data/W1-oxygen-indices.npy"
 W2_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5/data/W2-oxygen-indices.npy"
+W1TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/data/W1-oxygen-indices.npy"
+W2TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/data/W2-oxygen-indices.npy"
 
 W1 = np.load(W1_filename)
 W2 = np.load(W2_filename)
+W1TPX = np.load(W1TPX_filename)
+W2TPX = np.load(W2TPX_filename)
+
+print W1.shape
 
 def same_water_present(x, y):
     """
@@ -28,16 +34,20 @@ from correlation import unnormalizedFluctuationCorrelationFunction
 from correlation import unnormalizedFluctuationCorrelationFunctionMultiple
 
 dt = 0.250 # ns
-Tmax = 1500 # max number of frames to go out to
-nskip = 10 # frame interval to evaluate C(t)
+Tmax = 1800 # max number of frames to go out to
+nskip = 20 # frame interval to evaluate C(t)
 
 #C_t = unnormalizedFluctuationCorrelationFunction(data[0,:], N_max=Tmax, dot_product_function=same_water_present)
 [tvec, C_W1_t, N_W1_t] = unnormalizedFluctuationCorrelationFunctionMultiple(W1, N_max=Tmax, dot_product_function=same_water_present, nskip=nskip)
 [tvec, C_W2_t, N_W2_t] = unnormalizedFluctuationCorrelationFunctionMultiple(W2, N_max=Tmax, dot_product_function=same_water_present, nskip=nskip)
+[tvec, C_W1TPX_t, N_W1TPX_t] = unnormalizedFluctuationCorrelationFunctionMultiple(W1TPX, N_max=Tmax, dot_product_function=same_water_present, nskip=nskip)
+[tvec, C_W2TPX_t, N_W2TPX_t] = unnormalizedFluctuationCorrelationFunctionMultiple(W2TPX, N_max=Tmax, dot_product_function=same_water_present, nskip=nskip)
 tvec = dt * tvec
 
 np.save('C_W1_t.npy', C_W1_t)
 np.save('C_W2_t.npy', C_W2_t)
+np.save('C_W1TPX_t.npy', C_W1TPX_t)
+np.save('C_W2TPX_t.npy', C_W2TPX_t)
 np.save('tvec.npy', tvec)
 
 import matplotlib
@@ -46,37 +56,29 @@ import matplotlib.pyplot as plt
 import seaborn
 
 # Unnormalized fluctuation autocorrelation functions
-plt.subplot(2,1,1)
-plt.plot(tvec, C_W1_t, '.');
-plt.title('W1 water unnormalized autocorrelation function');
+plt.plot(tvec, C_W1_t, 'k-', tvec, C_W2_t, 'k--');
+plt.hold(True)
+plt.plot(tvec, C_W1TPX_t, 'r-', tvec, C_W2TPX_t, 'r--');
 plt.ylabel('C(t)');
 plt.xlabel('time / ns')
-
-plt.subplot(2,1,2)
-plt.plot(tvec, C_W2_t, '.');
-plt.title('W2 water unnormalized autocorrelation function')
-plt.ylabel('C(t)');
-plt.xlabel('time / ns')
+plt.legend(['W1 -TPX2', 'W2 -TPX2', 'W1 +TPX2', 'W2 +TPX2'])
+plt.axis([0, 450, -0.05, 1]);
 
 plt.savefig('unnormalized-water-autocorrelation.pdf');
 
 # Normalized fluctuation autocorrelation functions
-D_W1_t = (C_W1_t - C_W1_t[-1]) / (C_W1_t[0] - C_W1_t[-1])
-D_W2_t = (C_W2_t - C_W2_t[-1]) / (C_W2_t[0] - C_W2_t[-1])
+def normalize(C_t):
+    return (C_t - C_t[-1]) / (C_t[0] - C_t[-1])
 
 plt.clf()
 
-plt.subplot(2,1,1)
-plt.plot(tvec, D_W1_t, '.');
-plt.title('W1 water normalized fluctuation autocorrelation function');
+plt.plot(tvec, normalize(C_W1_t), 'k-', tvec, normalize(C_W2_t), 'k--');
+plt.hold(True)
+plt.plot(tvec, normalize(C_W1TPX_t), 'r-', tvec, normalize(C_W2TPX_t), 'r--');
 plt.ylabel('C(t)');
 plt.xlabel('time / ns')
-
-plt.subplot(2,1,2)
-plt.plot(tvec, D_W2_t, '.');
-plt.title('W2 water normalized fluctuation autocorrelation function')
-plt.ylabel('C(t)');
-plt.xlabel('time / ns')
+plt.legend(['W1 -TPX2', 'W2 -TPX2', 'W1 +TPX2', 'W2 +TPX2'])
+plt.axis([0, 450, -0.05, 1]);
 
 plt.savefig('normalized-water-autocorrelation.pdf');
 
