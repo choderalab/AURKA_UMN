@@ -8,6 +8,7 @@ import os
 import mdtraj as md
 from msmbuilder import dataset
 from itertools import chain
+import plot_function
 
 projects = ['11410','11411']
 project_dirs = {'11410':'/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5','11411':'/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7'}
@@ -23,6 +24,76 @@ for entry in run_index.split('\n'):
         mutant[entry.split(' ')[0]] = entry.split(' ')[1]
     except:
         pass
+
+overwrite = False
+
+OFFSET = plot_function.OFFSET
+OFFSET = 0
+
+def plot_2dhist(key, x_axis, adp_count, weights, title, filename):
+    ylabel = 'ADP mlc bound'
+    plot_function.plot_2dhist(key, x_axis, adp_count, weights, title, ylabel, filename)
+
+def plot_initial_adp(project_adp_active):
+    bin_x = np.arange(6) - 0.25
+    for project in project_adp_active.keys():
+        ADPs = np.zeros(5*50) - 1
+        x_axis = np.zeros(5*50)
+        weights = np.zeros(5*50)
+        project_dir = project_dirs[project]
+        adp_active = project_adp_active[project]
+        for clone, traj in enumerate(adp_active):
+            x_axis[clone] = clone/50
+            if traj[0]:
+                ADPs[clone] = 1
+            else:
+                ADPs[clone] = 0
+            weights[clone] = 1.00
+        title = 'Is ADP bound in initial frame in WT AURKA %s' % system[project]
+        filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/ADP-frame0-binding-%s.png" % project
+        key = 'ADP0'
+        plot_2dhist(key, x_axis, ADPs, weights, title, filename)
+
+
+def plot_adp_active(project_adp_active):
+    bin_x = np.arange(OFFSET/4,510,10) - 0.25
+    for project in project_adp_active.keys():
+        ADPs = np.zeros((5*50,2000-OFFSET)) - 1
+        x_axis = np.zeros((5*50,2000-OFFSET))
+        weights = np.zeros((5*50,2000-OFFSET))
+        column_count = np.zeros(bin_x.shape)
+        project_dir = project_dirs[project]
+        adp_active = project_adp_active[project]
+        residue = 185
+        for run in range(5):
+            if run == 0:
+                frame_reference = np.load('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue))
+            else:
+                new_run = np.load('%s/data/%s_%s_%s_HBonds.npy' % (project_dir, project, run, residue))
+                frame_reference = np.concatenate((frame_reference, new_run))
+        for clone, traj in enumerate(adp_active):
+            for index in range(OFFSET,2000):
+                x_axis[clone][index-OFFSET] = index*0.25
+                try:
+                    frame_exists = frame_reference[clone][index]
+                    column_count[(index-OFFSET-0.25)/40] += 1
+                except:
+                    continue
+                if traj[index]:
+                    ADPs[clone][index-OFFSET] = 1
+                else:
+                    ADPs[clone][index-OFFSET] = 0
+        print(column_count)
+        for clone, traj in enumerate(adp_active):
+            for index in range(OFFSET,2000):
+                weights[clone][index-OFFSET] = 1.00 / column_count[(index-OFFSET-0.25)/40]
+        x_axis = x_axis.flatten()
+        ADPs = ADPs.flatten()
+        weights = weights.flatten()
+        title = 'Frames with ADP bound in WT AURKA %s' % system[project]
+        filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/ADP-binding-%s.png" % project
+        key = 'ADP'
+        plot_2dhist(key, x_axis, ADPs, weights, title, filename)
 
 def find_hbonds_for_this_traj(traj, residue, haystack, sidechain=False, backbone=False):
     if sidechain:
@@ -79,6 +150,7 @@ def save_adp_status(distances, hbonds, project_dir):
                 adp_active[clone][index] = False
         print(count/length)
     np.save('%s/is-ADP-bound.npy' % project_dir, adp_active)
+    project_adp_active[project] = adp_active
 
 try:
     this_project = int(sys.argv[1]) # 1 - 10
@@ -88,9 +160,15 @@ except:
 if this_project is not None:
     projects = [projects[this_project%2]]
 
+project_adp_active = dict()
+
 verbose = True
+
 for project in projects:
     project_dir = project_dirs[project]
+    if not overwrite and os.path.exists('%s/is-ADP-bound.npy' % project_dir):
+        project_adp_active[project] = np.load('%s/is-ADP-bound.npy' % project_dir)
+        continue
     SB_a213_total = []
     HB_e211_total = []
     for run in runs:
@@ -160,6 +238,8 @@ for project in projects:
             SB_a213_total.append(md.compute_distances(traj, atom_pair_A))
             HB_e211_total.append(md.compute_distances(traj, atom_pair_E))
     save_adp_status(SB_a213_total, HB_e211_total, project_dir)
+plot_initial_adp(project_adp_active)
+#plot_adp_active(project_adp_active)
 
 if verbose:
     print('Complete!')

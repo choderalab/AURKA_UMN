@@ -40,7 +40,7 @@ for entry in run_index.split('\n'):
     except:
         pass
 
-USE_ADP = False
+USE_ADP = True
 
 def water_set(topology, frame, hydrogens=False):
     waters = set()

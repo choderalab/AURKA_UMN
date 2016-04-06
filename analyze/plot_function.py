@@ -18,6 +18,8 @@ BIN_Y = {
     '274': np.arange(11) - 0.5,
     '275': np.arange(11) - 0.5,
     'W1W2': np.arange(8) - 0.5,
+    'ADP': np.arange(3) - 0.5,
+    'ADP0': np.arange(3) - 0.5,
 }
 AXIS = {
     '181-185': [OFFSET/4,500,0.25,0.85],
@@ -27,16 +29,23 @@ AXIS = {
     '274':[OFFSET/4,500,-0.5,9.5],
     '275':[OFFSET/4,500,-0.5,9.5],
     'W1W2':[OFFSET/4,500,-0.5,6.5],
+    'ADP': [OFFSET/4,500,-0.5,1.5],
+    'ADP0': [-0.5,4.5,-0.5,1.5],
 }
-
+XLABEL = 't (nanoseconds)'
 
 def plot_2dhist(key, x_axis, y_data, weights, title, ylabel, filename):
+    bin_x = BIN_X
+    xlabel = XLABEL
     key = str(key)
+    if key == 'ADP0':
+        bin_x = np.arange(6) - 0.5
+        xlabel = 'RUN'
     fig1 = plt.figure()
-    plt.hist2d(x_axis[y_data > -1],y_data[y_data > -1],bins=[BIN_X,BIN_Y[key]],weights=weights[y_data > -1],cmap=plt.get_cmap('jet'))
+    plt.hist2d(x_axis[y_data > -1],y_data[y_data > -1],bins=[bin_x,BIN_Y[key]],weights=weights[y_data > -1],cmap=plt.get_cmap('jet'))
     plt.title(title)
     plt.ylabel(ylabel)
-    plt.xlabel('t (nanoseconds)')
+    plt.xlabel(xlabel)
     plt.colorbar()
     plt.axis(AXIS[key])
     plt.savefig(filename,dpi=300)

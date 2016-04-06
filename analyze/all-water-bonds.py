@@ -24,7 +24,7 @@ for entry in run_index.split('\n'):
 DIST_FOR_HBOND = False
 
 verbose = True
-overwrite = True
+overwrite = False
 
 def find_hbonds_for_this_traj(traj, haystack, traj_has_frames, sidechain=False, backbone=False):
     protein_atoms = find_protein_atoms(traj, sidechain=sidechain, backbone=backbone)
@@ -32,6 +32,7 @@ def find_hbonds_for_this_traj(traj, haystack, traj_has_frames, sidechain=False, 
         print('Starting search for RUN%s clone%s hbonds...' % (run, i))
     hbonds = list()
     old_chunk = 0
+    keep_going = True
     for chunk in range(100,2100,100):
         if chunk > 2000:
             break
@@ -41,7 +42,12 @@ def find_hbonds_for_this_traj(traj, haystack, traj_has_frames, sidechain=False, 
                 is_frame = traj_has_frames[index]
             except:
                 chunk_frames = range(old_chunk,index)
+                keep_going = False
                 break
+        if len(chunk_frames) == 0:
+            break
+        if verbose:
+            print('Calculating bonds in frames %s-%s' % (old_chunk, chunk_frames[-1]))
         hbonds0 = md.wernet_nilsson(traj[chunk_frames], exclude_water=False, proposed_donor_indices=protein_atoms, proposed_acceptor_indices=haystack)
         hbonds1 = md.wernet_nilsson(traj[chunk_frames], exclude_water=False, proposed_donor_indices=haystack, proposed_acceptor_indices=protein_atoms)
         old_chunk = chunk
@@ -56,6 +62,10 @@ def find_hbonds_for_this_traj(traj, haystack, traj_has_frames, sidechain=False, 
                 print(hbonds1[frame])
                 print(hbonds1[frame].shape)
                 raise(e)
+        if not keep_going:
+            break
+    if verbose:
+        print('Found all hbonds!')
     return hbonds, protein_atoms
 
 def find_protein_atoms(traj, sidechain=False, backbone=False):
@@ -99,7 +109,7 @@ for project in projects:
         for i,traj in enumerate(trajectories):
             if i == 0:
                 haystack = traj.top.select("water")
-            run_water_atoms[str(project)+str(run)] = haystack
+                run_water_atoms[str(project)+str(run)] = haystack
             hbonds, run_protein_atoms[str(project)+str(run)] = find_hbonds_for_this_traj(traj, haystack, traj_has_frame[i])
             all_water_hbonds.append(hbonds)
         np.save('%s/data/%s_%s_all-water-bonds_total.npy' % (project_dir, project, run), all_water_hbonds)
@@ -115,6 +125,7 @@ for project in projects:
             significant_bonds = np.load('%s/data/%s_%s_all-protein-significant-water-bonds.npy' % (project_dir, project, run))
             continue
         hbonds = np.empty(len(run_protein_atoms[run]), dtype=dict)
+        significant_bonds = dict()
         for frame_id, frame in enumerate(run_all_water_hbonds[str(project)+str(run)]):
             for bond in frame:
                 index = None
@@ -124,17 +135,14 @@ for project in projects:
                 if index is None or key is None:
                     continue
                 if hbonds[index].has_key(key):
+                    if len(hbonds[index][key]) == 100:
+                        if significant_bonds.has_key(key):
+                            significant_bonds[key].append(index)
+                        else:
+                            significant_bonds[key] = [index]
                     hbonds[index][key].append(frame_id)
                 else:
                     hbonds[index][key] = [frame_id]
-        significant_bonds = dict()
-        for index in range(len(hbonds)):
-            for key in hbonds[index].keys():
-                if len(hbonds[index][key]) > 100:
-                    if not significant_bonds.has_key(key):
-                        significant_bonds[key] = [index]
-                    else:
-                        significant_bonds[key].append(index)
         for key in significant_bonds.keys():
             print('Significant bonds found at water %s:' % key)
             print(significant_bonds[key])

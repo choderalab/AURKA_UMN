@@ -56,12 +56,13 @@ def find_neighbor_set(traj, residue, haystack):
     return list(neighbor_set)
 
 try:
-    this_project = int(sys.argv[1]) # 1 - 10
+    this_run = int(sys.argv[1]) # 1 - 10
 except:
-    this_project = None
+    this_run = None
 
-if this_project is not None:
-    projects = [projects[this_project%2]]
+if this_run is not None:
+    projects = [projects[this_run%2]]
+    runs = [runs[this_run%5]]
 
 verbose = True
 for project in projects:

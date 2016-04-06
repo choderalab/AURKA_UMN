@@ -2,7 +2,7 @@
 DIFFERENT FROM SEARCH: ALL WATERS, CHANGED DEFS
 
 Attempt to identify W1 and W2 via definitions
-W1 is bound to 274 (future: and ADP)
+W1 is bound to 274 and ADP
 W2 is bound to 185 and 181
 
 Plot 2D hists: W1 per frame, W2 per frame, per project
@@ -21,7 +21,8 @@ import plot_function
         # look at trajectories : how long do waters stay in place
             # may need to account for the waters exchanging
 
-OFFSET = plot_function.OFFSET
+#OFFSET = plot_function.OFFSET
+OFFSET = 0
 
 residues_with_H = [185,181,274,275]
 reference = 185
@@ -68,7 +69,7 @@ def plot_2dhist(x_axis, hbond_count, weights, title, filename):
     plot_function.plot_2dhist(key, x_axis, hbond_count, weights, title, ylabel, filename)
 
 def find_W1(HB_total, ADP_bound):
-    bin_x = plot_function.BIN_X
+    bin_x = np.arange(OFFSET/4,510,10) - 0.25
     HB_res_total = HB_total[274]
     W1s = np.empty((5*50,2000-OFFSET),dtype=set)
     hbond_count = np.zeros((5*50,2000-OFFSET)) - 1
@@ -76,8 +77,8 @@ def find_W1(HB_total, ADP_bound):
     weights = np.zeros((5*50,2000-OFFSET))
     column_count = np.zeros(bin_x.shape)
     for clone, traj in enumerate(HB_res_total):
-        #if clone%50 == 0:
-            #water_to_adp = np.load('%s/data/%s_%s_adp-hbond-water.npy' % (project_dir, project, clone/50))
+        if clone%50 == 0:
+            water_to_adp = np.load('%s/data/%s_%s_adp-hbond-water.npy' % (project_dir, project, clone/50))
         if clone == 0:
             topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
         for index in range(OFFSET,2000):
@@ -90,8 +91,8 @@ def find_W1(HB_total, ADP_bound):
             except:
                 continue
             waters = water_set(topology, this_frame)
-            #adp_waters = water_set(topology, water_to_adp[clone%50][index])
-            #waters = waters.intersection(adp_waters)
+            adp_waters = water_set(topology, water_to_adp[clone%50][index])
+            waters = waters.intersection(adp_waters)
             W1s[clone][index-OFFSET] = waters
             hbond_count[clone][index-OFFSET] = len(waters)
     for clone, traj in enumerate(HB_res_total):
@@ -103,9 +104,11 @@ def find_W1(HB_total, ADP_bound):
     title = 'Possible W1 identified on AURKA %s over time %s' % (mutant['RUN%s' % 0], system[project])
     filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/W1-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
     plot_2dhist(x_axis, hbond_count, weights, title, filename)
+    np.save("%s/data/W1-oxygen-indices.npy" % project_dirs[project], W1s)
 
 def find_W2(HB_total, ADP_bound):
-    bin_x = plot_function.BIN_X
+    bin_x = np.arange(OFFSET/4,510,10) - 0.25
+    #bin_x = plot_function.BIN_X
     W2s = np.empty((5*50,2000-OFFSET),dtype=set)
     hbond_count = np.zeros((5*50,2000-OFFSET)) - 1
     x_axis = np.zeros((5*50,2000-OFFSET))
@@ -142,6 +145,7 @@ def find_W2(HB_total, ADP_bound):
     title = 'Possible W2 identified on AURKA %s over time %s' % (mutant['RUN%s' % 0], system[project])
     filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/W2-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
     plot_2dhist(x_axis, hbond_count, weights, title, filename)
+    np.save("%s/data/W2-oxygen-indices.npy" % project_dirs[project], W2s)
 
 def find_hbonds_between_waters(HB_total):
     from msmbuilder import dataset
