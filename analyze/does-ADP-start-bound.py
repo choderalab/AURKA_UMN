@@ -61,14 +61,15 @@ def find_neighbor_set(traj, residue, haystack):
     neighbor_set = set(chain.from_iterable(neighbors))
     return list(neighbor_set)
 
-def save_adp_status(distances, hbonds, project_dir):
-    adp_active = np.empty(len(distances),dtype=bool)
-    for run, distance in enumerate(distances):
+def save_adp_status(little_distances, big_distances, hbonds, project_dir):
+    adp_active = np.empty(len(little_distances),dtype=bool)
+    for run, little_distance in enumerate(little_distances):
         print('Finding if ADP is bound in initial RUN%s' % run)
-        this_dist = distance
+        this_lil_dist = little_distance
+        this_big_dist = big_distances[run]
                 #hbond_count = hbonds[clone][index].shape[0]
         hbond_dist = hbonds[run]
-        if this_dist < .45 and hbond_dist < .35:
+        if this_lil_dist < this_big_dist and hbond_dist < .40:
             adp_active = True
         else:
             adp_active = False
@@ -88,8 +89,9 @@ verbose = True
 
 for project in projects:
     project_dir = project_dirs[project]
-    SB_a213_total = []
-    HB_e211_total = []
+    a213n_total = list()
+    a213c_total = list()
+    e211nh2_total = list()
     for run in runs:
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
@@ -130,6 +132,7 @@ for project in projects:
             adp_nitrogens[nitrogen].append(atom)
         foundn4 = False
         foundn3 = False
+        foundc7 = False
         for key, value in adp_nitrogens.items():
             if len(value) == 3 and 'hydrogen' in [str(atom.element) for atom in value]:
                 nh2_group = key
@@ -137,24 +140,39 @@ for project in projects:
         for key, value in adp_nitrogens.items():
             if key == nh2_group:
                 continue
-            if any([atom in adp_nitrogens[nh2_group] for atom in value]):
-                n4_adp = key
-                foundn4 = True
+            for atom in value:
+                if atom in adp_nitrogens[nh2_group]:
+                    n4_adp = key
+                    foundn4 = True
+                    for bond in traj.topology.bonds:
+                        if atom == bond[0] and n4_adp not in bond and nh2_group not in bond:
+                            c7_adp = bond[1]
+                            foundc7 = True
+                        elif atom == bond[1] and n4_adp not in bond and nh2_group not in bond:
+                            c7_adp = bond[0]
+                            foundc7 = True
+                        else:
+                            continue
+        assert foundc7
         assert foundn4
         assert foundn3
 #            distances, residue_pairs = md.compute_contacts(traj, contacts=[[a213.index,adp.index]],scheme='active-adp')
 #            SB_a213_total.append(distances[:,0])
 #            distances, residue_pairs = md.compute_contacts(traj, contacts=[[e211.index,adp.index]],scheme='active-adp')
 #            HB_e211_total.append(distances[:,0])
-        atom_pair_A = np.zeros((1,2))
-        atom_pair_A[0,0] = a213_backbone_amide.index
-        atom_pair_A[0,1] = n4_adp.index
+        atom_pair_AN = np.zeros((1,2))
+        atom_pair_AN[0,0] = a213_backbone_amide.index
+        atom_pair_AN[0,1] = n4_adp.index
+        atom_pair_AC = np.zeros((1,2))
+        atom_pair_AC[0,0] = a213_backbone_amide.index
+        atom_pair_AC[0,1] = c7_adp.index
         atom_pair_E = np.zeros((1,2))
         atom_pair_E[0,0] = e211_backbone_carbonyl.index
         atom_pair_E[0,1] = nh2_group.index
-        SB_a213_total.append(md.compute_distances(traj, atom_pair_A))
-        HB_e211_total.append(md.compute_distances(traj, atom_pair_E))
-    save_adp_status(SB_a213_total, HB_e211_total, project_dir)
+        a213n_total.append(md.compute_distances(traj, atom_pair_AN))
+        a213c_total.append(md.compute_distances(traj, atom_pair_AC))
+        e211nh2_total.append(md.compute_distances(traj, atom_pair_E))
+    save_adp_status(a213n_total, a213c_total, e211nh2_total, project_dir)
 
 if verbose:
     print('Complete!')
