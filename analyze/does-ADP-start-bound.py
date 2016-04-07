@@ -19,11 +19,30 @@ overwrite = False
 
 which_pdb = 'system'
 
-def find_hbonds(traj, k162_sidechain_amine, value):
-    k162_indices = [atom.index for atom in k162_sidechain_amine]
-    oxygen_indices = [atom.index for atom in value]
-    hbonds = md.wernet_nilsson(traj, proposed_donor_indices=k162_indices, proposed_acceptor_indices=oxygen_indices)
-    return hbonds
+class PO(object):
+    def __init__(self, dist, index):
+        self.distance = dist
+        self.index = index
+
+def find_po_dist(traj, k162_sidechain_amineN, value):
+    k162_index = k162_sidechain_amineN.index
+#    hbonds = md.wernet_nilsson(traj, proposed_donor_indices=k162_indices, proposed_acceptor_indices=oxygen_indices)
+    # construct a thing that still looks like hbonds? or that has 2 entries at least ok fine like a tuple (?)
+    # dist, atom.index for chosen O
+    atom_pairs_PO = np.zeros((len(value),2))
+    for i, oxygen in enumerate(value):
+        atom_pairs_PO[i,0] = k162_index
+        atom_pairs_PO[i,1] = oxygen.index
+    distances = md.compute_distances(traj, atom_pairs_PO)[0]
+    dist = min(distances) # only 1 frame
+    oxygen = value[distances.argmin()]
+    return PO(dist, oxygen.index)
+
+def find_o_to_o(traj, k162op_alpha, k162op_beta):
+    atom_pair_OO = np.zeros((1,2))
+    atom_pair_OO[0,0] = k162op_alpha.index
+    atom_pair_OO[0,1] = k162op_beta.index
+    return md.compute_distances(traj, atom_pair_OO)
 
 def save_adp_status(little_distances, big_distances, hbonds, k162op, project_dir):
     adp_active = np.empty(len(little_distances),dtype=bool)
@@ -32,12 +51,14 @@ def save_adp_status(little_distances, big_distances, hbonds, k162op, project_dir
         this_lil_dist = little_distance
         this_big_dist = big_distances[run]
         hbond_dist = hbonds[run]
-        k162p1 = k162op[0][run][0].shape[0]
-        k162p2 = k162op[1][run][0].shape[0]
+        k162p1 = min([k162op[i][run].distance for i in range(2)])
+        k162p2 = max([k162op[i][run].distance for i in range(2)])
+        o_to_o = k162op[2][run]
+        allowed_p2 = (o_to_o**2 + k162p1**2)**(1.0/2.0)
         if (this_lil_dist < this_big_dist and
             hbond_dist < .40 and
-            k162p1 > 0 and
-            k162p2 > 0):
+            k162p1 < .33 and
+            k162p2 < allowed_p2):
             adp_active = True
         else:
             adp_active = False
@@ -60,7 +81,7 @@ for project in projects:
     a213n_total = list()
     a213c_total = list()
     e211nh2_total = list()
-    k162op_total = [list(),list()]
+    k162op_total = [list(),list(), list()] # N-Oa, N-Ob, Oa-Ob
     for run in runs:
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
@@ -90,7 +111,8 @@ for project in projects:
         found = False
         for atom in k162.atoms:
             if atom.is_sidechain and str(atom.element) == 'nitrogen':
-                k162_sidechain_amine = [atom]
+                k162_sidechain_amineN = atom
+                k162_sidechain_aminegroup = [atom]
                 found = True
         assert found
         adp_oxygens = dict()
@@ -112,8 +134,8 @@ for project in projects:
             elif bond[1] in adp_oxygens.keys():
                 adp_oxygens[bond[1]].append(bond[0])
                 oxygens+=1
-            elif k162_sidechain_amine[0] in bond:
-                [k162_sidechain_amine.append(atom) for atom in bond if str(atom.element) == 'hydrogen']
+            elif k162_sidechain_amineN in bond:
+                [k162_sidechain_aminegroup.append(atom) for atom in bond if str(atom.element) == 'hydrogen']
         assert oxygens == 8
         foundn4 = False
         foundn3 = False
@@ -158,7 +180,8 @@ for project in projects:
         a213c_total.append(md.compute_distances(traj, atom_pair_AC))
         e211nh2_total.append(md.compute_distances(traj, atom_pair_E))
         for p, value in enumerate(adp_oxygens.values()):
-            k162op_total[p].append(find_hbonds(traj, k162_sidechain_amine, value))
+            k162op_total[p].append(find_po_dist(traj, k162_sidechain_amineN, value))
+        k162op_total[2].append(find_o_to_o(traj, k162op_total[0][-1], k162op_total[1][-1]))
     save_adp_status(a213n_total, a213c_total, e211nh2_total, k162op_total, project_dir)
 
 if verbose:
