@@ -12,9 +12,11 @@ import mdtraj as md
 sns.set_style("whitegrid")
 sns.set_context("poster")
 
-projects = ['11410','11411']
-project_dirs = {'11410':'/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5','11411':'/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7'}
-system = {'11410':'with TPX2','11411':'without TPX2'}
+local_path = os.path.dirname(os.path.realpath(__file__))
+
+projects = ['11410','11411','11418']
+project_dirs = {'11410':'%s/../output-1OL5' % local_path,'11411':'%s/../output-1OL7' % local_path,'11418':'%s/../output1OL5-TPX2' % local_path}
+system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed'}
 
 with open('/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
