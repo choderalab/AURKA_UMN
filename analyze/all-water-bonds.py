@@ -3,12 +3,12 @@ import sys
 import math
 import os
 import mdtraj as md
-from msmbuilder import dataset
 from itertools import chain
 
 local_path = os.path.dirname(os.path.realpath(__file__))
 
 projects = ['11410','11411','11418']
+projects = ['11410','11411']
 project_dirs = {'11410':'%s/../output-1OL5' % local_path,'11411':'%s/../output-1OL7' % local_path,'11418':'%s/../output1OL5-TPX2' % local_path}
 system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed'}
 runs = range(5)
@@ -25,12 +25,14 @@ for entry in run_index.split('\n'):
 
 DIST_FOR_HBOND = False
 
+julie_says_break = True
+
 verbose = True
 overwrite = False
 
 def find_hbonds_for_this_traj(traj, protein_atoms, haystack, traj_has_frames):
     if verbose:
-        print('Starting search for RUN%s clone%s hbonds...' % (run, i))
+        print('Starting search for RUN%s clone%s hbonds...' % (run, clone))
     hbonds = list()
     old_chunk = 0
     keep_going = True
@@ -49,8 +51,9 @@ def find_hbonds_for_this_traj(traj, protein_atoms, haystack, traj_has_frames):
             break
         if verbose:
             print('Calculating bonds in frames %s-%s' % (old_chunk, chunk_frames[-1]))
-        hbonds0 = md.wernet_nilsson(traj[chunk_frames], exclude_water=False, proposed_donor_indices=protein_atoms, proposed_acceptor_indices=haystack)
-        hbonds1 = md.wernet_nilsson(traj[chunk_frames], exclude_water=False, proposed_donor_indices=haystack, proposed_acceptor_indices=protein_atoms)
+        slice_frames = traj.slice(chunk_frames, copy=False)
+        hbonds0 = md.wernet_nilsson(slice_frames, exclude_water=False, proposed_donor_indices=protein_atoms, proposed_acceptor_indices=haystack)
+        hbonds1 = md.wernet_nilsson(slice_frames, exclude_water=False, proposed_donor_indices=haystack, proposed_acceptor_indices=protein_atoms)
         old_chunk = chunk
         for frame, bondlist in enumerate(hbonds0):
             try:
@@ -101,26 +104,26 @@ for project in projects:
         if not overwrite and os.path.exists('%s/data/%s_%s_all-water-bonds_var.npy' % (project_dir, project, run)):
             all_water_hbonds = np.load('%s/data/%s_%s_all-water-bonds_var.npy' % (project_dir, project, run))
             if len(all_water_hbonds) == 50:
-                trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone0.h5" % (project, run))
-                run_protein_atoms[str(project)+str(run)] = find_protein_atoms(trajectories[0])
-                run_water_atoms[str(project)+str(run)] = trajectories[0].top.select("water")
+                traj = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone0.h5" % (project, run))
+                run_protein_atoms[str(project)+str(run)] = find_protein_atoms(traj)
+                run_water_atoms[str(project)+str(run)] = traj.top.select("water")
                 run_all_water_hbonds[str(project)+str(run)] = all_water_hbonds
                 continue
             else:
                 start = len(all_water_hbonds)
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
-        trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone*.h5" % (project, run))
-        for i,traj in enumerate(trajectories[start:]):
-            index = i + start
-            if index == start:
+        for clone in range(start,50):
+            traj = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone%s.h5" % (project, run, clone))
+            if clone == start:
                 haystack = traj.top.select("water")
                 run_water_atoms[str(project)+str(run)] = haystack
                 protein_atoms = find_protein_atoms(traj)
                 run_protein_atoms[str(project)+str(run)] = protein_atoms
-            hbonds = find_hbonds_for_this_traj(traj, protein_atoms, haystack, traj_has_frame[index])
+            hbonds = find_hbonds_for_this_traj(traj, protein_atoms, haystack, traj_has_frame[clone])
             all_water_hbonds.append(hbonds)
             np.save('%s/data/%s_%s_all-water-bonds_var.npy' % (project_dir, project, run), all_water_hbonds)
+            del(traj)
         run_all_water_hbonds[str(project)+str(run)] = all_water_hbonds
 
 if verbose:
@@ -133,8 +136,7 @@ for project in projects:
             #significant_bonds = np.load('%s/data/%s_%s_all-protein-significant-water-bonds.npy' % (project_dir, project, run))
             #hbonds = np.load('%s/data/%s_%s_all-protein-water-bonds.npy' % (project_dir, project, run))
             continue
-        for traj_id, traj in enumerate(run_all_water_hbonds[str(project)+str(run)]):
-        hbonds = np.empty(len(run_protein_atoms[run]), dtype=dict)
+        hbonds = np.empty(len(run_protein_atoms[str(project)+str(run)]), dtype=dict)
         significant_bonds = dict()
         for traj_id, traj in enumerate(run_all_water_hbonds[str(project)+str(run)]):
             simultaneously_bound = dict()
