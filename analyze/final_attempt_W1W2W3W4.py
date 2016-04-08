@@ -92,21 +92,29 @@ def build_water_cloud(waters, traj_slice):
     water_cloud = set(chain.from_iterable(neighbors))
     return list(water_cloud)
 
-def find_hbonds_between_waters(HB_total):
+def find_hbonds_between_waters():
+    WB_total = list()
+    start = 0
     if os.path.exists('%s/data/%s_%s_tryagain-IntraWater.npy' % (project_dir, project, 0)):
         WB_total = np.load('%s/data/%s_%s_tryagain-IntraWater.npy' % (project_dir, project, 0))
-        return WB_total
-    HB_res_total = HB_total[274]
-    WB_total = list()
-
-    for clone, traj in enumerate(HB_res_total):
+        if len(WB_total) == 250:
+            return WB_total
+        else:
+            start = len(WB_total)
+    HB_total = dict()
+    for clone in range(start,250):
         trajectory = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%s-clone%s.h5" % (project, clone/50, clone%50))
-        if clone%50 == 0:
+        if clone == start or clone%50 == 0:
             print('Now loading trajectories for RUN%s' % str(clone/50))
-            topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
+            for residue in residues_with_H:
+                del(HB_total)
+                HB_total = dict()
+                run = clone/50
+                HB_total[residue] = np.load('%s/data/%s_%s_%s_distHBonds.npy' % (project_dir, project, run, residue))
         old_chunk = 0
         hbonds = None
         print('Finding RUN%s clone%s hbonds' % (str(clone/50),str(clone%50)))
+        keep_going = True
         for chunk in range(100,2100,100):
             if chunk > 2000:
                 break
@@ -114,15 +122,18 @@ def find_hbonds_between_waters(HB_total):
             chunk_frames = range(old_chunk,chunk)
             for index in chunk_frames:
                 try:
-                    frame_274 = traj[index]
-                    frame_185 = HB_total[185][clone][index]
-                    frame_181 = HB_total[181][clone][index]
+                    frame_274 = HB_total[274][clone%50][index]
+                    frame_185 = HB_total[185][clone%50][index]
+                    frame_181 = HB_total[181][clone%50][index]
                 except:
                     chunk_frames = range(old_chunk,index)
+                    keep_going = False
                     break
-                waters = waters.union(water_set(topology, frame_274, hydrogens=True))
-                waters = waters.union(water_set(topology, frame_185, hydrogens=True))
-                waters = waters.union(water_set(topology, frame_181, hydrogens=True))
+                waters = waters.union(water_set(trajectory, frame_274, hydrogens=True))
+                waters = waters.union(water_set(trajectory, frame_185, hydrogens=True))
+                waters = waters.union(water_set(trajectory, frame_181, hydrogens=True))
+            if len(chunk_frames) == 0:
+                break
             traj_slice = trajectory.slice(chunk_frames, copy=False)
             water_cloud = build_water_cloud(waters, traj_slice)
             hbond_chunk = md.wernet_nilsson(traj_slice, exclude_water=False, proposed_donor_indices=water_cloud, proposed_acceptor_indices=water_cloud)
@@ -136,9 +147,14 @@ def find_hbonds_between_waters(HB_total):
                     print(len(hbond_chunk))
                     raise(e)
             old_chunk = chunk
+            del(waters)
+            del(water_cloud)
+            if not keep_going:
+                break
         WB_total.append(hbonds)
         del(trajectory)
-    np.save('%s/data/%s_%s_tryagain-IntraWater.npy' % (project_dir, project, 0),WB_total)
+        del(hbonds)
+        np.save('%s/data/%s_%s_tryagain-IntraWater.npy' % (project_dir, project, 0),WB_total)
     return WB_total
 
 def find_anchors(topology):
@@ -151,23 +167,9 @@ def find_anchors(topology):
 WB_dict = dict()
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
-    ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir)
-    HB_total = dict()
-    if os.path.exists('%s/data/%s_%s_tryagain-IntraWater.npy' % (project_dir, project, 0)):
-        WB_total = find_hbonds_between_waters(None)
-        WB_dict[project] = WB_total
-        continue
-    for residue in residues_with_H:
-        for run in range(5):
-            if not os.path.exists('%s/data/%s_%s_%s_distHBonds.npy' % (project_dir, project, run, residue)):
-                continue
-            if not HB_total.has_key(residue):
-                HB_total[residue] = np.load('%s/data/%s_%s_%s_distHBonds.npy' % (project_dir, project, run, residue))
-            else:
-                new_run = np.load('%s/data/%s_%s_%s_distHBonds.npy' % (project_dir, project, run, residue))
-                HB_total[residue] = np.concatenate((HB_total[residue], new_run))
-    WB_total = find_hbonds_between_waters(HB_total)
+    WB_total = find_hbonds_between_waters()
     WB_dict[project] = WB_total
+print('Saved all water bonds!')
 
 anchors = dict()
 for project, WB_total in WB_dict.values():
