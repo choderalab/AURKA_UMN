@@ -8,10 +8,10 @@ John D. Chodera
 
 import numpy as np
 
-W1_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5/data/W1-oxygen-indices.npy"
-W2_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5/data/W2-oxygen-indices.npy"
-W1TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/data/W1-oxygen-indices.npy"
-W2TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/data/W2-oxygen-indices.npy"
+W1TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5/data/W1-oxygen-indices.npy"
+W2TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL5/data/W2-oxygen-indices.npy"
+W1_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/data/W1-oxygen-indices.npy"
+W2_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/data/W2-oxygen-indices.npy"
 
 W1 = np.load(W1_filename)
 W2 = np.load(W2_filename)
