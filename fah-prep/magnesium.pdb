@@ -5,10 +5,9 @@ ATOM      4 D4   MMG     1      -0.9     0.0     0.0    1.00  0.00
 ATOM      5 D5   MMG     1       0.0    -0.9     0.0    1.00  0.00
 ATOM      6 D6   MMG     1       0.0     0.9     0.0    1.00  0.00
 ATOM      7 D1   MMG     1       0.0     0.0     0.9    1.00  0.00
-CONECT
-1 2
-1 3
-1 4
-1 5
-1 6
-1 7
+CONECT    1   2
+CONECT    1   3
+CONECT    1   4
+CONECT    1   5
+CONECT    1   6
+CONECT    1   7
