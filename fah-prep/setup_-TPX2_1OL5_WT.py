@@ -183,9 +183,10 @@ for name, mutant in enumerate(mutant_codes):
         for residue in modeller.topology.residues():
             if residue.name == 'ADP':
                 modeller.delete([residue])
+        if verbose: print "Loading forcefield..."
+        forcefield = app.ForceField(ff_name+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
         print('fixing dummy particles')
-        ion_forcefield = app.ForceField(ion_ff_name+'.xml', ff_name+'.xml', water_name+'.xml', ADP_ff_name+'.xml')
-        modeller.addExtraParticles(ion_forcefield)
+        modeller.addExtraParticles(forcefield)
         if not TPX2:
             print('removing TPX2...')
             for chain in modeller.topology.chains():
@@ -201,10 +202,6 @@ for name, mutant in enumerate(mutant_codes):
         if not os.path.exists(workdir):
             os.makedirs(workdir)
             print "Creating path %s" % workdir
-
-        # Solvate
-        if verbose: print "Loading forcefield..."
-        forcefield = app.ForceField(ff_name+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
 
         # Convert positions to numpy format and remove offset
         if verbose: print "Subtracting offset..."
