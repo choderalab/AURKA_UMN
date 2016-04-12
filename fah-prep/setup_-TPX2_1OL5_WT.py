@@ -21,16 +21,21 @@ from simtk.openmm import app
 import mdtraj as md
 
 #
-import argparse
+TPX2 = False
 
 print("Input PDB structure: 1OL5")
 pdbid = '1OL5'
 
+if TPX2:
+    output_identifier = '+'
+else:
+    output_identifier = '-'
 # Path to put all output in
-output_path = "output"+pdbid+"-TPX2"
+output_path = "output"+pdbid+output_identifier+"TPX2"
 
 # Source PDB
 pdbfilename = pdbid+"-WT-pdbfixer.pdb"
+pdbfilename = pdbid+"-modifiedMG-WT.pdb"
 
 adp_mol2 = "ADP"+pdbid[-1]+".mol2"
 
@@ -48,7 +53,7 @@ keep_crystallographic_water = True # not using
 # Forcefield
 ff_name = 'amber99sbildn'
 water_name = 'tip3p'
-ion_ff_name = 'ions'
+ion_ff_name = 'mg'
 ADP_ff_name = 'adp'
 
 solvate = True # if True, will add water molecules using simtk.openm.app.modeller
@@ -140,29 +145,6 @@ run_index_filename = os.path.join(output_path, 'run-index.txt') # to store index
 # Read the list of mutants already set up.
 #
 
-existing_mutants = list()
-if os.path.exists(run_index_filename):
-    infile = open(run_index_filename, 'r')
-    lines = infile.readlines()
-    for line in lines:
-        [run_name, name] = line.strip().split()
-        existing_mutants.append(name)
-    infile.close()
-print "Existing mutants:"
-print existing_mutants
-
-#
-# TODO: Determine offset to apply to residue numbers
-# TODO: We should look at first residue of source PDB file.
-#
-
-#residue_offset = 1 - first_residue # offset that must be added to desired mutation index to index into actual PDB file
-
-#
-# Generate list of mutants.
-#
-
-
 mutant_names = list()
 mutant_codes = list()
 
@@ -187,29 +169,32 @@ tmp_path = output_path
 # Open file to write all exceptions that occur during execution.
 exception_outfile = open(exception_filename, 'a')
 run_index_outfile = open(run_index_filename, 'a')
-runs = len(existing_mutants) # number for RUN to set up
 for name, mutant in enumerate(mutant_codes):
+    runs = name
     name = str(name)
     print "%s : %s" % (name, str(mutant))
     simulation = None
     try:
         # Create PDBFixer, retrieving PDB template
-        fixer = pdbfixer.PDBFixer(filename=pdbfilename)
-        print("Remove TPX2")
-        fixer.removeChains(chainIds=['B'])
-        #fixer.topology.createStandardBonds()
-        print("findMissingResidues...")
-        fixer.missingResidues = {}
-        print("findNonstandardResidues...")
-        fixer.findNonstandardResidues()
-        print("replaceNonstandardResidues...")
-        fixer.replaceNonstandardResidues()
-        print("findMissingAtoms...")
-        fixer.findMissingAtoms()
-        print("addMissingAtoms...")
-        fixer.addMissingAtoms()
-        print("addingmissinghydrogens...")
-        fixer.addMissingHydrogens(pH)
+        print("creating Modeller...")
+        pdb = app.PDBFile(pdbfilename, extraParticleIdentifier='')
+        modeller = app.Modeller(pdb.topology, pdb.positions)
+        print('removing ADP')
+        for residue in modeller.topology.residues():
+            if residue.name == 'ADP':
+                modeller.delete([residue])
+        if verbose: print "Loading forcefield..."
+        forcefield = app.ForceField(ff_name+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
+        print('fixing dummy particles')
+        modeller.addExtraParticles(forcefield)
+        if not TPX2:
+            print('removing TPX2...')
+            for chain in modeller.topology.chains():
+                if chain.id == 'B':
+                    to_delete = [chain]
+            modeller.delete(to_delete)
+        print("adding hydrogens...")
+        modeller.addHydrogens(pH=pH)
         #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         # Create directory to store files in.
@@ -217,12 +202,6 @@ for name, mutant in enumerate(mutant_codes):
         if not os.path.exists(workdir):
             os.makedirs(workdir)
             print "Creating path %s" % workdir
-
-        # Solvate
-        if verbose: print "Loading forcefield..."
-        forcefield = app.ForceField(ff_name+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
-        if verbose: print "Creating Modeller object..."
-        modeller = app.Modeller(fixer.topology, fixer.positions)
 
         # Convert positions to numpy format and remove offset
         if verbose: print "Subtracting offset..."
@@ -232,10 +211,7 @@ for name, mutant in enumerate(mutant_codes):
         modeller.positions -= offset
 
         # Add correct ADP (with hydrogens)
-        if verbose: print "Replacing ADP with protonated ADP..."
-        for residue in modeller.topology.residues():
-            if residue.name == 'ADP':
-                modeller.delete([residue])
+        if verbose: print "Replacing ADP with bonded ADP..."
         adp = md.load_mol2(adp_mol2)
         adp.topology = adp.top.to_openmm()
         adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)

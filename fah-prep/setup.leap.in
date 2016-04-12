@@ -1,0 +1,19 @@
+# Load AMBER '96 forcefield for protein.
+source oldff/leaprc.ff99SBildn
+
+# Load GAFF parameters.
+source leaprc.gaff
+
+# Load parameters.
+loadoff mag.lib
+
+# Load parameters for ligand.
+loadamberparams frcmod.mg
+
+# Load top.
+ion = loadpdb magnesium.pdb
+
+# Write ligand in vacuum.
+saveamberparm ion mg.prmtop mg.inpcrd
+
+quit
