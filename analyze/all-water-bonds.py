@@ -102,8 +102,13 @@ for project in projects:
         all_water_hbonds = []
         traj_has_frame = np.load('%s/data/%s_%s_185_HBonds.npy' % (project_dir, project, run))
         if not overwrite and os.path.exists('%s/data/%s_%s_all-water-bonds_var.npy' % (project_dir, project, run)):
+            if verbose:
+                print('Found existing data file!')
             all_water_hbonds = np.load('%s/data/%s_%s_all-water-bonds_var.npy' % (project_dir, project, run))
+            all_water_hbonds = all_water_hbonds.tolist()
             if len(all_water_hbonds) == 50:
+                if verbose:
+                    print('Existing data file was complete. Moving on...')
                 traj = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone0.h5" % (project, run))
                 run_protein_atoms[str(project)+str(run)] = find_protein_atoms(traj)
                 run_water_atoms[str(project)+str(run)] = traj.top.select("water")
@@ -111,6 +116,8 @@ for project in projects:
                 continue
             else:
                 start = len(all_water_hbonds)
+                if verbose:
+                    print('Existing data file was incomplete. Starting at clone %s' % start)
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
         for clone in range(start,50):
@@ -148,6 +155,8 @@ for project in projects:
                     key = [atom for atom in [bond[0],bond[2]] if atom in run_water_atoms[str(project)+str(run)]][0]
                     if index is None or key is None:
                         continue
+                    if hbonds[index] is None:
+                        hbonds[index] = dict()
                     if hbonds[index].has_key(key):
                         if len(hbonds[index][key]) == 200:
                             if significant_bonds.has_key(index):

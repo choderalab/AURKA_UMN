@@ -6,7 +6,6 @@ import sys
 import math
 import os
 import mdtraj as md
-from msmbuilder import dataset
 from itertools import chain
 import plot_function
 
@@ -166,18 +165,17 @@ def save_adp_status(little_distances, big_distances, hbonds, k162op, project_dir
             try:
                 this_lil_dist = little_distance[index]
                 this_big_dist = big_distances[clone][index]
-                #hbond_count = hbonds[clone][index].shape[0]
                 hbond_dist = hbonds[clone][index]
                 length = index + 1.0
             except:
                 adp_active[clone][index] = False
                 continue
-            #if this_dist < 4.5 and hbond_count > 0:
             k162p1 = min([k162op[i][clone].distance[index] for i in range(2)])
             k162p2 = max([k162op[i][clone].distance[index] for i in range(2)])
             o_to_o = k162op[2][clone][index]
             allowed_p2 = (o_to_o**2 + k162p1**2)**(1.0/2.0)
             if (this_lil_dist < this_big_dist and
+#                hbond_dist < .40):
                 hbond_dist < .40 and
                 k162p1 < .33 and
                 k162p2 < allowed_p2):
@@ -190,7 +188,7 @@ def save_adp_status(little_distances, big_distances, hbonds, k162op, project_dir
     project_adp_active[project] = adp_active
 
 try:
-    this_project = int(sys.argv[1]) # 1 - 10
+    this_project = int(sys.argv[1]) # 1 - 2
 except:
     this_project = None
 
@@ -213,8 +211,8 @@ for project in projects:
     for run in runs:
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
-        trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone*.h5" % (project, run))
-        for i,traj in enumerate(trajectories):
+        for i in range(50):
+            traj = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%s-clone%s.h5" % (project, run, i))
             if i == 0:
                 for residue in traj.topology.residues:
                     if str(residue) == 'GLU211':
@@ -312,6 +310,7 @@ for project in projects:
             for p, value in enumerate(adp_oxygens.values()):
                 k162op_total[p].append(find_po_dist(traj, k162_sidechain_amineN, value))
             k162op_total[2].append(find_o_to_o(traj, k162op_total[0][-1], k162op_total[1][-1]))
+            del(traj)
     save_adp_status(a213n_total, a213c_total, e211nh2_total, k162op_total, project_dir)
 plot_initial_adp(project_adp_active)
 plot_adp_active(project_adp_active)
