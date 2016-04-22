@@ -30,7 +30,7 @@ from simtk.openmm.app import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
 from parmed import unit as u ### ???
 
 #
-TPX2 = True
+TPX2 = False
 
 print("Input PDB structure: 1OL5")
 pdbid = '1OL5'
@@ -43,14 +43,12 @@ else:
 output_path = "charmm"+output_identifier+"TPX2"
 
 # Source PDB
-pdbfilename = "WT/charmm_"+pdbid+output_identifier+"TPX2.pdb"
+pdbfilename = "charmm_"+pdbid+output_identifier+"TPX2.pdb"
 
 print("Source PDB filename: %s" % pdbfilename)
 print("Output directory for mutations: %s" % output_path)
 
-#
-# PARAMETERS
-#
+mutants = ['Q185C','Q185L','Q185M','Q185N','Q185H','C247A','C247L']
 
 keep_crystallographic_water = True # not using
 
@@ -68,9 +66,8 @@ charmm_parameter_files = [
     pdbfilename.split('.')[0]+'.str',
     pdbfilename.split('.')[0]+'.ion.prm',
 ]
-charmm_parameter_files = ['WT/'+prmfile for prmfile in charmm_parameter_files]
 
-psf_file = 'WT/charmm_'+pdbid+output_identifier+'TPX2.psf'
+psf_file = 'charmm_'+pdbid+output_identifier+'TPX2.psf'
 
 padding = 11.0 * unit.angstroms
 nonbonded_cutoff = 9.0 * unit.angstroms
@@ -106,18 +103,27 @@ tmp_path = output_path
 # Open file to write all exceptions that occur during execution.
 exception_outfile = open(exception_filename, 'a')
 run_index_outfile = open(run_index_filename, 'a')
-for name in range(3,5):
-    runs = name
+for name, mutant in enumerate(mutants):
+    runs = name + 5
     name = str(name)
     simulation = None
     #try:
-    if True:
+#    if True:
+    run_name = 'RUN%d' % runs
+    run_dir = os.path.join(output_path, run_name)
+    if os.path.exists('%s/system.pdb' % run_dir):
+        print('I didnt break it!')
+        continue
+    else:
         # Load the CHARMM files
         print('Loading CHARMM files...')
+        local_parms = [mutant+'/'+prmfile for prmfile in charmm_parameter_files]
+        local_psf = mutant+'/'+psf_file
+        local_pdb = mutant+'/'+pdbfilename
         param_files = universal_parameter_files + local_parms
         params = CharmmParameterSet(*param_files)
-        psf = CharmmPsfFile(psf_file)
-        pdb = app.PDBFile(pdbfilename)
+        psf = CharmmPsfFile(local_psf)
+        pdb = app.PDBFile(local_pdb)
         psf._topology = pdb.topology
 
         coords = pdb.positions
@@ -142,7 +148,7 @@ for name in range(3,5):
         modeller = app.Modeller(pdb.topology, pdb.positions)
 
         # Create directory to store files in.
-        workdir = os.path.join(tmp_path, 'RUN'+name)
+        workdir = os.path.join(tmp_path, 'RUN'+str(runs))
         if not os.path.exists(workdir):
             os.makedirs(workdir)
             print("Creating path %s" % workdir)
@@ -269,7 +275,7 @@ for name in range(3,5):
         # Write mutation.
         filename = os.path.join(workdir, 'mutation.txt')
         outfile = open(filename, 'w')
-        outfile.write('%s\n' % name)
+        outfile.write('%s\n' % mutant)
         outfile.flush()
         outfile.close()
 
@@ -289,9 +295,8 @@ for name in range(3,5):
         run_name = 'RUN%d' % runs
         run_dir = os.path.join(output_path, run_name)
         shutil.move(workdir, run_dir)
-        run_index_outfile.write('%s %s\n' % (run_name, name))
+        run_index_outfile.write('%s %s\n' % (run_name, mutant))
         run_index_outfile.flush()
-        runs += 1
 
         # Clean up.
         del simulation.context
