@@ -21,7 +21,7 @@ from simtk.openmm import app
 import mdtraj as md
 
 #
-TPX2 = False
+TPX2 = True
 
 print("Input PDB structure: 1OL5")
 pdbid = '1OL5'
@@ -32,10 +32,12 @@ else:
     output_identifier = '-'
 # Path to put all output in
 output_path = "output"+pdbid+output_identifier+"TPX2"
+output_path = "output-MUTS"+output_identifier+"TPX2"
+
 
 # Source PDB
 pdbfilename = pdbid+"-WT-pdbfixer.pdb"
-pdbfilename = pdbid+"-modifiedMG-WT.pdb"
+#pdbfilename = pdbid+"-modifiedMG-WT.pdb"
 
 adp_mol2 = "ADP"+pdbid[-1]+".mol2"
 
@@ -192,13 +194,14 @@ for name, mutant in enumerate(mutant_codes):
             for chain in modeller.topology.chains():
                 if chain.id == 'B':
                     to_delete = [chain]
-            modeller.delete(to_delete)
+                    modeller.delete(to_delete)
+                    break
         print("adding hydrogens...")
         modeller.addHydrogens(pH=pH)
         #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         # Create directory to store files in.
-        workdir = os.path.join(tmp_path, 'RUN'+name)
+        workdir = os.path.join(tmp_path, 'RUNWT')
         if not os.path.exists(workdir):
             os.makedirs(workdir)
             print "Creating path %s" % workdir
@@ -436,6 +439,7 @@ for name, mutant in enumerate(mutant_codes):
         # If everything worked, add this RUN.
         run_name = 'RUN%d' % runs
         run_dir = os.path.join(output_path, run_name)
+        print("Saving to: %s" % run_dir)
         shutil.move(workdir, run_dir)
         run_index_outfile.write('%s %s\n' % (run_name, name))
         run_index_outfile.flush()

@@ -68,7 +68,6 @@ charmm_parameter_files = [
     pdbfilename.split('.')[0]+'.str',
     pdbfilename.split('.')[0]+'.ion.prm',
 ]
-charmm_parameter_files = ['WT/'+prmfile for prmfile in charmm_parameter_files]
 
 psf_file = 'WT/charmm_'+pdbid+output_identifier+'TPX2.psf'
 
@@ -81,7 +80,7 @@ pressure = 1.0 * unit.atmospheres
 collision_rate = 5.0 / unit.picoseconds
 barostat_frequency = 50
 timestep = 2.0 * unit.femtoseconds
-nsteps = 5000 # number of steps to take for testing
+nsteps = 50000 # number of steps to take for testing
 ionicStrength = 300 * unit.millimolar
 
 # Verbosity level
@@ -106,7 +105,7 @@ tmp_path = output_path
 # Open file to write all exceptions that occur during execution.
 exception_outfile = open(exception_filename, 'a')
 run_index_outfile = open(run_index_filename, 'a')
-for name in range(3,5):
+for name in range(2,5):
     runs = name
     name = str(name)
     simulation = None
@@ -114,11 +113,10 @@ for name in range(3,5):
     if True:
         # Load the CHARMM files
         print('Loading CHARMM files...')
-        param_files = universal_parameter_files + local_parms
+        param_files = universal_parameter_files + charmm_parameter_files
         params = CharmmParameterSet(*param_files)
         psf = CharmmPsfFile(psf_file)
         pdb = app.PDBFile(pdbfilename)
-        psf._topology = pdb.topology
 
         coords = pdb.positions
         min_crds = [coords[0][0], coords[0][1], coords[0][2]]
@@ -151,7 +149,7 @@ for name in range(3,5):
         if verbose: print("Writing initial output...")
         pdb_filename = os.path.join(workdir, 'initial.pdb')
         outfile = open(pdb_filename, 'w')
-        app.PDBFile.writeFile(modeller.topology, modeller.positions, outfile, keepIds=True)
+        app.PDBFile.writeFile(modeller.topology, modeller.positions, outfile)
         outfile.close()
 
         # Create OpenMM system.
@@ -233,7 +231,7 @@ for name in range(3,5):
         filename = os.path.join(workdir, 'modeller.pdb')
         positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
         print(abs(positions / unit.nanometers).max())
-        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
         # Minimize energy.
         if verbose: print("Minimizing energy...")
@@ -251,7 +249,7 @@ for name in range(3,5):
         # Write initial positions.
         filename = os.path.join(workdir, 'minimized.pdb')
         positions = simulation.context.getState(getPositions=True).getPositions()
-        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
         # Assign temperature
         simulation.context.setVelocitiesToTemperature(temperature)
@@ -264,7 +262,7 @@ for name in range(3,5):
         if verbose: print("Writing positions...")
         filename = os.path.join(workdir, 'system.pdb')
         positions = simulation.context.getState(getPositions=True).getPositions()
-        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
         # Write mutation.
         filename = os.path.join(workdir, 'mutation.txt')

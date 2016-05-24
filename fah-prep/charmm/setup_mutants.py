@@ -111,6 +111,7 @@ for name, mutant in enumerate(mutants):
 #    if True:
     run_name = 'RUN%d' % runs
     run_dir = os.path.join(output_path, run_name)
+    print(str(run_dir)+' -- '+str(mutant))
     if os.path.exists('%s/system.pdb' % run_dir):
         print('I didnt break it!')
         continue
@@ -157,7 +158,7 @@ for name, mutant in enumerate(mutants):
         if verbose: print("Writing initial output...")
         pdb_filename = os.path.join(workdir, 'initial.pdb')
         outfile = open(pdb_filename, 'w')
-        app.PDBFile.writeFile(modeller.topology, modeller.positions, outfile, keepIds=True)
+        app.PDBFile.writeFile(modeller.topology, modeller.positions, outfile) #, keepIds=True)
         outfile.close()
 
         # Create OpenMM system.
@@ -239,7 +240,7 @@ for name, mutant in enumerate(mutants):
         filename = os.path.join(workdir, 'modeller.pdb')
         positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
         print(abs(positions / unit.nanometers).max())
-        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))#, keepIds=True)
 
         # Minimize energy.
         if verbose: print("Minimizing energy...")
@@ -257,7 +258,7 @@ for name, mutant in enumerate(mutants):
         # Write initial positions.
         filename = os.path.join(workdir, 'minimized.pdb')
         positions = simulation.context.getState(getPositions=True).getPositions()
-        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))#, keepIds=True)
 
         # Assign temperature
         simulation.context.setVelocitiesToTemperature(temperature)
@@ -270,7 +271,7 @@ for name, mutant in enumerate(mutants):
         if verbose: print("Writing positions...")
         filename = os.path.join(workdir, 'system.pdb')
         positions = simulation.context.getState(getPositions=True).getPositions()
-        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))#, keepIds=True)
 
         # Write mutation.
         filename = os.path.join(workdir, 'mutation.txt')

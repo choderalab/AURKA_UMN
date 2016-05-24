@@ -39,8 +39,9 @@ skipClasses = ['OW', 'HW'] # Skip water atoms, since we define these in separate
 def addAtom(residue, atomName, atomClass, element, charge):
     if residue is None:
         return
-    residueAtoms[residue].append([atomName, len(types)])
-    types.append((atomClass, element, charge))
+    type_name = str(residue)+'-'+str(atomName)
+    residueAtoms[residue].append([atomName, type_name])
+    types.append((type_name, atomClass, element, charge))
 
 def addBond(residue, atom1, atom2):
     if residue is None:
@@ -276,8 +277,8 @@ for res in residueAtoms:
     for bond in residueBonds[res]:
         atomBonds[bond[0]].append(bond[1])
         atomBonds[bond[1]].append(bond[0])
-    for index, atom in enumerate(residueAtoms[res]):
-        hydrogens = [x for x in atomBonds[index] if types[residueAtoms[res][x][1]][1] == element.hydrogen]
+    for index, (atom, type_name) in enumerate(residueAtoms[res]):
+        hydrogens = [x for x in atomBonds[index] if types[residueAtoms[res][x][1]][2] == element.hydrogen]
         for h in hydrogens[1:]:
             removeType[residueAtoms[res][h][1]] = True
             residueAtoms[res][h][1] = residueAtoms[res][hydrogens[0]][1]
@@ -301,14 +302,14 @@ def fix(atomClass):
 
 print "<ForceField>"
 print " <AtomTypes>"
-for index, type in enumerate(types):
-    if type[1] is None:
+for type in types:
+    if type[2] is None:
         el = ""
         mass = 0
     else:
-        el = type[1].symbol
-        mass = type[1].mass.value_in_unit(unit.amu)
-    print """  <Type name="%d" class="%s" element="%s" mass="%s"/>""" % (index, type[0], el, mass)
+        el = type[2].symbol
+        mass = type[2].mass.value_in_unit(unit.amu)
+    print """  <Type name="%d" class="%s" element="%s" mass="%s"/>""" % (type[0], type[1], el, mass)
 print " </AtomTypes>"
 print " <Residues>"
 for res in sorted(residueAtoms):
@@ -391,9 +392,9 @@ for tor in reversed(impropers):
 print " </PeriodicTorsionForce>"
 print """ <NonbondedForce coulomb14scale="%g" lj14scale="%s">""" % (charge14scale, epsilon14scale)
 sigmaScale = 0.1*2.0/(2.0**(1.0/6.0))
-for index, type in enumerate(types):
-    atomClass = type[0]
-    q = type[2]
+for type in types:
+    atomClass = type[1]
+    q = type[3]
     if atomClass in vdwEquivalents:
         atomClass = vdwEquivalents[atomClass]
     if atomClass in vdw:
@@ -408,7 +409,7 @@ for index, type in enumerate(types):
         sigma = 0
         epsilon = 0
     if q != 0 or epsilon != 0:
-        print """  <Atom type="%d" charge="%s" sigma="%s" epsilon="%s"/>""" % (index, q, sigma, epsilon)
+        print """  <Atom type="%d" charge="%s" sigma="%s" epsilon="%s"/>""" % (type[0], q, sigma, epsilon)
 print " </NonbondedForce>"
 print "</ForceField>"
 
