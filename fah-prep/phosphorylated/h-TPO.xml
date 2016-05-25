@@ -1,0 +1,13 @@
+<Residues>
+ <Residue name="TPO">
+  <H name="H" parent="N"/>
+  <H name="H2" parent="N" terminal="N"/>
+  <H name="H3" parent="N" terminal="N"/>
+  <H name="HA" parent="CA"/>
+  <H name="HB" parent="CB"/>
+  <H name="HG21" parent="CG2"/>
+  <H name="HG22" parent="CG2"/>
+  <H name="HG23" parent="CG2"/>
+  <H name="H1P" parent="P"/>
+ </Residue>
+</Residues>
