@@ -31,6 +31,32 @@ for TPX2 in [True, False]:
 
     forcefield = ForceField('amber99sbildn.xml','TPO.xml','tip3p.xml','ions.xml','adp.xml')
     modeller = Modeller(fixer.topology, fixer.positions)
+    for residue in modeller.topology.residues():
+        if residue.name == 'TPO':
+            tpo1 = residue
+            break
+    for residue in modeller.topology.residues():
+        if residue.index == tpo1.index-1:
+            prev = residue
+        elif residue.index == tpo1.index+1:
+            tpo2 = residue
+            break
+    for atom in prev.atoms():
+        if atom.name == 'C':
+            prevC = atom
+            break
+    for atom in tpo1.atoms():
+        if atom.name == 'N':
+            tpo1N = atom
+        elif atom.name == 'C':
+            tpo1C = atom         
+    for atom in tpo2.atoms():
+        if atom.name == 'N':
+            tpo2N = atom
+            break
+    modeller.topology.addBond(prevC, tpo1N)
+    modeller.topology.addBond(tpo1C, tpo2N)
+
     modeller.addHydrogens(forcefield=forcefield,pH=7.4)
 
     PDBFile.writeFile(modeller.topology, modeller.positions, open(pdbid+'-WT-int-pdbfixer.pdb', 'w'), keepIds=True)
