@@ -24,52 +24,64 @@ for TPX2 in [True, False]:
             fixer.missingResidues.pop(key)
     fixer.findMissingAtoms()
     fixer.addMissingAtoms()
-
     fixer.addMissingHydrogens(pH=7.4)
 
     if not TPX2:
         fixer.removeChains(chainIds=['B'])
 
-    forcefield = ForceField('amber99sbildn.xml','TPO.xml','tip3p.xml','ions.xml','adp.xml')
+    tpo_ff = ForceField("TPO.xml")
     modeller = Modeller(fixer.topology, fixer.positions)
 
+    new_atoms = list()
     for residue in modeller.topology.residues():
-        if residue.name == 'TPO':
-            tpo1 = residue
-            break
-    for residue in modeller.topology.residues():
-        if residue.index == tpo1.index-1:
-            prev = residue
-        elif residue.index == tpo1.index+1:
-            tpo2 = residue
-            break
-    for atom in prev.atoms():
-        if atom.name == 'C':
-            prevC = atom
-            break
-    for atom in tpo1.atoms():
-        if atom.name == 'N':
-            tpo1N = atom
-        elif atom.name == 'C':
-            tpo1C = atom         
-    for atom in tpo2.atoms():
-        if atom.name == 'N':
-            tpo2N = atom
-            break
-    modeller.topology.addBond(prevC, tpo1N)
-    modeller.topology.addBond(tpo1C, tpo2N)
+        if residue.name != 'TPO':
+            continue
+        template = tpo_ff._templates['T1P']
+        standard_atoms = set(atom.name for atom in template.atoms)
+        template_atoms = list(template.atoms)
+        atom_names = set(atom.name for atom in residue.atoms())
+        missing = list()
+        for atom in template_atoms:
+            if atom.name not in atom_names:
+                missing.append(atom)
+        print("This better be 7H...")
+        print(missing)
+        for atom in missing:
+            new_atom = modeller.topology.addAtom(atom.name, atom.element, residue)
+            new_atoms.append(new_atom)
+        new_res_atoms = dict()
+        for atom in residue.atoms():
+            new_res_atoms[atom.name] = atom
+        new_res_bonds = list()
+        for bond in modeller.topology._bonds:
+            if bond[0].residue == residue and bond[1].residue == residue:
+                new_res_bonds.append((bond[0].name, bond[1].name))
+        template_bonds = [(template.atoms[bond[0]].name, template.atoms[bond[1]].name) for bond in template.bonds]
+        for bond in new_res_bonds:
+            if bond not in template_bonds and (bond[1],bond[0]) not in template_bonds:
+                bonded_0 = new_res_atoms[bond[0]]
+                bonded_1 = new_res_atoms[bond[1]]
+                modeller.topology._bonds.remove((bonded_0, bonded_1))
+        for bond in template_bonds:
+            if bond not in new_res_bonds and (bond[1],bond[0]) not in new_res_bonds:
+                new_bonded_0 = new_res_atoms[bond[0]]
+                new_bonded_1 = new_res_atoms[bond[1]]
+                modeller.topology.addBond(new_bonded_0, new_bonded_1)
+    modeller.topology._numAtoms = len(list(modeller.topology.atoms()))
 
-    modeller.addHydrogens(forcefield=forcefield,pH=7.4)
+
+
+
+
+
+
+
+
 
     PDBFile.writeFile(modeller.topology, modeller.positions, open(pdbid+'-WT-int-pdbfixer.pdb', 'w'), keepIds=True)
-
     with open(pdbid+'-WT-int-pdbfixer.pdb', 'r') as fold:
         with open(pdbid+'-WT'+id+'TPX2.pdb', 'w') as fnew:
             for line in fold.readlines():
                 if not delete_this_line(line):
                     fnew.write(line)
-
-
-
-
 
