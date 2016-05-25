@@ -8,6 +8,6 @@
   <H name="HG21" parent="CG2"/>
   <H name="HG22" parent="CG2"/>
   <H name="HG23" parent="CG2"/>
-  <H name="H1P" parent="P"/>
+  <H name="H1P" parent="O1P"/>
  </Residue>
 </Residues>

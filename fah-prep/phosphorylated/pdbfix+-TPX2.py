@@ -34,7 +34,7 @@ def tpo_bonds(modeller, residue):
         name_dict[atom.name] = atom
     for bond in bonds:
         modeller.topology.addBond(name_dict[bond[0]],name_dict[bond[1]])
-
+    return modeller
 
 for TPX2 in [True, False]:
 
@@ -83,14 +83,8 @@ for TPX2 in [True, False]:
             break
     modeller.topology.addBond(prevC, tpo1N)
     modeller.topology.addBond(tpo1C, tpo2N)
-    tpo_bonds(modeller, tpo1)
-    tpo_bonds(modeller, tpo2)
-
-    modeller.loadHydrogenDefinitions("h-TPO.xml")
-    for bond in modeller.topology.bonds():
-        if bond[0].residue in [tpo1, tpo2] or bond[1].residue  in [tpo1, tpo2]:
-            print(bond)
-    modeller.addHydrogens(forcefield=forcefield,pH=7.4)
+    modeller = tpo_bonds(modeller, tpo1)
+    modeller = tpo_bonds(modeller, tpo2)
 
     PDBFile.writeFile(modeller.topology, modeller.positions, open(pdbid+'-WT-int-pdbfixer.pdb', 'w'), keepIds=True)
     with open(pdbid+'-WT-int-pdbfixer.pdb', 'r') as fold:

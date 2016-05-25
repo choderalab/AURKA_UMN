@@ -1,0 +1,82 @@
+Tuesday May 24 2016
+
+ValueError: No template found for residue 164 (ARG).  The set of atoms matches ARG, but the bonds are different.
+
+* I think this is due to missing internal bond CONECT entries
+* correct manually in the 2 WT pdbs
+
+CONECT 2710 2730
+CONECT 2730 2710
+CONECT 2739 2741
+CONECT 2741 2739
+
+No template found for residue 165 (TPO).  The set of atoms is similar to T1P, but it is missing 7 hydrogen atoms.
+* this was fixed in myb somehow -- that might have been within leap though?
+* had something to do with naming? or does pdbfixer need TPO.xml?
+
+In [24]:     modeller.addHydrogens(forcefield=forcefield,pH=7.4)
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-24-84641a16582f> in <module>()
+----> 1 modeller.addHydrogens(forcefield=forcefield,pH=7.4)
+
+/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/modeller.pyc in addHydrogens(self, forcefield, pH, variants, platform)
+    858             # Use the ForceField the user specified.
+    859 
+--> 860             system = forcefield.createSystem(newTopology, rigidWater=False)
+    861             atoms = list(newTopology.atoms())
+    862             for i in range(system.getNumParticles()):
+
+/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/forcefield.pyc in createSystem(self, topology, nonbondedMethod, nonbondedCutoff, constraints, rigidWater, removeCMMotion, hydrogenMass, **args)
+    783                 # Raise an exception if we have found no templates that match.
+    784                 if matches is None:
+--> 785                     raise ValueError('No template found for residue %d (%s).  %s' % (res.index+1, res.name, _findMatchErrors(self, res)))
+    786 
+    787                 # Store parameters for the matched residue template.
+
+ValueError: No template found for residue 165 (TPO).  The set of atoms is similar to T1P, but it is missing 7 hydrogen atoms.
+
+* not generating the rest of the bonds in TPO residues
+(<Atom 2749 (C) of chain 0 residue 165 (TPO)>, <Atom 2751 (N) of chain 0 residue 166 (LEU)>)
+(<Atom 2738 (C) of chain 0 residue 164 (TPO)>, <Atom 2740 (N) of chain 0 residue 165 (TPO)>)
+Traceback (most recent call last):
+  File "pdbfix+-TPX2.py", line 66, in <module>
+    modeller.addHydrogens(forcefield=forcefield,pH=7.4)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/modeller.py", line 860, in addHydrogens
+    system = forcefield.createSystem(newTopology, rigidWater=False)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/forcefield.py", line 785, in createSystem
+    raise ValueError('No template found for residue %d (%s).  %s' % (res.index+1, res.name, _findMatchErrors(self, res)))
+ValueError: No template found for residue 165 (TPO).  The set of atoms matches TPO, but the bonds are different.
+
+Wednesday May 25 2016
+* typo in h-TPO.xml was putting a hydrogen on the wrong atom; corrected
+
+Working in temporary directory: /tmp/tmpxKJMTF
+WT : []
+addingmissinghydrogens...
+Creating path 1OL5+TPX2-TPOs/WT
+Loading forcefield...
+Creating Modeller object...
+Subtracting offset...
+Shifting model by [ 17.4192009   19.61090088   1.95560002] nm
+Replacing ADP with protonated ADP...
+Shifting protonated ADP by [ 17.4192009   19.61090088   1.95560002] nm
+Writing pdbfixer output...
+Creating OpenMM system...
+Adding barostat...
+Creating simulation...
+Minimizing energy...
+Initial potential energy : 1839528179909002.500 kcal/mol
+Final potential energy:  : 1839528179908925.750 kcal/mol
+Creating constrained OpenMM system...
+Adding barostat...
+Creating simulation...
+Writing modeller output...
+21478.4712226
+Minimizing energy...
+Initial potential energy : 5172251.057 kcal/mol
+Final potential energy:  : 54070764097317.883 kcal/mol
+Solvating with tip3p...
+[[ hangs here for > hours ]]
+
+
