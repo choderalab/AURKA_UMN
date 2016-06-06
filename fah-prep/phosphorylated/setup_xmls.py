@@ -142,32 +142,6 @@ residues = set(residues)
 exception_filename = os.path.join(output_path, 'exceptions.out') # to store exceptions
 run_index_filename = os.path.join(output_path, 'run-index.txt') # to store index of which mutants are which
 
-#
-# Read the list of mutants already set up.
-#
-
-existing_mutants = list()
-if os.path.exists(run_index_filename):
-    infile = open(run_index_filename, 'r')
-    lines = infile.readlines()
-    for line in lines:
-        [run_name, name] = line.strip().split()
-        existing_mutants.append(name)
-    infile.close()
-print "Existing mutants:"
-print existing_mutants
-
-#
-# TODO: Determine offset to apply to residue numbers
-# TODO: We should look at first residue of source PDB file.
-#
-
-#residue_offset = 1 - first_residue # offset that must be added to desired mutation index to index into actual PDB file
-
-#
-# Generate list of mutants.
-#
-
 npoint_mutants = len(point_mutants)
 
 mutant_names = list()
@@ -187,57 +161,16 @@ for mutation in point_mutants:
         mutant_names.append(mutation)
         mutant_codes.append([generate_pdbfixer_mutation_code(original_residue_name, residue_index, mutated_residue_name)])
 
-# Append all pairs of point mutants.
-#for i in range(npoint_mutants):
-#    for j in range(i+1, npoint_mutants):
-#        mutation_i = point_mutants[i]
-#        mutation_j = point_mutants[j]
-
-#        (original_residue_name_i, residue_index_i, mutated_residue_name_i) = decompose_mutation(mutation_i)
-#        (original_residue_name_j, residue_index_j, mutated_residue_name_j) = decompose_mutation(mutation_j)
-
-        #residue_index_i += residue_offset
-        #residue_index_j += residue_offset
-
-#        key_i = (chain_id_to_mutate, str(residue_index_i), original_residue_name_i)
-#        key_j = (chain_id_to_mutate, str(residue_index_j), original_residue_name_j)
-
-#        if (key_i in residues) and (key_j in residues):
-#            mutant_names.append(mutation_i + '+' + mutation_j)
-#            mutant_codes.append([
-#                    generate_pdbfixer_mutation_code(original_residue_name_i, residue_index_i, mutated_residue_name_i), 
-#                    generate_pdbfixer_mutation_code(original_residue_name_j, residue_index_j, mutated_residue_name_j)
-#                    ])
-
-print ""
-print "Feasible mutants:"
-print mutant_names
-print ""
-
-
-#
-# MAIN
-#
 
 # Create output directory.
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 
-# Create temporary directory.
-tmp_path = tempfile.mkdtemp()
-print "Working in temporary directory: %s" % tmp_path
-tmp_path = output_path
-
 # Open file to write all exceptions that occur during execution.
 exception_outfile = open(exception_filename, 'a')
 run_index_outfile = open(run_index_filename, 'a')
-runs = len(existing_mutants) # number for RUN to set up
+runs = 0
 for (name, mutant) in zip(mutant_names, mutant_codes):
-    if name in existing_mutants:
-        # Skip this.
-        print "%s : %s already exists, skipping" % (name, str(mutant))        
-        continue
-
     print "%s : %s" % (name, str(mutant))
     simulation = None
     if True:
@@ -268,7 +201,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         # Create directory to store files in.
-        workdir = os.path.join(tmp_path, name)
+        workdir = os.path.join(output_path, name)
         if not os.path.exists(workdir):
             os.makedirs(workdir)
             print "Creating path %s" % workdir
@@ -360,7 +293,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if verbose: print "Writing modeller output..."
         filename = os.path.join(workdir, 'minimize-1.pdb')
         positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
-        print abs(positions / unit.nanometers).max()
         app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
         # Minimize energy.
@@ -424,22 +356,10 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
             simulation.context.setPositions(modeller.positions)
 
-            # Compute forces.
-#            if verbose: print "Computing forces..."
-#            forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
-#            print forces
-#            atoms = [ atom for atom in simulation.topology.atoms() ]
-#            force_unit = unit.kilojoules_per_mole / unit.nanometers
-#            for (index, atom) in enumerate(atoms):
-#                force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
-#                if force_norm > 10.0:
-#                    print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)
-
             # Write modeller positions.
             if verbose: print "Writing modeller output..."
             filename = os.path.join(workdir, 'modeller_solvent.pdb')
             positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
-            print abs(positions / unit.nanometers).max()
             app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
             # Minimize energy.
@@ -460,12 +380,20 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         positions = simulation.context.getState(getPositions=True).getPositions()
         app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
-        # Assign temperature
-        simulation.context.setVelocitiesToTemperature(temperature)
-
-        # Take a few steps to relax structure.
         if verbose: print "Taking a few steps..."
-        simulation.step(nsteps)
+        temp_steps = [100,50,30,15,10,100,50,30,15,10,6,4,100,50,30,15,10,6,4,3,2,1]
+        for j in temp_steps:
+            # Assign temperature
+            temp = temperature / j
+            print("Set temp to %s K" % temp)
+            simulation.context.setVelocitiesToTemperature(temp)
+            # Take a few steps to relax structure.
+            for k in range(nsteps/len(temp_steps)+1):
+                simulation.step(1)
+                filename = os.path.join(workdir, 'stepping-'+str(j)+'-'+str(k)+'.pdb')
+                positions = simulation.context.getState(getPositions=True).getPositions()
+                app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
 
         # Write initial positions.
         if verbose: print "Writing positions..."
