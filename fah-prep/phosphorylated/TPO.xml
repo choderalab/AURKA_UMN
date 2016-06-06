@@ -70,21 +70,21 @@
  <PeriodicTorsionForce>
  </PeriodicTorsionForce>
  <NonbondedForce coulomb14scale="0.833333" lj14scale="0.5">
-  <Atom type="TPO-0" charge="-0.5163" sigma="0" epsilon="0"/>
-  <Atom type="TPO-1" charge="0.2936" sigma="0" epsilon="0"/>
-  <Atom type="TPO-2" charge="0.043873" sigma="0" epsilon="0"/>
-  <Atom type="TPO-3" charge="0.104472" sigma="0" epsilon="0"/>
-  <Atom type="TPO-4" charge="0.352701" sigma="0" epsilon="0"/>
-  <Atom type="TPO-5" charge="0.037488" sigma="0" epsilon="0"/>
-  <Atom type="TPO-6" charge="-0.28753" sigma="0" epsilon="0"/>
-  <Atom type="TPO-7" charge="0.054266" sigma="0" epsilon="0"/>
-  <Atom type="TPO-8" charge="-0.490763" sigma="0" epsilon="0"/>
-  <Atom type="TPO-9" charge="1.261943" sigma="0" epsilon="0"/>
-  <Atom type="TPO-10" charge="-0.705351" sigma="0" epsilon="0"/>
-  <Atom type="TPO-11" charge="-0.815354" sigma="0" epsilon="0"/>
-  <Atom type="TPO-12" charge="-0.815354" sigma="0" epsilon="0"/>
-  <Atom type="TPO-13" charge="0.419076" sigma="0" epsilon="0"/>
-  <Atom type="TPO-14" charge="0.5366" sigma="0" epsilon="0"/>
-  <Atom type="TPO-15" charge="-0.5819" sigma="0" epsilon="0"/>
+  <Atom type="TPO-0" charge="-0.5163" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-1" charge="0.2936" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-2" charge="0.043873" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-3" charge="0.104472" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-4" charge="0.352701" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-5" charge="0.037488" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-6" charge="-0.28753" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-7" charge="0.054266" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-8" charge="-0.490763" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-9" charge="1.261943" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-10" charge="-0.705351" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-11" charge="-0.815354" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-12" charge="-0.815354" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-13" charge="0.419076" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-14" charge="0.5366" sigma="1.0" epsilon="0"/>
+  <Atom type="TPO-15" charge="-0.5819" sigma="1.0" epsilon="0"/>
  </NonbondedForce>
 </ForceField>
