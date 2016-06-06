@@ -90,4 +90,9 @@ Sunday June 5 2016
 * minimizing puts the O2 from TPO 288 right on top of one of the Ns of ARG 255 -- why? why would minimizing allow that?
 * trying to take a single step after each minimize -- set temp to temp/20?
 
+* ok so the difference between the old pdbs and the new is that pdbfixer is turning all HIS into double protonated right now?
+* and also T1P = TPO and OG = OG1 (make these changes in old and see if it works)
+* this seems to work now (or at least, energies are way lower) -- what happened to pdbfixer?
+
+
 

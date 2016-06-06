@@ -223,17 +223,10 @@ print ""
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 
-forcefield = app.ForceField(ff_name+'.xml',phos_res+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
-pdb = app.PDBFile(pdbfilename)
-modeller = app.Modeller(pdb.topology, pdb.positions)
-for residue in modeller.topology.residues():
-    if residue.name == 'ADP':
-        modeller.delete([residue])
-modeller.loadHydrogenDefinitions("h-TPO.xml")
-modeller.addHydrogens(forcefield=forcefield,pH=pH)
-pdbfilename = pdbfilename[:-4]+"+Hs.pdb"
-app.PDBFile.writeFile(modeller.topology, modeller.positions, open(pdbfilename,'w'), keepIds=True)
-
+# Create temporary directory.
+tmp_path = tempfile.mkdtemp()
+print "Working in temporary directory: %s" % tmp_path
+tmp_path = output_path
 
 # Open file to write all exceptions that occur during execution.
 exception_outfile = open(exception_filename, 'a')
@@ -267,6 +260,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             fixer.missingResidues = {}
             #print "findMissingAtoms..."
             fixer.findMissingAtoms()
+            print(fixer.missingAtoms)
             #print "addMissingAtoms..."
             fixer.addMissingAtoms()
             print "addingmissinghydrogens..."
@@ -274,48 +268,37 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         # Create directory to store files in.
-        workdir = os.path.join(output_path, name)
+        workdir = os.path.join(tmp_path, name)
         if not os.path.exists(workdir):
             os.makedirs(workdir)
             print "Creating path %s" % workdir
 
-        # Solvate
+        # Create Modeller
         if verbose: print "Loading forcefield..."
         forcefield = app.ForceField(ff_name+'.xml',phos_res+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
         if verbose: print "Creating Modeller object..."
         modeller = app.Modeller(fixer.topology, fixer.positions)
-        tempname = os.path.join(workdir, 'justloaded.pdb')
-        app.PDBFile.writeFile(modeller.topology, modeller.positions, open(tempname,'w'), keepIds=True)
         for residue in modeller.topology.residues():
             if residue.name == 'ADP':
                 modeller.delete([residue])
         modeller.loadHydrogenDefinitions("h-TPO.xml")
         modeller.addHydrogens(forcefield=forcefield,pH=pH)
-        tempname = os.path.join(workdir, 'addedHs.pdb')
-        app.PDBFile.writeFile(modeller.topology, modeller.positions, open(tempname,'w'), keepIds=True)
+        if verbose: print("Writing protonated solute")
+        filename = os.path.join(workdir, 'pdbfixer-H.pdb') 
 
-        # Convert positions to numpy format and remove offset
-        if verbose: print "Subtracting offset..."
+        # Convert positions to numpy format
         modeller.positions = unit.Quantity(np.array(modeller.positions / unit.nanometer), unit.nanometer)
-        offset = modeller.positions[0,:]
-        if verbose: print "Shifting model by %s" % str(offset)
-        modeller.positions -= offset
-        tempname = os.path.join(workdir, 'shifted.pdb')
-        app.PDBFile.writeFile(modeller.topology, modeller.positions, open(tempname,'w'), keepIds=True)
-
 
         # Add correct ADP (with hydrogens)
         if verbose: print "Replacing ADP with protonated ADP..."
         adp = md.load_mol2(adp_mol2)
         adp.topology = adp.top.to_openmm()
         adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)
-        if verbose: print "Shifting protonated ADP by %s" % str(offset)
-        adp.positions -= offset
         modeller.add(adp.topology,adp.positions)
 
         # Write PDB file for solute only.
-        if verbose: print "Writing pdbfixer output..."
-        pdb_filename = os.path.join(workdir, 'pdbfixer.pdb')
+        if verbose: print "Writing modeller output..."
+        pdb_filename = os.path.join(workdir, 'modeller.pdb')
         outfile = open(pdb_filename, 'w')
         app.PDBFile.writeFile(modeller.topology, modeller.positions, outfile, keepIds=True)
         outfile.close()
@@ -335,24 +318,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
         simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
         simulation.context.setPositions(modeller.positions)
-
-        # Compute forces.
-#        if verbose: print "Computing forces..."
-#        forces = simulation.context.getState(getForces=True).getForces(asNumpy=True)
-#        print forces
-#        atoms = [ atom for atom in simulation.topology.atoms() ]
-#        force_unit = unit.kilojoules_per_mole / unit.nanometers
-#        for (index, atom) in enumerate(atoms):            
-#            force_norm = np.sqrt(((forces[index,:] / force_unit)**2).sum())
-#            if force_norm > 1000000.0:
-#                print "%8d %8s %20s %8d %8s %5d : %24f kJ/nm" % (index, atom.name, str(atom.element), atom.index, atom.residue.name, atom.residue.index, force_norm)    
-        
-        # Write modeller positions.
-#        if verbose: print "Writing modeller output..."
-#        filename = os.path.join(workdir, 'modeller.pdb')
-#        positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
-#        print abs(positions / unit.nanometers).max()
-#        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
         # Minimize energy.
         if verbose: print "Minimizing energy..."
@@ -393,7 +358,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
 
         # Write modeller positions.
         if verbose: print "Writing modeller output..."
-        filename = os.path.join(workdir, 'modeller.pdb')
+        filename = os.path.join(workdir, 'minimize-1.pdb')
         positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
         print abs(positions / unit.nanometers).max()
         app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
@@ -409,6 +374,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
             raise Exception("Potential energy is NaN after minimization.")
         if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+
 
         if solvate:
             # Write initial positions.
@@ -476,7 +442,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             print abs(positions / unit.nanometers).max()
             app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
-
             # Minimize energy.
             if verbose: print "Minimizing energy..."
             potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
@@ -496,16 +461,11 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
         # Assign temperature
-        for j in [100.0, 50.0, 30.0, 15.0, 100.0, 50.0, 30.0, 15.0, 10.0, 6.0, 4.0, 100.0, 50.0, 30.0, 15.0, 10.0, 6.0, 4.0, 2.0, 1.0]:
-            simulation.context.setVelocitiesToTemperature(temperature/j)
+        simulation.context.setVelocitiesToTemperature(temperature)
 
-            # Take a few steps to relax structure.
-            if verbose: print "Taking a few steps..."
-            for k in range(nsteps):
-                simulation.step(1)
-                filename = os.path.join(workdir, 'stepping-'+str(j)+'-'+str(k)+'.pdb')
-                positions = simulation.context.getState(getPositions=True).getPositions()
-                app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+        # Take a few steps to relax structure.
+        if verbose: print "Taking a few steps..."
+        simulation.step(nsteps)
 
         # Write initial positions.
         if verbose: print "Writing positions..."
