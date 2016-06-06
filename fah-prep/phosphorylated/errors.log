@@ -81,18 +81,26 @@ Solvating with tip3p...
 
 Sunday June 5 2016
 * was breaking on TPO: reran pdbfix.py, fine
-* started exploding when pdbfixer was run withing the setup script before the modeller.addHydrogens thing; moved that out front
-* still seems to be hanging at taking steps; adding in writing out a pdf after each individual step
+* started exploding when pdbfixer was run withing the setup script before the
+modeller.addHydrogens thing; moved that out front
+* still seems to be hanging at taking steps; adding in writing out a pdf after
+each individual step
 
 * Crashed the first time -- rerunning and energies are way down (?)
 * NaNing after 2 steps now instead of 1!
 * perpetrators: TPO 288, ARG 255 (possibly others)
-* minimizing puts the O2 from TPO 288 right on top of one of the Ns of ARG 255 -- why? why would minimizing allow that?
+* minimizing puts the O2 from TPO 288 right on top of one of the Ns of ARG 255
+-- why? why would minimizing allow that?
 * trying to take a single step after each minimize -- set temp to temp/20?
 
-* ok so the difference between the old pdbs and the new is that pdbfixer is turning all HIS into double protonated right now?
+* ok so the difference between the old pdbs and the new is that pdbfixer is
+turning all HIS into double protonated right now?
 * and also T1P = TPO and OG = OG1 (make these changes in old and see if it works)
-* this seems to work now (or at least, energies are way lower) -- what happened to pdbfixer?
+* this seems to work now (or at least, energies are way lower) -- what happened 
+to pdbfixer?
 
+* MINIMIZE ERROR: TPOs not minimized correctly, somehow not taken into consideration, 
+such that atoms end up overlapping either with each other or with other residues
+ -- image added to repo
 
 
