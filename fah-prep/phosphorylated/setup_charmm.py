@@ -30,7 +30,7 @@ from simtk.openmm.app import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
 from parmed import unit as u ### ???
 
 #
-TPX2 = False
+TPX2 = True
 
 print("Input PDB structure: 1OL5")
 pdbid = '1OL5'

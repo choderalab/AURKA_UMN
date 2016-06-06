@@ -223,10 +223,17 @@ print ""
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 
-# Create temporary directory.
-tmp_path = tempfile.mkdtemp()
-print "Working in temporary directory: %s" % tmp_path
-tmp_path = output_path
+forcefield = app.ForceField(ff_name+'.xml',phos_res+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
+pdb = app.PDBFile(pdbfilename)
+modeller = app.Modeller(pdb.topology, pdb.positions)
+for residue in modeller.topology.residues():
+    if residue.name == 'ADP':
+        modeller.delete([residue])
+modeller.loadHydrogenDefinitions("h-TPO.xml")
+modeller.addHydrogens(forcefield=forcefield,pH=pH)
+pdbfilename = pdbfilename[:-4]+"+Hs.pdb"
+app.PDBFile.writeFile(modeller.topology, modeller.positions, open(pdbfilename,'w'), keepIds=True)
+
 
 # Open file to write all exceptions that occur during execution.
 exception_outfile = open(exception_filename, 'a')
@@ -256,18 +263,18 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
                 exception_outfile.write(str(e) + '\n')
                 continue
 
-        #fixer.topology.createStandardBonds()
-        fixer.missingResidues = {}
-        #print "findMissingAtoms..."
-        fixer.findMissingAtoms()
-        #print "addMissingAtoms..."
-        fixer.addMissingAtoms()
-        print "addingmissinghydrogens..."
-        fixer.addMissingHydrogens(pH)
-        #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
+            #fixer.topology.createStandardBonds()
+            fixer.missingResidues = {}
+            #print "findMissingAtoms..."
+            fixer.findMissingAtoms()
+            #print "addMissingAtoms..."
+            fixer.addMissingAtoms()
+            print "addingmissinghydrogens..."
+            fixer.addMissingHydrogens(pH)
+            #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         # Create directory to store files in.
-        workdir = os.path.join(tmp_path, name)
+        workdir = os.path.join(output_path, name)
         if not os.path.exists(workdir):
             os.makedirs(workdir)
             print "Creating path %s" % workdir
@@ -277,11 +284,15 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         forcefield = app.ForceField(ff_name+'.xml',phos_res+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
         if verbose: print "Creating Modeller object..."
         modeller = app.Modeller(fixer.topology, fixer.positions)
+        tempname = os.path.join(workdir, 'justloaded.pdb')
+        app.PDBFile.writeFile(modeller.topology, modeller.positions, open(tempname,'w'), keepIds=True)
         for residue in modeller.topology.residues():
             if residue.name == 'ADP':
                 modeller.delete([residue])
         modeller.loadHydrogenDefinitions("h-TPO.xml")
         modeller.addHydrogens(forcefield=forcefield,pH=pH)
+        tempname = os.path.join(workdir, 'addedHs.pdb')
+        app.PDBFile.writeFile(modeller.topology, modeller.positions, open(tempname,'w'), keepIds=True)
 
         # Convert positions to numpy format and remove offset
         if verbose: print "Subtracting offset..."
@@ -289,6 +300,9 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         offset = modeller.positions[0,:]
         if verbose: print "Shifting model by %s" % str(offset)
         modeller.positions -= offset
+        tempname = os.path.join(workdir, 'shifted.pdb')
+        app.PDBFile.writeFile(modeller.topology, modeller.positions, open(tempname,'w'), keepIds=True)
+
 
         # Add correct ADP (with hydrogens)
         if verbose: print "Replacing ADP with protonated ADP..."
@@ -396,7 +410,6 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             raise Exception("Potential energy is NaN after minimization.")
         if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
 
-
         if solvate:
             # Write initial positions.
             filename = os.path.join(workdir, 'minimized_vacuum.pdb')
@@ -463,6 +476,7 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
             print abs(positions / unit.nanometers).max()
             app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
+
             # Minimize energy.
             if verbose: print "Minimizing energy..."
             potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
@@ -482,11 +496,16 @@ for (name, mutant) in zip(mutant_names, mutant_codes):
         app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
         # Assign temperature
-        simulation.context.setVelocitiesToTemperature(temperature)
+        for j in [100.0, 50.0, 30.0, 15.0, 100.0, 50.0, 30.0, 15.0, 10.0, 6.0, 4.0, 100.0, 50.0, 30.0, 15.0, 10.0, 6.0, 4.0, 2.0, 1.0]:
+            simulation.context.setVelocitiesToTemperature(temperature/j)
 
-        # Take a few steps to relax structure.
-        if verbose: print "Taking a few steps..."
-        simulation.step(nsteps)
+            # Take a few steps to relax structure.
+            if verbose: print "Taking a few steps..."
+            for k in range(nsteps):
+                simulation.step(1)
+                filename = os.path.join(workdir, 'stepping-'+str(j)+'-'+str(k)+'.pdb')
+                positions = simulation.context.getState(getPositions=True).getPositions()
+                app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
 
         # Write initial positions.
         if verbose: print "Writing positions..."
