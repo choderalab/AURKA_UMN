@@ -112,5 +112,14 @@ python processAmberParameters.py T1P.off T1P.frcmod > TPO.xml
 :%s/T1P/TPO/g
 * had to change atom name OG to OG1
 
+* make .xml incorrectly ughhhhhh
+python processAmberParameters.py parm94.dat T1P.off T1P.frcmod > TPO.xml
+* in vi:
+:%s/T1P/TPO/g
+* change atom name from OG to OG1
+
+
+
+
 
 
