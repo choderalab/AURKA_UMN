@@ -103,4 +103,14 @@ to pdbfixer?
 such that atoms end up overlapping either with each other or with other residues
  -- image added to repo
 
+Tuesday June 7 2016
+* in TPO.xml: sigma = 1 epsilon = 0 for every atom
+* TPO.xml was generated using:
+python processAmberParameters.py T1P.off T1P.frcmod > TPO.xml
+* manually changed sigma from 0 to 1
+* had to change name from T1P to TPO:
+:%s/T1P/TPO/g
+* had to change atom name OG to OG1
+
+
 
