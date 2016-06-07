@@ -118,6 +118,45 @@ python processAmberParameters.py parm94.dat T1P.off T1P.frcmod > TPO.xml
 :%s/T1P/TPO/g
 * change atom name from OG to OG1
 
+* actually, found from parameter source 
+  (http://sites.pharmacy.manchester.ac.uk/bryce/amber/) that the T1P params
+  were intended for use with parm99.dat; reran
+python processAmberParameters.py parm99.dat T1P.off T1P.frcmod > TPO99.xml
+* vimdiff TPO.xml TPO99.xml -- no differences, so it's fine
+
+Q185C : ['GLN-185-CYS']
+{<Residue 62 (CYS) of chain 0>: [<Atom 3 (SG) of chain 0 residue 0 (CYS)>]}
+addingmissinghydrogens...
+Loading forcefield...
+Creating Modeller object...
+Traceback (most recent call last):
+  File "setup_xmls.py", line 233, in <module>
+    modeller.addHydrogens(forcefield=forcefield,pH=pH)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/modeller.py", line 860, in addHydrogens
+    system = forcefield.createSystem(newTopology, rigidWater=False)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/forcefield.py", line 785, in createSystem
+    raise ValueError('No template found for residue %d (%s).  %s' % (res.index+1, res.name, _findMatchErrors(self, res)))
+ValueError: No template found for residue 164 (ARG).  The set of atoms matches ARG, but the bonds are different.
+ WHYYYYYYYY
+
+* previous error was due to TPO bonds being removed by (?) pdbfixer -- manually
+  adding back in
+* now getting NaNs:
+
+Minimizing energy...
+Initial solvated potential energy : -136620.466 kcal/mol
+Final solvated potential energy:  : -136619.638 kcal/mol
+Taking a few steps...
+Traceback (most recent call last):
+  File "setup_xmls.py", line 466, in <module>
+    simulation.step(nsteps)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/simulation.py", line 132, in step
+    self._simulate(endStep=self.currentStep+steps)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/simulation.py", line 194, in _simulate
+    self.integrator.step(10) # Only take 10 steps at a time, to give Python more chances to respond to a control-c.
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/openmm.py", line 4731, in step
+    return _openmm.LangevinIntegrator_step(self, steps)
+Exception: Particle coordinate is nan
 
 
 
