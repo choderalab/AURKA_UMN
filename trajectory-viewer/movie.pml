@@ -11,20 +11,30 @@ load_traj trajectory.dcd
 #
 
 hide all
+# Select things
 select AurA, resi 123-388
+select DFG, resi 274-276
+select activation_loop, resi 281-293
+select Tpx2, resi 1-41
+select ADP, resn MOL
 deselect
+# Fit things
 intra_fit trajectory-aligned and AurA
+# Show things
 show cartoon, all
 # AurA
 color green, AurA
 # T288
 show sticks, resi 288
 # activation loop
-color red, resi 281-293
+color red, activation_loop3
 distance resi 284 and name CB, resi 225 and name CB
 show sticks, resi 284 or resi 225
+# DFG
+util.cbao('DFG')
+show sticks, DFG
 # Tpx2
-color yellow, resi 1-41
+color yellow, Tpx2
 # ADP
-show sticks, resn MOL
-util.cbay('resn MOL')
+show spheres, ADP
+util.cbay('ADP')
