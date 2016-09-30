@@ -381,7 +381,15 @@ def unnormalizedFluctuationCorrelationFunctionMultiple(A_kn, B_kn=None, N_max=No
             N_n[n] = 0.0
             for k in range(K):
                 for t0 in range(0, N_k[k] - t, nskip):
-                    C_n[n] += 0.5 * dot_product_function(A_kn[k,t0], B_kn[k,t0+t])
+                    try:
+                        C_n[n] += 0.5 * dot_product_function(A_kn[k][t0], B_kn[k][t0+t])
+                    except Exception as e:
+                        print(k)
+                        print(t0)
+                        print(t)
+                        print(k,t0)
+                        print(k,t0+t)
+                        raise(e)
                     C_n[n] += 0.5 * dot_product_function(B_kn[k,t0], A_kn[k,t0+t])
                     N_n[n] += 1.0
             C_n[n] /= N_n[n]
