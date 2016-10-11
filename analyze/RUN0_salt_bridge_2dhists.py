@@ -1,6 +1,7 @@
 """
 Plot minimum distances between 181-185 and 181-162
 """
+import os
 import numpy as np
 import sys
 import math

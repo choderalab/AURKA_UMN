@@ -51,8 +51,8 @@ for project in projects:
                     residue_atoms[residue] = [atom.index for atom in res.atoms]
                     print('Indices of atoms in this residue:')
                     print(residue_atoms[residue])
-            #if os.path.exists("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-significant-waters.png" % (project_dir, project, run, clone_id, residue)):
-            #    continue
+                if os.path.exists("%s/hbonds/AURKA-%s-RUN%s-clone%s-%s-significant-waters.png" % (project_dir, project, fake_run, clone_id, residue)):
+                    continue
                 tracking_waters = dict()
                 for frame_id, frame in enumerate(hbonds_traj):
                     if frame.shape[0] > 0:

@@ -1,13 +1,9 @@
 """
 DIFFERENT FROM SEARCH: ALL WATERS, CHANGED DEFS
 
-Attempt to identify W1 and W2 via definitions
-W1 is bound to 274 and ADP
-W2 is bound to 185 and 181
-
 DESIRED NEW DEFINITIONS:
-W1 is bound to 274 backbone N and W2
-W2 is bound to 275 backbone N and W1
+W1 is bound to 274 backbone N
+W2 is bound to (181 and 185 sidechains (anywhere)) or 275 backbone N
 
 Plot 2D hists: W1 per frame, W2 per frame, per project
 """
@@ -28,12 +24,11 @@ import plot_function
 #OFFSET = plot_function.OFFSET
 OFFSET = 0
 
-residues_with_H = [185,181,274,275]
-reference = 185
+residues_with_H = [181,274,275,185]
 
 local_path = os.path.dirname(os.path.realpath(__file__))
 
-projects = ['11414','11418','11419','11423','11424','11425']
+projects = ['11410','11411','11414','11418','11419','11423','11424','11425']
 project_dirs = {
     '11410':'%s/../output-1OL5' % local_path,
     '11411':'%s/../output-1OL7' % local_path,
@@ -67,16 +62,17 @@ for project in projects:
         try:
             run = entry.split(' ')[0]
             mutant = entry.split(' ')[1]
-            run = run[3:]
+            run = int(run[3:])
             run_guide[project] += 1
             mutants[(project, run)] = mutant
         except:
             pass
 print(run_guide)
 print(len(run_guide))
+print(mutants)
 # remove project 11414 because it will be analyzed with project 11419
 # remove project 11423 because there are no WT runs in it
-projects = ['11418','11419','11424','11425']
+projects = ['11414','11418','11419','11423']#,'11425']
 
 try:
     this_run = int(sys.argv[1]) # 1-4
@@ -84,8 +80,9 @@ except:
     this_run = None
 if this_run is not None:
     projects = [projects[this_run%4]]
-if '11419' in projects:
-    projects.append('11414')
+#if '11419' in projects:
+#    projects.append('11414')
+#    projects.append('11410')
 
 def water_set(topology, frame, hydrogens=False):
     waters = set()
@@ -99,6 +96,14 @@ def water_set(topology, frame, hydrogens=False):
     [[waters.add(atom.index) for atom in topology.top.atom(oatom).residue.atoms]
      for oatom in oxygens]
     return waters
+
+def gimme_dat_N(topology, frame):
+    nitrogen_frame = [bond for bond in frame
+                      if 'N' in [topology.top.atom(int(atom)).name
+                                 for atom in [bond[0],bond[2]]
+                                 ]
+                      ]
+    return nitrogen_frame 
 
 def find_other_waters(frame, first_waters):
     waters = set()
@@ -115,7 +120,7 @@ def plot_2dhist(x_axis, hbond_count, weights, title, filename):
     ylabel = 'number of waters found'
     plot_function.plot_2dhist(key, x_axis, hbond_count, weights, title, ylabel, filename)
 
-def find_W1(HB_total, ADP_bound):
+def find_W1(HB_total, ADP_bound, project_tracker):
     bin_x = np.arange(OFFSET/4,510,10) - 0.25
     HB_res_total = HB_total[274]
     W1s = np.empty((5*50,2000-OFFSET),dtype=set)
@@ -124,13 +129,9 @@ def find_W1(HB_total, ADP_bound):
     weights = np.zeros((5*50,2000-OFFSET))
     column_count = np.zeros(bin_x.shape)
     for clone, traj in enumerate(HB_res_total):
-        if clone%50 == 0:
-            if project == '11419' and clone/50 == 4:
-                project = '11414'
-                project_dir = project_dirs[project]
-            water_to_adp = np.load('%s/data/%s_%s_adp-hbond-water.npy' % (project_dir, project, clone/50))
-        if clone == 0:
-            topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
+        if clone in project_tracker.keys():
+            project = project_tracker[clone]
+            topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, run))
         for index in range(OFFSET,2000):
             x_axis[clone][index-OFFSET] = index*0.25
 #            if not ADP_bound[clone][index]:
@@ -141,9 +142,8 @@ def find_W1(HB_total, ADP_bound):
                 column_count[(index-OFFSET-0.25)/40] += 1
             except:
                 continue
-            waters = water_set(topology, this_frame)
-            adp_waters = water_set(topology, water_to_adp[clone%50][index])
-            waters = waters.intersection(adp_waters)
+            this_N_frame = gimme_dat_N(topology, this_frame)
+            waters = water_set(topology, this_N_frame)
             W1s[clone][index-OFFSET] = waters
             hbond_count[clone][index-OFFSET] = len(waters)
     for clone, traj in enumerate(HB_res_total):
@@ -152,12 +152,16 @@ def find_W1(HB_total, ADP_bound):
     x_axis = x_axis.flatten()
     hbond_count = hbond_count.flatten()
     weights = weights.flatten()
-    title = 'Possible W1 identified on AURKA %s over time %s' % (mutants[(project, 0)], system[project])
-    filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/W1-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
+    title = 'Possible W1 [274 N] identified on AURKA %s over time %s' % (mutants[(project, run)], system[project])
+    unique_projects = list(set(project_tracker.values()))
+    project_for_title = str(unique_projects[0])
+    for add_project in unique_projects[1:]:
+        project_for_title+='-'+str(add_project)
+    filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/W1-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project_for_title, run)
     plot_2dhist(x_axis, hbond_count, weights, title, filename)
-    np.save("%s/data/W1-oxygen-indices.npy" % project_dirs[project], W1s)
+    np.save("%s/data/RUN%s-274N-oxygen-indices.npy" % (project_dirs[project],run), W1s)
 
-def find_W2(HB_total, ADP_bound):
+def find_W2(HB_total, ADP_bound, project_tracker):
     bin_x = np.arange(OFFSET/4,510,10) - 0.25
     #bin_x = plot_function.BIN_X
     W2s = np.empty((5*50,2000-OFFSET),dtype=set)
@@ -166,9 +170,10 @@ def find_W2(HB_total, ADP_bound):
     weights = np.zeros((5*50,2000-OFFSET))
     column_count = np.zeros(bin_x.shape)
 
-    for clone, traj in enumerate(HB_total[185]):
-        if clone == 0:
-            topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
+    for clone, traj in enumerate(HB_total[181]):
+        if clone in project_tracker.keys():
+            project = project_tracker[clone]
+            topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, run))
         for index in range(OFFSET,2000):
             x_axis[clone][index-OFFSET] = index*0.25
             #if not ADP_bound[clone][index]:
@@ -183,21 +188,31 @@ def find_W2(HB_total, ADP_bound):
                 hbond_count[clone][index-OFFSET] = 0
                 continue
             waters = water_set(topology, this_frame)
-            frame_181 = HB_total[181][clone][index]
-            waters_181 = water_set(topology, frame_181)
-            waters = waters.intersection(waters_181)
+            frame_185 = HB_total[185][clone][index]
+            waters_185 = water_set(topology, frame_185)
+            frame_275 = HB_total[275][clone][index]
+            frame_275_N = gimme_dat_N(topology, frame_275)
+            waters_275 = water_set(topology, frame_275_N)
+            # intersection = AND
+            # union = OR
+            waters = waters.intersection(waters_185)
+            waters = waters.union(waters_275)
             W2s[clone][index-OFFSET] = waters            
             hbond_count[clone][index-OFFSET] = len(W2s[clone][index-OFFSET])
-    for clone, traj in enumerate(HB_total[185]):
+    for clone, traj in enumerate(HB_total[181]):
         for index in range(OFFSET,2000):
             weights[clone][index-OFFSET] = 1.00 / column_count[(index-OFFSET-0.25)/40]
     x_axis = x_axis.flatten()
     hbond_count = hbond_count.flatten()
     weights = weights.flatten()
-    title = 'Possible W2 identified on AURKA %s over time %s' % (mutants[(project, 0)], system[project])
-    filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/W2-AURKA-hist2d-entire-traj-%s-combined-RUN%s.png" % (project, 0)
+    unique_projects = list(set(project_tracker.values()))
+    project_for_title = str(unique_projects[0])
+    for add_project in unique_projects[1:]:
+        project_for_title+='-'+str(add_project)
+    title = 'Possible W2 [275 or (185 and 181)] identified on AURKA %s over time %s' % (mutants[(project, run)], system[project])
+    filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/W2-%s-%s-181and185-or275.png" % (project_for_title, run)
     plot_2dhist(x_axis, hbond_count, weights, title, filename)
-    np.save("%s/data/W2-oxygen-indices.npy" % project_dirs[project], W2s)
+    np.save("%s/data/RUN%s-W2-181185-or275-oxygen-indices.npy" % (project_dirs[project],run), W2s)
 
 def find_hbonds_between_waters(HB_total):
     from msmbuilder import dataset
@@ -206,13 +221,13 @@ def find_hbonds_between_waters(HB_total):
 
     for clone, traj in enumerate(HB_res_total):
         if clone%50 == 0:
-            print('Now loading trajectories for RUN%s' % str(clone/50))
-            trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%d-clone*.h5" % (project, clone/50))
-            topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
-        trajectory = trajectories[clone%50]
+            print('Now loading trajectories for RUN%s' % str(run))
+            trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%d-clone*.h5" % (project, run))
+            topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, run))
+        trajectory = trajectories[run]
         old_chunk = 0
         hbonds = None
-        print('Finding RUN%s clone%s hbonds' % (str(clone/50),str(clone%50)))
+        print('Finding RUN%s clone%s hbonds' % (str(run),str(clone%50)))
         for chunk in range(100,2100,100):
             if chunk > 2000:
                 break
@@ -241,24 +256,47 @@ def find_hbonds_between_waters(HB_total):
                     raise(e)
             old_chunk = chunk
         WB_total.append(hbonds)
-    np.save('%s/data/%s_%s_IntraWater.npy' % (project_dir, project, 0),WB_total)
+    np.save('%s/data/%s_%s_IntraWater.npy' % (project_dir, project, run),WB_total)
     return WB_total
 
 HB_total = dict()
+project_tracker = dict()
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
     #ADP_bound = np.load('%s/is-ADP-bound.npy' % project_dir) #--> what to do about this
     ADP_bound = True
     for run in range(run_guide[project]):
-        if not mutants[(project, run)] == 'WT': continue
+        if project != '11419' or run != 4: continue
+        project_tracker = dict()
+        print("Loading RUN%s" % run)
         for residue in residues_with_H:
             if not os.path.exists('%s/data/%s_%s_%s_distHBonds.npy' % (project_dir, project, run, residue)):
-                continue
-            if not HB_total.has_key(residue):
-                HB_total[residue] = np.load('%s/data/%s_%s_%s_distHBonds.npy' % (project_dir, project, run, residue))
+                print("file not found: %s" % residue)
+                break#continue
+            if True:
+#            if not HB_total.has_key(residue):
+                if residue == 181: project_tracker[0] = project
+                HB_total[residue] = list(np.load('%s/data/%s_%s_%s_distHBonds.npy' % (project_dir, project, run, residue)))
+                if residue == 185: 
+                    len_first_run = len(HB_total[181])
+                    print(len_first_run)
+                    print(len(HB_total[residue]))
+                    print("subtracting %s clones" % (len(HB_total[residue])-len_first_run))
+                    HB_total[residue] = HB_total[residue][:len_first_run]
             else:
-                new_run = np.load('%s/data/%s_%s_%s_distHBonds.npy' % (project_dir, project, run, residue))
-                HB_total[residue] = np.concatenate((HB_total[residue], new_run))
-project = projects[0]
-find_W1(HB_total, ADP_bound)
-find_W2(HB_total, ADP_bound)
+                if residue == 181: project_tracker[len(HB_total[residue])] = project
+                new_run = list(np.load('%s/data/%s_%s_%s_distHBonds.npy' % (project_dir, project, run, residue)))
+                if residue == 185:
+                    len_previous_run = max(project_tracker.keys())
+                    len_this_run = len(HB_total[181]) - len_previous_run
+                    print(len_this_run)
+                    print(len(new_run))
+                    print("subtracting %s clones" % (len(new_run)-len_this_run))
+                    new_run = new_run[:len_this_run]
+               # try:
+                HB_total[residue] += new_run
+                #except:
+                 #   print(new_run.shape)
+                  #  print(HB_total[residue].shape)
+        find_W1(HB_total, ADP_bound, project_tracker)
+        find_W2(HB_total, ADP_bound, project_tracker)

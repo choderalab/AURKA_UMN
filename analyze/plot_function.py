@@ -12,7 +12,9 @@ OFFSET = 400
 BIN_X = np.arange(OFFSET/4,510,10) - 0.25
 BIN_Y = {
     '181-185': np.arange(21) * 0.03 + 0.25,
-    '181-162': np.arange(20) * 0.02 + 0.25,
+    '181-162': np.arange(40) * 0.02 + 0.05,
+    '284-225': np.arange(45) * 0.05 + 2.8,
+    '287-225': np.arange(45) * 0.05 + 2.8,
     '181': np.arange(11) - 0.5,
     '185': np.arange(11) - 0.5,
     '274': np.arange(11) - 0.5,
@@ -23,7 +25,9 @@ BIN_Y = {
 }
 AXIS = {
     '181-185': [OFFSET/4,500,0.25,0.85],
-    '181-162':[OFFSET/4,500,0.25,0.63],
+    '181-162':[OFFSET/4,500,0.05,0.83],
+    '284-225':[OFFSET/4,500,2.8,5.0],
+    '287-225':[OFFSET/4,500,2.8,5.0],
     '181':[OFFSET/4,500,-0.5,9.5],
     '185':[OFFSET/4,500,-0.5,9.5],
     '274':[OFFSET/4,500,-0.5,9.5],
@@ -42,7 +46,7 @@ def plot_2dhist(key, x_axis, y_data, weights, title, ylabel, filename):
         bin_x = np.arange(6) - 0.5
         xlabel = 'RUN'
     fig1 = plt.figure()
-    plt.hist2d(x_axis[y_data > -1],y_data[y_data > -1],bins=[bin_x,BIN_Y[key]],weights=weights[y_data > -1],cmap=plt.get_cmap('jet'))
+    plt.hist2d(x_axis[y_data > -1],y_data[y_data > -1],bins=[bin_x,BIN_Y[key]],weights=weights[y_data > -1],cmap=plt.get_cmap('inferno'))
     plt.title(title)
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
@@ -51,6 +55,4 @@ def plot_2dhist(key, x_axis, y_data, weights, title, ylabel, filename):
     plt.savefig(filename,dpi=300)
     plt.close(fig1)
     print('Saved %s' % filename)
-
-
 

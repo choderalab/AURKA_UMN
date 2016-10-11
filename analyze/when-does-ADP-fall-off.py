@@ -7,12 +7,19 @@ local_path = os.path.dirname(os.path.realpath(__file__))
 
 projects = ['11410','11411','11418']
 projects = ['11410','11411']
-project_dirs = {'11410':'%s/../output-1OL5' % local_path,'11411':'%s/../output-1OL7' % local_path,'11418':'%s/../output1OL5-TPX2' % local_path}
-system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed'}
+projects = ['11414','11418']
+project_dirs = {
+    '11410':'%s/../output-1OL5' % local_path,
+    '11411':'%s/../output-1OL7' % local_path,
+    '11414':'%s/../output-11414' % local_path,
+    '11418':'%s/../output-11418' % local_path
+}
+
+system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed','11414':'with TPX2'}
 
 if len(sys.argv) == 2:
     this_project = int(sys.argv[1])
-    projects = [projects[this_project%2]]
+    projects = [projects[this_project%len(projects)]]
 
 for i, project in enumerate(projects):
     print('Project %s' % project)

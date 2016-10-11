@@ -50,7 +50,7 @@ axis = {'181-185': [offset/4,500,0.25,1.05], '181-162':[offset/4,500,0.25,0.63]}
 
 def plot_bridge_2dhist(bridge, x_axis, minimum_distance, weights, run, project, has_bonds):
     fig1 = plt.figure()
-    plt.hist2d(x_axis[minimum_distance > 0],minimum_distance[minimum_distance > 0],bins=[bin_x,bin_y[bridge]],weights=weights[minimum_distance > 0],cmap=plt.get_cmap('jet'))
+    plt.hist2d(x_axis[minimum_distance > 0],minimum_distance[minimum_distance > 0],bins=[bin_x,bin_y[bridge]],weights=weights[minimum_distance > 0],cmap=plt.get_cmap('inferno'))
     if has_bonds:
         plt.title('AURKA %s, with 275 Hbond,  minimum %s salt bridge distance over time %s' % (mutant['RUN%s' % run], bridge, system[project]))
     else:
