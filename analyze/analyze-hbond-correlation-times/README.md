@@ -1,8 +1,14 @@
 ## AURKA_UMN/analyze/analyze-hbond-correlation-times/
 Original home of scripts: `/cbio/jclab/projects/behrj/AURKA_UMN/analyze/analyze-hbond-correlation-times`
+
+All scripts include pointers to relevant data files; to run any of these scripts, simply use 
+```
+python (script filename)
+```
 ###analyze-hbond-correlation-times-ALLMUTANTS-boot-tail.py
 * Loads W1 and W2 arrays for corresponding runs (same mutant, with and without TPX2)
   * runs corresponding to each mutant defined at line 22
+  * input filenames defined at line 83
   * W1, W2 arrays saved by `../if-W1W2-are-any-274-181185.py`
 * Collects 50 (defined at line 105) bootstrapped samples of each array
 * Calculates `unnormalizedFluctuationCorrelationFunctionMultiple` for each bootstrapped sample
@@ -24,6 +30,7 @@ Original home of scripts: `/cbio/jclab/projects/behrj/AURKA_UMN/analyze/analyze-
 Same as previous, but for entire C(t) array
 
 Note: filenames of numpy arrays are the same as the `tail` script; will overwrite saved arrays
+unless moved (moved to `./output-full` on hal)
 ###analyze-hbond-correlation-times-WT-boot-tail.py
 Corresponds to `analyze-hbond-correlation-times-ALLMUTANTS-boot-tail.py`, but includes only WT data, 
 with all 5 WT runs combined into one plot
