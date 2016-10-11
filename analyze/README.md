@@ -2,7 +2,7 @@
 original: `/cbio/jclab/projects/behrj/AURKA_UMN/analyze`
 ### first run calculate-all-SB-HB.py
 ** note: this script depends on local changes to `mdtraj` to create `"sidechain-heavy"` option for `compute_contacts`
-Calculates and saves 7 arrays:
+Calculates and saves 7 arrays to `/cbio/jclab/projects/behrj/AURKA_UMN/output-{project#}/data/`:
 * waters hydrogen bonded to residue: `{project#}_{run#}_{residue#}_distHBonds.npy`
   * "hydrogen bond" defined as being within 0.35nm (no angle requirement)
   * for residue# in 181, 185, 274, 275, 162
