@@ -22,7 +22,7 @@ projects = ['11410','11411','11418']
 project_dirs = {'11410':'%s/../output-1OL5' % local_path,'11411':'%s/../output-1OL7' % local_path,'11418':'%s/../output1OL5-TPX2' % local_path}
 system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed'}
 
-with open('./output-1OL7/run-index.txt','r') as fi:
+with open('%s/../output-1OL7/run-index.txt' % local_path,'r') as fi:
     run_index = fi.read()
 mutant = dict()
 for entry in run_index.split('\n'):
@@ -33,7 +33,7 @@ for entry in run_index.split('\n'):
 
 def plot_2dhist(residue, x_axis, hbond_count, weights, run, project):
     title = 'AURKA %s number of hydrogen bonds on residue %s over time %s' % (mutant['RUN%s' % run], residue, system[project])
-    filename = "./plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (residue, project, run)
+    filename = "%s/../plots/AURKA-%s-hbonds-hist2d-entire-traj-%s-RUN%s" % (local_path, residue, project, run)
     ylabel = 'number of hydrogen bonds'
     plot_function.plot_2dhist(residue, x_axis, hbond_count, weights, title, ylabel, filename)
 

@@ -96,16 +96,16 @@ def find_hbonds_between_waters():
     WB_total = list()
     start = 0
     end = 250
-#    if os.path.exists('%s/data/%s_%s_tryagain-IntraWater.npy' % (project_dir, project, 0)):
-#        WB_total = np.load('%s/data/%s_%s_tryagain-IntraWater.npy' % (project_dir, project, 0))
-#        WB_total = WB_total.tolist()
-#        if len(WB_total) == 250:
-#            return WB_total
-#        else:
-#            start = len(WB_total)
+    if os.path.exists('%s/data/%s_%s_tryagain-IntraWater.npy' % (project_dir, project, 0)):
+        WB_total = np.load('%s/data/%s_%s_tryagain-IntraWater.npy' % (project_dir, project, 0))
+        WB_total = WB_total.tolist()
+        if len(WB_total) == 250:
+            return WB_total
+        else:
+            start = len(WB_total)
     HB_total = dict()
     for clone in range(start,end):
-        trajectory = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%s-clone%s.h5" % (project, clone/50, clone%50))
+        trajectory = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%s-clone%s.h5" % (project, clone/50, clone%50))
         if clone == start or clone%50 == 0:
             print('Now loading trajectories for RUN%s' % str(clone/50))
             del(HB_total)
@@ -123,21 +123,17 @@ def find_hbonds_between_waters():
             waters = set()
             chunk_frames = range(old_chunk,chunk)
             for index in chunk_frames:
-                print(index)
                 try:
                     frame_274 = HB_total[274][clone%50][index]
                     frame_185 = HB_total[185][clone%50][index]
                     frame_181 = HB_total[181][clone%50][index]
-                    print('frame')
                 except:
                     chunk_frames = range(old_chunk,index)
                     keep_going = False
-                    print('stop')
                     break
                 waters = waters.union(water_set(trajectory, frame_274, hydrogens=True))
                 waters = waters.union(water_set(trajectory, frame_185, hydrogens=True))
                 waters = waters.union(water_set(trajectory, frame_181, hydrogens=True))
-            print(waters)
             if len(chunk_frames) == 0:
                 break
             traj_slice = trajectory.slice(chunk_frames, copy=False)
@@ -174,15 +170,10 @@ for i, project in enumerate(projects):
     project_dir = project_dirs[project]
     WB_total = find_hbonds_between_waters()
     WB_dict[project] = WB_total
-    print(project)
-    print(WB_total)
 print('Saved all water bonds!')
 
 anchors = dict()
 for project, WB_total in WB_dict.items():
-    print(project)
-    print(type(WB_total))
-    print(type(WB_total[0]))
     static_positions = dict()
     position_definitions = list()
     if os.path.exists('%s/data/%s_%s_1234-IntraWater-sig.npy' % (project_dir, project, 0)):
@@ -213,7 +204,7 @@ for project, WB_total in WB_dict.items():
         if not anchors.has_key(project):
             protein_and_adp = find_anchors(traj.top)
             anchors[project] = protein_and_adp
-        traj = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%s-clone%s.h5" % (project, bond.clone/50, bond.clone%50))
+        traj = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%s-clone%s.h5" % (project, bond.clone/50, bond.clone%50))
         for water in bond.oxygens:
             if not static_positions[bond.clone].has_key(water):
                 static_positions[bond.clone][water] = dict()

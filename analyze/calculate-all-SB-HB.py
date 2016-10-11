@@ -11,27 +11,60 @@ local_path = os.path.dirname(os.path.realpath(__file__))
 projects = ['11410','11411','11418']
 project_dirs = {'11410':'%s/../output-1OL5' % local_path,'11411':'%s/../output-1OL7' % local_path,'11418':'%s/../output1OL5-TPX2' % local_path}
 system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed'}
-runs = range(5)
+projects = ['11410','11411','11418']
+projects = ['11414','11418','11419','11423','11424','11425']
+project_dirs = {
+    '11410':'%s/../output-1OL5' % local_path,
+    '11411':'%s/../output-1OL7' % local_path,
+    '11414':'%s/../output-11414' % local_path,
+    '11418':'%s/../output-11418' % local_path,
+    '11419':'%s/../output-11419' % local_path,
+    '11423':'%s/../output-11423' % local_path,
+    '11424':'%s/../output-11424' % local_path,
+    '11425':'%s/../output-11425' % local_path,
+}
 
-with open('/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
-    run_index = fi.read()
+system = {
+    '11410':'with TPX2',
+    '11411':'without TPX2',
+    '11414':'with TPX2',
+    '11418':'with TPX2 removed',
+    '11419':'with TPX2',
+    '11423':'with TPX2 removed',
+    '11424':'with TPX2',
+    '11425':'with TPX2 removed'
+}
 
-mutant = dict()
-for entry in run_index.split('\n'):
-    try:
-        mutant[entry.split(' ')[0]] = entry.split(' ')[1]
-    except:
-        pass
+projects = ['11414','11418','11419','11423']
+
+run_guide = list()
+#mutants = dict()
+for project in projects:
+    filename = project_dirs[project]+'/run-index.txt'
+    with open(filename, 'r') as fi:
+        project_run_index = fi.read()
+    for entry in project_run_index.split('\n'):
+        try:
+            run = entry.split(' ')[0]
+            mutant = entry.split(' ')[1]
+            run = run[3:]
+            run_guide.append([project, run])
+            #mutants[(project, run)] = mutant
+        except:
+            pass
+print(run_guide)
+print(len(run_guide))
+
 
 DIST_FOR_HBOND = True
 
 def find_hbondsdists_for_this_traj(traj, residue, haystack, sidechain=False, backbone=False):
     if sidechain:
-        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_sidechain and (str(atom.element)=='oxygen' or str(atom.element)=='nitrogen'))]
+        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_sidechain and str(atom.element) in ['oxygen','nitrogen'])]
     elif backbone:
-        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_backbone and (str(atom.element)=='oxygen' or str(atom.element)=='nitrogen'))]
+        residue_atoms = [atom.index for atom in residue.atoms if (atom.is_backbone and str(atom.element) in ['oxygen','nitrogen'])]
     else:
-        residue_atoms = [atom.index for atom in residue.atoms if (str(atom.element)=='oxygen' or str(atom.element)=='nitrogen')]
+        residue_atoms = [atom.index for atom in residue.atoms if str(atom.element) in ['oxygen','nitrogen']]
 
     contact_size = (len(haystack)*len(residue_atoms),2)
     contacts = np.zeros(contact_size)
@@ -47,11 +80,13 @@ def find_hbondsdists_for_this_traj(traj, residue, haystack, sidechain=False, bac
         num_bonds = 0
         for index, little_dist in enumerate(frame):
             if little_dist < 0.35:
+#            if little_dist < 0.41:
                 num_bonds+=1
         local_hbonds = np.zeros((num_bonds,3))
         bond_index = 0
         for index, little_dist in enumerate(frame):
             if little_dist < 0.35:
+#            if little_dist < 0.41:
                 local_hbonds[bond_index][0] = contacts[index][0]
                 local_hbonds[bond_index][1] = little_dist
                 local_hbonds[bond_index][2] = contacts[index][1]
@@ -84,23 +119,31 @@ def find_hbonds_for_this_traj(traj, residue, haystack, sidechain=False, backbone
     return hbonds
 
 def find_neighbor_set(traj, residue, haystack):
-    neighbors = md.compute_neighbors(traj, 0.4, residue, haystack_indices=haystack)
+#    neighbors = md.compute_neighbors(traj, 0.4, residue, haystack_indices=haystack)
+    neighbors = md.compute_neighbors(traj, 0.42, residue, haystack_indices=haystack)
     neighbor_set = set(chain.from_iterable(neighbors))
     return list(neighbor_set)
 
 try:
-    this_run = int(sys.argv[1]) # 1 - 10
+    this_run = int(sys.argv[1]) # 1 - 48
 except:
     this_run = None
 
 if this_run is not None:
-    projects = [projects[this_run%2]]
-    runs = [runs[this_run%5]]
+    projects = [run_guide[this_run][0]]
+    runs = [run_guide[this_run][1]]
+else: runs = [] # so basically, never do this
 
+projects = ['11419']
+runs = [4]
 
 verbose = True
 for project in projects:
     project_dir = project_dirs[project]
+    if project in ['11424','11425']:
+        charmm = True
+    else:
+        charmm = False
     for run in runs:
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
@@ -110,13 +153,27 @@ for project in projects:
         HB_181_total = []
         HB_274_total = []
         HB_275_total = []
-        trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone*.h5" % (project, run))
+        HB_162_total = []
+        trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%s-clone*.h5" % (project, run))
         for i,traj in enumerate(trajectories):
-            if i == 0:
+            print(i)
+            if charmm and i == 0:
+                for residue in traj.topology.residues:
+                    if str(residue) == 'GLU59':
+                        e181 = residue
+                    if residue.is_protein and str(residue)[-2:] == '63':
+                        q185 = residue
+                    if str(residue) == 'LYS40':
+                        k162 = residue
+                    if str(residue) == 'ASP152':
+                        d274 = residue
+                    if str(residue) == 'PHE153':
+                        f275 = residue
+            elif i == 0:
                 for residue in traj.topology.residues:
                     if str(residue) == 'GLU181':
                         e181 = residue
-                    if str(residue) == 'GLN185':
+                    if residue.is_protein and str(residue)[-3:] == '185':
                         q185 = residue
                     if str(residue) == 'LYS162':
                         k162 = residue
@@ -145,21 +202,26 @@ for project in projects:
                 HB_274_total.append(find_hbondsdists_for_this_traj(traj, d274, haystack, backbone=True))
                 print('275')
                 HB_275_total.append(find_hbondsdists_for_this_traj(traj, f275, haystack, backbone=True))
+                print('162')
+                HB_162_total.append(find_hbondsdists_for_this_traj(traj, k162, haystack, sidechain=True)) 
             else:
                 HB_185_total.append(find_hbonds_for_this_traj(traj, res185, haystack, sidechain=True))
                 HB_181_total.append(find_hbonds_for_this_traj(traj, e181, haystack, sidechain=True))
                 HB_274_total.append(find_hbonds_for_this_traj(traj, d274, haystack, backbone=True))
                 HB_275_total.append(find_hbonds_for_this_traj(traj, f275, haystack, backbone=True))
+                HB_162_total.append(find_hbonds_for_this_traj(traj, k162, haystack, sidechain=True))
         if DIST_FOR_HBOND:
             np.save('%s/data/%s_%s_181_distHBonds.npy' % (project_dir, project, run), HB_181_total)
             np.save('%s/data/%s_%s_185_distHBonds.npy' % (project_dir, project, run), HB_185_total)
             np.save('%s/data/%s_%s_274_distHBonds.npy' % (project_dir, project, run), HB_274_total)
             np.save('%s/data/%s_%s_275_distHBonds.npy' % (project_dir, project, run), HB_275_total)
+            np.save('%s/data/%s_%s_162_distHBonds.npy' % (project_dir, project, run), HB_162_total)
         else:
             np.save('%s/data/%s_%s_181_HBonds.npy' % (project_dir, project, run), HB_181_total)
             np.save('%s/data/%s_%s_185_HBonds.npy' % (project_dir, project, run), HB_185_total)
             np.save('%s/data/%s_%s_274_HBonds.npy' % (project_dir, project, run), HB_274_total)
             np.save('%s/data/%s_%s_275_HBonds.npy' % (project_dir, project, run), HB_275_total)
+            np.save('%s/data/%s_%s_162_HBonds.npy' % (project_dir, project, run), HB_162_total)
         np.save('%s/data/%s_%s_181-185_SB_total.npy' % (project_dir, project, run), SB_eq_total)
         np.save('%s/data/%s_%s_181-162_SB_total.npy' % (project_dir, project, run), SB_ek_total)
 
