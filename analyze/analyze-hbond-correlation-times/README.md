@@ -45,3 +45,5 @@ begins at line 298)
 ###replot-ALLMUTANTS.py
 Reads in saved numpy arrays from other scripts and recreates plots (intended to simplify 
 making stylistic changes with the same data)
+* requires numpy arrays from previous runs to be in local directory
+* Julie's existing arrays live at `/cbio/jclab/projects/behrj/AURKA_UMN/analyze/analyze-hbond-correlation-times/output-tail` for the tail data and `/cbio/jclab/projects/behrj/AURKA_UMN/analyze/analyze-hbond-correlation-times/output-full` for the full data
