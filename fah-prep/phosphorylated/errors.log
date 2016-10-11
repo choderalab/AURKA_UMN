@@ -1,0 +1,164 @@
+Tuesday May 24 2016
+
+ValueError: No template found for residue 164 (ARG).  The set of atoms matches ARG, but the bonds are different.
+
+* I think this is due to missing internal bond CONECT entries
+* correct manually in the 2 WT pdbs
+
+CONECT 2710 2730
+CONECT 2730 2710
+CONECT 2739 2741
+CONECT 2741 2739
+
+No template found for residue 165 (TPO).  The set of atoms is similar to T1P, but it is missing 7 hydrogen atoms.
+* this was fixed in myb somehow -- that might have been within leap though?
+* had something to do with naming? or does pdbfixer need TPO.xml?
+
+In [24]:     modeller.addHydrogens(forcefield=forcefield,pH=7.4)
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-24-84641a16582f> in <module>()
+----> 1 modeller.addHydrogens(forcefield=forcefield,pH=7.4)
+
+/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/modeller.pyc in addHydrogens(self, forcefield, pH, variants, platform)
+    858             # Use the ForceField the user specified.
+    859 
+--> 860             system = forcefield.createSystem(newTopology, rigidWater=False)
+    861             atoms = list(newTopology.atoms())
+    862             for i in range(system.getNumParticles()):
+
+/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/forcefield.pyc in createSystem(self, topology, nonbondedMethod, nonbondedCutoff, constraints, rigidWater, removeCMMotion, hydrogenMass, **args)
+    783                 # Raise an exception if we have found no templates that match.
+    784                 if matches is None:
+--> 785                     raise ValueError('No template found for residue %d (%s).  %s' % (res.index+1, res.name, _findMatchErrors(self, res)))
+    786 
+    787                 # Store parameters for the matched residue template.
+
+ValueError: No template found for residue 165 (TPO).  The set of atoms is similar to T1P, but it is missing 7 hydrogen atoms.
+
+* not generating the rest of the bonds in TPO residues
+(<Atom 2749 (C) of chain 0 residue 165 (TPO)>, <Atom 2751 (N) of chain 0 residue 166 (LEU)>)
+(<Atom 2738 (C) of chain 0 residue 164 (TPO)>, <Atom 2740 (N) of chain 0 residue 165 (TPO)>)
+Traceback (most recent call last):
+  File "pdbfix+-TPX2.py", line 66, in <module>
+    modeller.addHydrogens(forcefield=forcefield,pH=7.4)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/modeller.py", line 860, in addHydrogens
+    system = forcefield.createSystem(newTopology, rigidWater=False)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/forcefield.py", line 785, in createSystem
+    raise ValueError('No template found for residue %d (%s).  %s' % (res.index+1, res.name, _findMatchErrors(self, res)))
+ValueError: No template found for residue 165 (TPO).  The set of atoms matches TPO, but the bonds are different.
+
+Wednesday May 25 2016
+* typo in h-TPO.xml was putting a hydrogen on the wrong atom; corrected
+
+Working in temporary directory: /tmp/tmpxKJMTF
+WT : []
+addingmissinghydrogens...
+Creating path 1OL5+TPX2-TPOs/WT
+Loading forcefield...
+Creating Modeller object...
+Subtracting offset...
+Shifting model by [ 17.4192009   19.61090088   1.95560002] nm
+Replacing ADP with protonated ADP...
+Shifting protonated ADP by [ 17.4192009   19.61090088   1.95560002] nm
+Writing pdbfixer output...
+Creating OpenMM system...
+Adding barostat...
+Creating simulation...
+Minimizing energy...
+Initial potential energy : 1839528179909002.500 kcal/mol
+Final potential energy:  : 1839528179908925.750 kcal/mol
+Creating constrained OpenMM system...
+Adding barostat...
+Creating simulation...
+Writing modeller output...
+21478.4712226
+Minimizing energy...
+Initial potential energy : 5172251.057 kcal/mol
+Final potential energy:  : 54070764097317.883 kcal/mol
+Solvating with tip3p...
+[[ hangs here for > hours ]]
+
+Sunday June 5 2016
+* was breaking on TPO: reran pdbfix.py, fine
+* started exploding when pdbfixer was run withing the setup script before the
+modeller.addHydrogens thing; moved that out front
+* still seems to be hanging at taking steps; adding in writing out a pdf after
+each individual step
+
+* Crashed the first time -- rerunning and energies are way down (?)
+* NaNing after 2 steps now instead of 1!
+* perpetrators: TPO 288, ARG 255 (possibly others)
+* minimizing puts the O2 from TPO 288 right on top of one of the Ns of ARG 255
+-- why? why would minimizing allow that?
+* trying to take a single step after each minimize -- set temp to temp/20?
+
+* ok so the difference between the old pdbs and the new is that pdbfixer is
+turning all HIS into double protonated right now?
+* and also T1P = TPO and OG = OG1 (make these changes in old and see if it works)
+* this seems to work now (or at least, energies are way lower) -- what happened 
+to pdbfixer?
+
+* MINIMIZE ERROR: TPOs not minimized correctly, somehow not taken into consideration, 
+such that atoms end up overlapping either with each other or with other residues
+ -- image added to repo
+
+Tuesday June 7 2016
+* in TPO.xml: sigma = 1 epsilon = 0 for every atom
+* TPO.xml was generated using:
+python processAmberParameters.py T1P.off T1P.frcmod > TPO.xml
+* manually changed sigma from 0 to 1
+* had to change name from T1P to TPO:
+:%s/T1P/TPO/g
+* had to change atom name OG to OG1
+
+* make .xml incorrectly ughhhhhh
+python processAmberParameters.py parm94.dat T1P.off T1P.frcmod > TPO.xml
+* in vi:
+:%s/T1P/TPO/g
+* change atom name from OG to OG1
+
+* actually, found from parameter source 
+  (http://sites.pharmacy.manchester.ac.uk/bryce/amber/) that the T1P params
+  were intended for use with parm99.dat; reran
+python processAmberParameters.py parm99.dat T1P.off T1P.frcmod > TPO99.xml
+* vimdiff TPO.xml TPO99.xml -- no differences, so it's fine
+
+Q185C : ['GLN-185-CYS']
+{<Residue 62 (CYS) of chain 0>: [<Atom 3 (SG) of chain 0 residue 0 (CYS)>]}
+addingmissinghydrogens...
+Loading forcefield...
+Creating Modeller object...
+Traceback (most recent call last):
+  File "setup_xmls.py", line 233, in <module>
+    modeller.addHydrogens(forcefield=forcefield,pH=pH)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/modeller.py", line 860, in addHydrogens
+    system = forcefield.createSystem(newTopology, rigidWater=False)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/forcefield.py", line 785, in createSystem
+    raise ValueError('No template found for residue %d (%s).  %s' % (res.index+1, res.name, _findMatchErrors(self, res)))
+ValueError: No template found for residue 164 (ARG).  The set of atoms matches ARG, but the bonds are different.
+ WHYYYYYYYY
+
+* previous error was due to TPO bonds being removed by (?) pdbfixer -- manually
+  adding back in
+* now getting NaNs:
+
+Minimizing energy...
+Initial solvated potential energy : -136620.466 kcal/mol
+Final solvated potential energy:  : -136619.638 kcal/mol
+Taking a few steps...
+Traceback (most recent call last):
+  File "setup_xmls.py", line 466, in <module>
+    simulation.step(nsteps)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/simulation.py", line 132, in step
+    self._simulate(endStep=self.currentStep+steps)
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/app/simulation.py", line 194, in _simulate
+    self.integrator.step(10) # Only take 10 steps at a time, to give Python more chances to respond to a control-c.
+  File "/home/behrj/miniconda/lib/python2.7/site-packages/simtk/openmm/openmm.py", line 4731, in step
+    return _openmm.LangevinIntegrator_step(self, steps)
+Exception: Particle coordinate is nan
+
+
+
+
+

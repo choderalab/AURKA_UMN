@@ -1,0 +1,526 @@
+"""
+Set up AurKA mutant simulations
+@author John D. Chodera
+@date 8 Aug 2014
+"""
+
+#
+# IMPORTS
+#
+
+import os, os.path
+import copy
+import numpy
+import shutil
+import tempfile
+import numpy as np
+
+import pdbfixer
+from simtk import openmm, unit
+from simtk.openmm import app
+import mdtraj as md
+
+#
+
+def tpo_bonds(modeller, residue):
+    for bond in modeller.topology.bonds():
+        if residue in [bond[0].residue, bond[1].residue]:
+            modeller.topology._bonds = list(filter(lambda a: a != bond, modeller.topology._bonds))
+    bonds = list()
+    bonds.append(("N","CA"))
+    bonds.append(("CA","C"))
+    bonds.append(("CA","CB"))
+    bonds.append(("CB","OG1"))
+    bonds.append(("CB","CG2"))
+    bonds.append(("OG1","P"))
+    bonds.append(("P","O3P"))
+    bonds.append(("P","O2P"))
+    bonds.append(("P","O1P"))
+    bonds.append(("C","O"))
+    name_dict = dict()
+    for atom in residue.atoms():
+        name_dict[atom.name] = atom
+    for bond in bonds:
+        modeller.topology.addBond(name_dict[bond[0]],name_dict[bond[1]])
+    return modeller
+
+
+TPX2 = True
+
+if TPX2:
+    id = '+'
+else:
+    id = '-'
+# Path to put all output in
+output_path = "1OL5"+id+"TPX2-TPOs"
+
+# Source PDB
+pdbfilename = "1OL5-WT"+id+"TPX2.pdb"
+
+adp_mol2 = "ADP5.mol2"
+
+print "Source PDB filename: %s" % pdbfilename
+print "Output directory for mutations: %s" % output_path
+
+#
+# PARAMETERS
+#
+
+chain_id_to_mutate = 'A' # chain to mutate
+pH = 7.4 # pH to model
+keep_crystallographic_water = False # keep crystallographic waters?
+
+# Single point mutants
+point_mutants = ['Q185C', 'Q185L','Q185M','Q185N','Q185H','C247A','C247L']
+
+# Forcefield
+ff_name = 'amber99sbildn'
+water_name = 'tip3p'
+ion_ff_name = 'ions'
+ADP_ff_name = 'adp'
+phos_res = 'TPO'
+
+solvate = True # if True, will add water molecules using simtk.openm.app.modeller
+padding = 11.0 * unit.angstroms
+nonbonded_cutoff = 9.0 * unit.angstroms
+nonbonded_method = app.PME
+max_minimization_iterations = 5000
+temperature = 300.0 * unit.kelvin
+pressure = 1.0 * unit.atmospheres
+collision_rate = 5.0 / unit.picoseconds
+barostat_frequency = 50
+timestep = 2.0 * unit.femtoseconds
+nsteps = 5000 # number of steps to take for testing
+ionicStrength = 300 * unit.millimolar
+
+# Verbosity level
+verbose = True
+
+#===============================================================================
+# DATA
+#===============================================================================
+
+three_letter_code = {
+    'A' : 'ALA',
+    'C' : 'CYS',
+    'D' : 'ASP',
+    'E' : 'GLU',
+    'F' : 'PHE',
+    'G' : 'GLY',
+    'H' : 'HIS',
+    'I' : 'ILE',
+    'K' : 'LYS',
+    'L' : 'LEU',
+    'M' : 'MET',
+    'N' : 'ASN',
+    'P' : 'PRO',
+    'Q' : 'GLN',
+    'R' : 'ARG',
+    'S' : 'SER',
+    'T' : 'THR',
+    'V' : 'VAL',
+    'W' : 'TRP',
+    'Y' : 'TYR'
+}
+
+one_letter_code = dict()
+for one_letter in three_letter_code.keys():
+    three_letter = three_letter_code[one_letter]
+    one_letter_code[three_letter] = one_letter
+
+def decompose_mutation(mutation):
+    import re
+    match = re.match('(\D)(\d+)(\D)', mutation)
+    original_residue_name = three_letter_code[match.group(1)]
+    residue_index = int(match.group(2))
+    mutated_residue_name = three_letter_code[match.group(3)]
+    return (original_residue_name, residue_index, mutated_residue_name)
+
+def generate_pdbfixer_mutation_code(original_residue_name, residue_index, mutated_residue_name):
+    return '%s-%d-%s' % (original_residue_name, residue_index, mutated_residue_name)
+
+def write_file(filename, contents):
+    with open(filename, 'w') as outfile:
+        outfile.write(contents)
+
+#
+# Read reference PDB file to create a list of possible alterations.
+#
+
+print "Reading reference PDB file..."
+fixer = pdbfixer.PDBFixer(filename=pdbfilename)
+residues = list()
+for chain in fixer.topology.chains():
+    for residue in chain.residues():
+        if residue.name != 'HOH':
+            key = (chain.id, residue.id, residue.name)
+            residues.append(key)
+print residues
+residues = set(residues)
+
+#
+# FILENAMES
+#
+
+exception_filename = os.path.join(output_path, 'exceptions.out') # to store exceptions
+run_index_filename = os.path.join(output_path, 'run-index.txt') # to store index of which mutants are which
+
+existing_mutants = list()
+if os.path.exists(run_index_filename):
+    infile = open(run_index_filename, 'r')
+    lines = infile.readlines()
+    for line in lines:
+        [run_name, name] = line.strip().split()
+        existing_mutants.append(name)
+    infile.close()
+print "Existing mutants:"
+print existing_mutants
+
+npoint_mutants = len(point_mutants)
+
+mutant_names = list()
+mutant_codes = list()
+
+# Append wild type (no mutation).
+mutant_names.append('WT')
+mutant_codes.append([])
+
+# Append point mutants.
+for mutation in point_mutants:
+    (original_residue_name, residue_index, mutated_residue_name) = decompose_mutation(mutation)
+    #residue_index += residue_offset
+    key = (chain_id_to_mutate, str(residue_index), original_residue_name)
+    print key
+    if key in residues:
+        mutant_names.append(mutation)
+        mutant_codes.append([generate_pdbfixer_mutation_code(original_residue_name, residue_index, mutated_residue_name)])
+
+
+# Create output directory.
+if not os.path.exists(output_path):
+    os.makedirs(output_path)
+
+# Open file to write all exceptions that occur during execution.
+exception_outfile = open(exception_filename, 'a')
+run_index_outfile = open(run_index_filename, 'a')
+runs = 0
+for (name, mutant) in zip(mutant_names, mutant_codes):
+    print "%s : %s" % (name, str(mutant))
+    if name in existing_mutants:
+        # Skip this.
+        print "%s : %s already exists, skipping" % (name, str(mutant))        
+        continue
+    simulation = None
+    if True:
+#    try:
+        # Create PDBFixer, retrieving PDB template
+        fixer = pdbfixer.PDBFixer(filename=pdbfilename)
+
+        # Attempt to make mutations.
+        if len(mutant) > 0:
+            try:
+                fixer.applyMutations(mutant, chain_id_to_mutate)
+            except Exception as e:
+                # Mutant could not be constructed.
+                print e
+                exception_outfile.write("%s : %s" % (name, str(mutant)) + '\n')
+                exception_outfile.write(str(e) + '\n')
+                raise(e)
+
+            #fixer.topology.createStandardBonds()
+            fixer.missingResidues = {}
+            print "findMissingAtoms..."
+            fixer.findMissingAtoms()
+            print(fixer.missingAtoms)
+            #print "addMissingAtoms..."
+            fixer.addMissingAtoms()
+#            print "addingmissinghydrogens..."
+#            fixer.addMissingHydrogens(pH)
+            #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
+
+        # Create directory to store files in.
+        workdir = os.path.join(output_path, name)
+        if not os.path.exists(workdir):
+            os.makedirs(workdir)
+            print "Creating path %s" % workdir
+
+
+        filename = os.path.join(workdir, "freshmut.pdb")
+        app.PDBFile.writeFile(fixer.topology, fixer.positions, open(filename, 'w'), keepIds=True)
+
+        # Create Modeller
+        if verbose: print "Loading forcefield..."
+        forcefield = app.ForceField(ff_name+'.xml',phos_res+'.xml',water_name+'.xml',ion_ff_name+'.xml',ADP_ff_name+'.xml')
+        if verbose: print "Creating Modeller object..."
+        modeller = app.Modeller(fixer.topology, fixer.positions)
+        for residue in modeller.topology.residues():
+            if residue.name == 'ADP':
+                modeller.delete([residue])
+        if len(mutant) > 0:
+            for residue in modeller.topology.residues():
+                if residue.name == 'TPO':
+                    tpo1 = residue
+                    break
+            for residue in modeller.topology.residues():
+                if residue.index == tpo1.index-1:
+                    prev = residue
+                elif residue.index == tpo1.index+1:
+                    tpo2 = residue
+                elif residue.index == tpo1.index+2:
+                    follow = residue
+                    break
+            for atom in prev.atoms():
+                if atom.name == 'C':
+                    prevC = atom
+                    break
+            for atom in tpo1.atoms():
+                if atom.name == 'N':
+                    tpo1N = atom
+                elif atom.name == 'C':
+                    tpo1C = atom
+            for atom in tpo2.atoms():
+                if atom.name == 'N':
+                    tpo2N = atom
+                elif atom.name == 'C':
+                    tpo2C = atom
+            for atom in follow.atoms():
+                if atom.name == 'N':
+                    followN = atom
+                    break
+            modeller = tpo_bonds(modeller, tpo1)
+            modeller = tpo_bonds(modeller, tpo2)
+            modeller.topology.addBond(prevC, tpo1N)
+            modeller.topology.addBond(tpo1C, tpo2N)
+            modeller.topology.addBond(tpo2C, followN)
+
+        modeller.loadHydrogenDefinitions("h-TPO.xml")
+        modeller.addHydrogens(forcefield=forcefield,pH=pH)
+        if verbose: print("Writing protonated solute")
+        filename = os.path.join(workdir, 'pdbfixer-H.pdb') 
+
+        # Convert positions to numpy format
+        modeller.positions = unit.Quantity(np.array(modeller.positions / unit.nanometer), unit.nanometer)
+
+        # Add correct ADP (with hydrogens)
+        if verbose: print "Replacing ADP with protonated ADP..."
+        adp = md.load_mol2(adp_mol2)
+        adp.topology = adp.top.to_openmm()
+        adp.positions = unit.Quantity(np.array([(x,y,z) for x,y,z in adp.xyz[0]]), unit.nanometer)
+        modeller.add(adp.topology,adp.positions)
+
+        # Write PDB file for solute only.
+        if verbose: print "Writing modeller output..."
+        pdb_filename = os.path.join(workdir, 'modeller.pdb')
+        outfile = open(pdb_filename, 'w')
+        app.PDBFile.writeFile(modeller.topology, modeller.positions, outfile, keepIds=True)
+        outfile.close()
+
+        # Create OpenMM system.
+        if verbose: print "Creating OpenMM system..."
+        #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HAngles)
+        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
+        if verbose: print "Adding barostat..."
+        system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
+
+        # Create simulation.
+        if verbose: print "Creating simulation..."
+        integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+        #platform = openmm.Platform.getPlatformByName('CPU')
+        platform = openmm.Platform.getPlatformByName('OpenCL')
+        platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+        simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
+        simulation.context.setPositions(modeller.positions)
+
+        # Minimize energy.
+        if verbose: print "Minimizing energy..."
+        potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+        if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+            raise Exception("Potential energy is NaN before minimization.")
+        if verbose: print "Initial potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+        simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
+        potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+        if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+            raise Exception("Potential energy is NaN after minimization.")
+        if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+
+        del(modeller)
+        positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+        modeller = app.Modeller(simulation.topology, positions)
+
+        # Write modeller positions.
+        if verbose: print("Writing modeller output...")
+        filename = os.path.join(workdir, 'minimize-1.pdb')
+        app.PDBFile.writeFile(modeller.topology, modeller.positions, open(filename, 'w'), keepIds=True)
+
+        del(system)
+        del(integrator)
+        del(platform)
+        del(simulation.context)
+        del(simulation)
+        simulation = None
+
+        if verbose: print "Creating constrained OpenMM system..."
+        system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+        if verbose: print "Adding barostat..."
+        system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
+
+        # Create simulation.
+        if verbose: print "Creating simulation..."
+        integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+        #platform = openmm.Platform.getPlatformByName('CPU')
+        platform = openmm.Platform.getPlatformByName('OpenCL')
+        platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+        simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
+        simulation.context.setPositions(modeller.positions)
+
+        # Minimize energy.
+        if verbose: print "Minimizing energy..."
+        potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+        if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+            raise Exception("Potential energy is NaN before minimization.")
+        if verbose: print "Initial potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+        simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
+        potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+        if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+            raise Exception("Potential energy is NaN after minimization.")
+        if verbose: print "Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+
+
+        if solvate:
+            # Write initial positions.
+            filename = os.path.join(workdir, 'minimized_vacuum.pdb')
+            positions = simulation.context.getState(getPositions=True).getPositions()
+            app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
+            del(modeller)
+            positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+            modeller = app.Modeller(simulation.topology, positions)
+
+            del(system)
+            del(integrator)
+            del(platform)
+            del(simulation.context)
+            del(simulation)
+            simulation = None
+
+            # Solvate and create system.
+            if verbose: print "Solvating with %s..." % water_name
+            modeller.addSolvent(forcefield, padding=padding, model=water_name, ionicStrength=ionicStrength)
+
+            # Separate waters into a separate 'W' chain with renumbered residues.
+            # This is kind of a hack, as waters are numbered 1-9999 and then we repeat
+            print "Renumbering waters..."
+            for chain in modeller.topology.chains(): water_id = chain.id
+            nwaters_and_ions = 0
+            for residue in modeller.topology.residues():
+                if residue.chain.id == water_id:
+                    residue.id = (nwaters_and_ions % 9999) + 1
+                    nwaters_and_ions += 1
+            print "System contains %d waters and ions." % nwaters_and_ions
+
+            # Create OpenMM system.
+            if verbose: print "Creating solvated OpenMM system..."
+            system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+            #system = forcefield.createSystem(modeller.topology, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
+            if verbose: print "Adding barostat..."
+            system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
+
+            # Create simulation.
+            if verbose: print "Creating solvated simulation..."
+            integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+            #platform = openmm.Platform.getPlatformByName('CPU')
+            platform = openmm.Platform.getPlatformByName('OpenCL')
+            platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+            simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
+            simulation.context.setPositions(modeller.positions)
+
+            # Write modeller positions.
+            if verbose: print "Writing modeller output..."
+            filename = os.path.join(workdir, 'modeller_solvent.pdb')
+            positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+            app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
+            # Minimize energy.
+            if verbose: print "Minimizing energy..."
+            potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+            if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+                raise Exception("Potential energy is NaN before minimization.")
+            if verbose: print "Initial solvated potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+            simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
+            potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+            if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+                raise Exception("Potential energy is NaN after minimization.")
+            if verbose: print "Final solvated potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole)
+
+
+        # Write minimized positions.
+        filename = os.path.join(workdir, 'minimized.pdb')
+        positions = simulation.context.getState(getPositions=True).getPositions()
+        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
+        # Assign temperature
+        simulation.context.setVelocitiesToTemperature(temperature)
+
+        # Take a few steps to relax structure.
+        if verbose: print "Taking a few steps..."
+        simulation.step(nsteps)
+
+        # Write initial positions.
+        if verbose: print "Writing positions..."
+        filename = os.path.join(workdir, 'system.pdb')
+        positions = simulation.context.getState(getPositions=True).getPositions()
+        app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'), keepIds=True)
+
+        # Write mutation.
+        filename = os.path.join(workdir, 'mutation.txt')
+        outfile = open(filename, 'w')
+        outfile.write('%s\n' % name)
+        outfile.flush()
+        outfile.close()
+
+        # Serialize to XML files.
+        if verbose: print "Serializing to XML..."
+        system_filename = os.path.join(workdir, 'system.xml')
+        integrator_filename = os.path.join(workdir, 'integrator.xml')
+        write_file(system_filename, openmm.XmlSerializer.serialize(system))
+        write_file(integrator_filename, openmm.XmlSerializer.serialize(integrator))
+        simulation.context.setVelocitiesToTemperature(temperature)
+        state = simulation.context.getState(getPositions=True, getVelocities=True, getForces=True, getEnergy=True, getParameters=True, enforcePeriodicBox=True)
+        state_filename = os.path.join(workdir, 'state.xml')
+        serialized = openmm.XmlSerializer.serialize(state)
+        write_file(state_filename, serialized)
+
+        # If everything worked, add this RUN.
+        run_name = 'RUN%d' % runs
+        run_dir = os.path.join(output_path, run_name)
+        shutil.move(workdir, run_dir)
+        run_index_outfile.write('%s %s\n' % (run_name, name))
+        run_index_outfile.flush()
+        runs += 1
+
+        # Clean up.
+        del simulation.context
+        del simulation
+        del system
+        del positions
+
+    if False:
+        e = 'No'
+#    except Exception as e:
+        print str(e)
+        exception_outfile.write("%s : %s : %s\n" % (name, str(mutant), str(e)))
+        exception_outfile.flush()
+
+        # Clean up.
+        if simulation:
+            if simulation.context: del simulation.context        
+
+exception_outfile.close()
+run_index_outfile.close()
+
+
+
+
+
+
+
