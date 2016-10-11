@@ -1,6 +1,8 @@
 # AURKA_UMN
 original location: `/cbio/jclab/projects/behrj/AURKA_UMN`
 
+Correlation timeplot scripts found at `AURKA_UMN/analyze/analyze-hbond-correlation-times/`
+
 Projects to be analyzed for manuscript:
 (in all cases, crystallographic waters were preserved for initial setup)
 * 11414: AurA +TPX2, pdb 1OL5
