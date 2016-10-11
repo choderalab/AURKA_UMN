@@ -134,9 +134,6 @@ if this_run is not None:
     runs = [run_guide[this_run][1]]
 else: runs = [] # so basically, never do this
 
-projects = ['11419']
-runs = [4]
-
 verbose = True
 for project in projects:
     project_dir = project_dirs[project]
