@@ -26,11 +26,13 @@ Plots histogram of presence of W1 and W2 and saves arrays
 * W2 plot: `"/cbio/jclab/projects/behrj/AURKA_UMN/plots/W2-%s-%s-181and185-or275.png" % (project_for_title, run)`
 * W2 array: `"%s/data/RUN%s-W2-181185-or275-oxygen-indices.npy" % (project_dirs[project],run)`
 * HBonds between waters: `'%s/data/%s_%s_IntraWater.npy' % (project_dir, project, run)`
+* where `project_dirs[project]` (defined at top of script) is `/cbio/jclab/projects/behrj/AURKA_UMN/output-{project#}/`
 
 ### additional salt bridges representing fret fret-calc.py
 Calculates and saves 2 arrays:
 * salt bridge distances S284-L225: `'%s/data/%s_%s_284-225_SB_total.npy' % (project_dir, project, run)`
-* salt bridge distances T287-L225: '%s/data/%s_%s_287-225_SB_total.npy' % (project_dir, project, run)
+* salt bridge distances T287-L225: `'%s/data/%s_%s_287-225_SB_total.npy' % (project_dir, project, run)`
+* where `project_dir` (defined at top of script) is `/cbio/jclab/projects/behrj/AURKA_UMN/output-{project#}/`
 
 ### plot fret distances fret-mutants.py
 For each separate project run, plots each fret salt bridge and saves:
