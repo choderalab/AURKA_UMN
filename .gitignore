@@ -1,0 +1,4 @@
+plots/
+output-*/
+*.pyc
+*.sh

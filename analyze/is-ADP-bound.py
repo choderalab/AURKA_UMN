@@ -12,9 +12,21 @@ import plot_function
 local_path = os.path.dirname(os.path.realpath(__file__))
 
 projects = ['11410','11411','11418']
-projects = ['11410','11411']
-project_dirs = {'11410':'%s/../output-1OL5' % local_path,'11411':'%s/../output-1OL7' % local_path,'11418':'%s/../output1OL5-TPX2' % local_path}
-system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed'}
+projects = ['11414','11418']
+project_dirs = {
+    '11410':'%s/../output-1OL5' % local_path,
+    '11411':'%s/../output-1OL7' % local_path,
+    '11414':'%s/../output-11414' % local_path,
+    '11418':'%s/../output-11418' % local_path
+}
+
+system = {
+    '11410':'with TPX2',
+    '11411':'without TPX2',
+    '11414':'with TPX2',
+    '11418': 'with TPX2 removed'
+}
+
 runs = range(5)
 
 with open('/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
@@ -26,6 +38,45 @@ for entry in run_index.split('\n'):
         mutant[entry.split(' ')[0]] = entry.split(' ')[1]
     except:
         pass
+projects = ['11414','11418','11419','11423','11424','11425']
+project_dirs = {
+    '11410':'%s/../output-1OL5' % local_path,
+    '11411':'%s/../output-1OL7' % local_path,
+    '11414':'%s/../output-11414' % local_path,
+    '11418':'%s/../output-11418' % local_path,
+    '11419':'%s/../output-11419' % local_path,
+    '11423':'%s/../output-11423' % local_path,
+    '11424':'%s/../output-11424' % local_path,
+    '11425':'%s/../output-11425' % local_path,
+}
+
+system = {
+    '11410':'with TPX2',
+    '11411':'without TPX2',
+    '11414':'with TPX2',
+    '11418':'with TPX2 removed',
+    '11419':'with TPX2',
+    '11423':'with TPX2 removed',
+    '11424':'with TPX2',
+    '11425':'with TPX2 removed'
+}
+
+run_guide = dict()
+for project in projects:
+    run_guide[project] = 0
+    filename = project_dirs[project]+'/run-index.txt'
+    with open(filename, 'r') as fi:
+        project_run_index = fi.read()
+    for entry in project_run_index.split('\n'):
+        try:
+            run = entry.split(' ')[0]
+            mutant = entry.split(' ')[1]
+            run = run[3:]
+            run_guide[project] += 1
+            #mutants[(project, run)] = mutant
+        except:
+            pass
+print(run_guide)
 
 overwrite = True
 
@@ -193,7 +244,7 @@ except:
     this_project = None
 
 if this_project is not None:
-    projects = [projects[this_project%2]]
+    projects = [projects[this_project%6]]
 
 project_adp_active = dict()
 
@@ -208,11 +259,15 @@ for project in projects:
     a213c_total = []
     e211nh2_total = []
     k162op_total = [list(),list(), list()] # N-Oa, N-Ob, Oa-Ob
+    runs = range(run_guide[project])
     for run in runs:
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
         for i in range(50):
-            traj = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%s-clone%s.h5" % (project, run, i))
+            try:
+                traj = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%s-clone%s.h5" % (project, run, i))
+            except:
+                break
             if i == 0:
                 for residue in traj.topology.residues:
                     if str(residue) == 'GLU211':

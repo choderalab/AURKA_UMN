@@ -7,6 +7,7 @@ Creates one 2D hist per residue per project
 
 Can be modified to consider only hydrogen bonds with molecules also bound to 185
 """
+import os
 import numpy as np
 import sys
 import math

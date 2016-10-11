@@ -1,7 +1,10 @@
+"""
+Plot minimum distances between 181-185 and 181-162
+"""
+import os
 import numpy as np
 import sys
 import math
-import os
 import plot_function
 
         # make plots of all data past t = 250ns
@@ -52,44 +55,52 @@ for project in projects:
         except:
             pass
 print(run_guide)
-#print(len(run_guide))
-#print(mutants)
 
 offset = plot_function.OFFSET
 bin_x = plot_function.BIN_X
 
 def plot_2dhist(bridge, x_axis, minimum_distance, weights, run, project):
-    title = 'AURKA %s minimum %s salt bridge distance over time %s' % (mutants[(project, run)], bridge, system[project])
-    filename = "./plots/AURKA-salt-bridge-%s-hist2d-entire-traj-%s-RUN%s" % (bridge, project, run)
+    title = 'AURKA %s minimum %s CB-CB distance over time %s' % (mutants[(project, run)], bridge, system[project])
+    filename = "../plots/AURKA-CB-%s-hist2d-entire-traj-%s-combined-RUN%s" % (bridge, project, run)
     ylabel = 'distance r (nanometers) between residues %s and %s' % (bridge.split('-')[0], bridge.split('-')[1])
     plot_function.plot_2dhist(bridge, x_axis, minimum_distance, weights, title, ylabel, filename)
 
 for i, project in enumerate(projects):
     project_dir = project_dirs[project]
-    runs = run_guide[project]
-    for run in range(runs):
-        for bridge in ['181-162']:
-            if not os.path.exists('%s/data/%s_%s_%s_SB_total.npy' % (project_dir, project, run, bridge)):
-                print('MISSING BRIDGE DATA FOR %s RUN %s' % (project, run))
+    for bridge in ['287-225']:
+        runs = run_guide[project]
+        for run in range(runs):
+            if project == '11419' and run == 4:
                 continue
             SB_total = np.load('%s/data/%s_%s_%s_SB_total.npy' % (project_dir, project, run, bridge))
+            existing_frames = 0
+            should_have_frames = 50 * 2000
 
-            minimum_distance = np.zeros((50,2000-offset))
-            x_axis = np.zeros((50,2000-offset))
-            weights = np.zeros((50,2000-offset))
-            column_count = np.zeros(bin_x.shape)
-            for clone, traj in enumerate(SB_total):
-                for index in range(offset, 2000):
-                    try:
-                        minimum_distance[clone][index-offset] = traj[index]
-                        column_count[int((index-offset-0.25)/40)] += 1
-                    except:
-                        pass
-                    x_axis[clone][index] = index*0.25
             for clone, traj in enumerate(SB_total):
                 for index in range(offset,2000):
-                    weights[clone][index-offset] = 1.00 / column_count[int((index-offset-0.25)/40)]
-            x_axis = x_axis.flatten()
-            minimum_distance = minimum_distance.flatten()
-            weights = weights.flatten()
-            plot_2dhist(bridge, x_axis, minimum_distance, weights, run, project)
+                    try:
+                        minimum_distance = traj[index]
+                        existing_frames += 1
+                    except:
+                        pass
+            total_time = existing_frames * 0.25
+            print('%s ns in Project %s RUN%s -- %s %s' % (str(total_time), project, run, mutants[(project,run)], system[project]))
+
+print('Complete!')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

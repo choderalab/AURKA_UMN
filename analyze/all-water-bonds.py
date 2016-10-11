@@ -4,6 +4,8 @@ import math
 import os
 import mdtraj as md
 from itertools import chain
+from bondlife import bondlife
+from simtk.openmm.app import PDBFile
 
 local_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -109,7 +111,7 @@ for project in projects:
             if len(all_water_hbonds) == 50:
                 if verbose:
                     print('Existing data file was complete. Moving on...')
-                traj = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone0.h5" % (project, run))
+                traj = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%d-clone0.h5" % (project, run))
                 run_protein_atoms[str(project)+str(run)] = find_protein_atoms(traj)
                 run_water_atoms[str(project)+str(run)] = traj.top.select("water")
                 run_all_water_hbonds[str(project)+str(run)] = all_water_hbonds
@@ -121,7 +123,7 @@ for project in projects:
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
         for clone in range(start,50):
-            traj = md.load("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone%s.h5" % (project, run, clone))
+            traj = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%d-clone%s.h5" % (project, run, clone))
             if clone == start:
                 haystack = traj.top.select("water")
                 run_water_atoms[str(project)+str(run)] = haystack
@@ -136,16 +138,19 @@ for project in projects:
 if verbose:
     print('Found and saved bonds!')
 
+run_significant_bonds = dict()
+run_hbonds = dict()
 for project in projects:
     project_dir = project_dirs[project]
     for run in runs:
         if not overwrite and os.path.exists('%s/data/%s_%s_all-protein-significant-water-bonds.npy' % (project_dir, project, run)):
-            #significant_bonds = np.load('%s/data/%s_%s_all-protein-significant-water-bonds.npy' % (project_dir, project, run))
-            #hbonds = np.load('%s/data/%s_%s_all-protein-water-bonds.npy' % (project_dir, project, run))
+            run_significant_bonds[str(project)+str(run)] = np.load('%s/data/%s_%s_all-protein-significant-water-bonds.npy' % (project_dir, project, run)).tolist()
+            run_hbonds[str(project)+str(run)] = np.load('%s/data/%s_%s_all-protein-water-bonds.npy' % (project_dir, project, run)).tolist()
             continue
         hbonds = np.empty(len(run_protein_atoms[str(project)+str(run)]), dtype=dict)
         significant_bonds = dict()
         for traj_id, traj in enumerate(run_all_water_hbonds[str(project)+str(run)]):
+            print('RUN%s CLONE%s' % (run, traj_id))
             simultaneously_bound = dict()
             for frame_id, frame in enumerate(traj):
                 for bond in frame:
@@ -179,6 +184,69 @@ for project in projects:
             print(significant_bonds[key])
         np.save('%s/data/%s_%s_all-protein-significant-water-bonds.npy' % (project_dir, project, run), significant_bonds)
         np.save('%s/data/%s_%s_all-protein-water-bonds.npy' % (project_dir, project, run), hbonds)
+        run_significant_bonds[str(project)+str(run)] = significant_bonds
+        run_hbonds[str(project)+str(run)] = hbonds
+
+#for key, all_water_bonds in run_significant_bonds.items():
+#    project = key[:-1]
+#    run = key[-1]
+#    project_dir = project_dirs[project]
+#    every_water = set(chain.from_iterable(all_water_bonds.values()))
+#    topology = md.load("%s/RUN0/system.pdb" % project_dir)
+#    for protein, water_list in all_water_bonds.items():
+#        protein_atom = topology.top.atom(protein)
+#        print("Atom %s of Resdiue %s has %s significant waters" % (protein_atom.name, str(protein_atom.residue), len(water_list)))
+
+compile_all = dict()
+proteins = list()
+residue_to_atoms = dict()
+show_the_thing = True
+for project in ['11410','11411']:
+    compile_all[project] = dict()
+    residue_to_atoms[project] = dict()
+    project_dir = project_dirs[project]
+    topology = md.load("%s/RUN0/system.pdb" % project_dir)
+    for run in range(5):
+        temp_dict =  np.load('%s/data/%s_%s_all-protein-significant-water-bonds.npy' % (project_dir, project, run)).tolist()
+        for key, value in temp_dict.items():
+            if compile_all[project].has_key(key):
+                compile_all[project][key] = list(chain(compile_all[project][key],value))
+                if show_the_thing:
+                    print(compile_all[project][key])
+                    show_the_thing = False
+            else:
+                compile_all[project][key] = value
+    for key in compile_all[project].keys():
+        atom = topology.top.atom(key)
+        residue = str(atom.residue)
+        proteins.append(residue)
+        if residue_to_atoms[project].has_key(residue):
+            residue_to_atoms[project][residue].append(atom)
+        else:
+            residue_to_atoms[project][residue] = [atom]
+proteins = set(proteins)
+
+for residue in proteins:
+    print('\n========================  %s  =========================' % str(residue))
+    atom_names = {'11410':dict(),'11411':dict()}
+    if residue_to_atoms['11410'].has_key(residue):
+        [atom_names['11410'].update({atom.name:atom}) for atom in residue_to_atoms['11410'][residue]]
+    if residue_to_atoms['11411'].has_key(residue):
+        [atom_names['11411'].update({atom.name:atom}) for atom in residue_to_atoms['11411'][residue]]
+    atom_list = set(chain(atom_names['11410'].keys(),atom_names['11411'].keys()))
+    for atom in atom_list:
+        print('\t\tsignificant bonds on atom %s' % atom)
+        try:
+            atom0 = atom_names['11410'][atom]
+            p0 = len(compile_all['11410'][atom0.index])
+        except:
+            p0 = 0
+        try:
+            atom1 = atom_names['11411'][atom]
+            p1 = len(compile_all['11411'][atom1.index])
+        except:
+            p1 = 0
+        print('\twith TPX2: %s\t\t\twithout: %s' % (p0,p1))
 
 if verbose:
     print('Complete!')
