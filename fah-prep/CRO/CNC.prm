@@ -1,0 +1,23 @@
+[ atomtypes ] 
+amber03_CY   CY     12.0100  0.0000  A   3.39967e-01  3.59824e-01 ; from parm99.dat 
+amber03_NY   NY     14.0100  0.0000  A   3.25000e-01  7.11280e-01 ; from parm99.dat
+
+[ bondtypes ] 
+; i    j  func       b0          kb 
+  S  CY         1    0.16790   272290.0 ; from parm99.dat via parmchk, tleap, and amb2gmx, consistent with acpype
+  CY NY         1    0.11380   848930.0 ; from parm99.dat via parmchk, tleap, and amb2gmx, consistent with acpype
+
+[ angletypes ] 
+;      i        j        k  func       theta0       ktheta          ub0          kub
+CT  S   CY           1    99.900    329.280 ; from parm99.dat via parmchk, tleap, and amb2gmx, consistent with acpype
+S   CY  NY           1   178.680    591.120 ; from parm99.dat via parmchk, tleap, and acpype 
+
+[ dihedraltypes ]  ;; propers
+;  i  j  k  l  func      phi0     kphi        mult
+H1   CT  S   CY    9      0.00      1.39467     3  ; parm99.dat via parmchk, tleap, and acpype
+CT   CT  S   CY    9      0.00      1.39467     3  ; parm99.dat via parmchk, tleap, and acpype
+CT   S   CY  NY    9    180.00      0.00000     2  ; parm99.dat via parmchk, tleap, and acpype
+
+[ dihedraltypes ] ;; improper dihedrals 
+; 'improper' dihedrals
+;      i        j        k        l  func         phi0         kphi

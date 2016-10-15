@@ -1,0 +1,16 @@
+;
+;   Example topology file
+;
+
+; The force field files to be included
+#include "forcefield.itp"
+
+[ moleculetype ]
+; name  nrexcl
+CNCys        3
+
+[ system ]
+CNCys
+
+[ molecules ]
+CNC        1
