@@ -42,3 +42,9 @@ For each separate project run, plots each fret salt bridge and saves:
 * Creates the same plots as `fret-mutants.py` but pools all WT and all Q185 mutant data
 * Saves plots as: `"../plots/AURKA-CB-%s-hist2d-entire-traj-%s-combined-%s.pdf" % (bridge, project, mutant)` 
 where `mutant` is either "WT" or "Q185mutants"
+
+### Extract trajectories with specific waters that meet W1 and W2 criteria
+
+* `extract_trajectories_with_W1W2.py` - For each trajectory, extract only waters for that trajectory that meet W1/W2 criteria.
+  Trajectories are rendered as PDB and DCD files.
+
