@@ -80,7 +80,7 @@ pressure = 1.0 * unit.atmospheres
 collision_rate = 5.0 / unit.picoseconds
 barostat_frequency = 50
 timestep = 2.0 * unit.femtoseconds
-nsteps = 50000 # number of steps to take for testing
+nsteps = 500 # number of steps to take for testing
 ionicStrength = 20 * unit.millimolar
 
 # Verbosity level
@@ -163,8 +163,8 @@ for name in range(5):
         if verbose: print("Creating simulation...")
         integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
         #platform = openmm.Platform.getPlatformByName('CPU')
-        platform = openmm.Platform.getPlatformByName('OpenCL')
-        platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+        platform = openmm.Platform.getPlatformByName('CUDA')
+        platform.setPropertyDefaultValue('CUDAPrecision', 'mixed') # use double precision
         simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
         try:
             simulation.context.setPositions(modeller.positions)
@@ -221,8 +221,8 @@ for name in range(5):
         if verbose: print("Creating simulation...")
         integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
         #platform = openmm.Platform.getPlatformByName('CPU')
-        platform = openmm.Platform.getPlatformByName('OpenCL')
-        platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+        platform = openmm.Platform.getPlatformByName('CUDA')
+        platform.setPropertyDefaultValue('CUDAPrecision', 'mixed') # use double precision
         simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
         simulation.context.setPositions(modeller.positions)
 
