@@ -27,23 +27,19 @@ import sys
 #from parmed.charmm import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
 from simtk.openmm.app import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
 
-from parmed import unit as u ### ???
+
 
 #
-TPX2 = True
+
 
 print("Input PDB structure: 1OL5")
 pdbid = '1OL5'
 
-if TPX2:
-    output_identifier = '+'
-else:
-    output_identifier = '-'
-# Path to put all output in
-output_path = "charmm"+output_identifier+"TPX2"
+
+output_path = '/Users/albaness/github/AURKA_UMN/charmm-gui-output/1OL5-phos-tpx2'
 
 # Source PDB
-pdbfilename = "WT/charmm_"+pdbid+output_identifier+"TPX2.pdb"
+pdbfilename = 'step2_solvator.pdb'
 
 print("Source PDB filename: %s" % pdbfilename)
 print("Output directory for mutations: %s" % output_path)
@@ -52,24 +48,28 @@ print("Output directory for mutations: %s" % output_path)
 # PARAMETERS
 #
 
-keep_crystallographic_water = True # not using
-
 universal_parameter_files = [
-    'par_all36_prot.prm',
-    'par_all36_na.prm',
-    'top_all36_prot.rtf',
-    'toppar_all36_na_nad_ppi.str',
-    'toppar_water_ions.str',
+    'toppar/par_all36_prot.prm',
+    'toppar/par_all36_na.prm',
+    'toppar/top_all36_prot.rtf',
+    'toppar/toppar_all36_na_nad_ppi.str',
+    'toppar/toppar_water_ions.str',
+    'step2_solvator.str',
+    'step2.2_ions.prm',
+    'step2.1_waterbox.prm',
+    'step1_pdbreader.str',
+    'step1_labelrot.str',
+    'toppar/toppar_all36_label_spin.str',
+    'step1_pdbreader.str',
+    'toppar/top_all36_cgenff.rtf',
+    'toppar/top_all36_na.rtf',
+    'toppar/toppar_all36_na_rna_modified.str',
+    'toppar/toppar_all36_prot_na_combined.str',
+    'toppar/par_all36_cgenff.prm',
+    'toppar/par_all36_na.prm',
 ]
 
-charmm_parameter_files = [
-    pdbfilename.split('.')[0]+'.top.inp',
-    pdbfilename.split('.')[0]+'.box.prm',
-    pdbfilename.split('.')[0]+'.str',
-    pdbfilename.split('.')[0]+'.ion.prm',
-]
-
-psf_file = 'WT/charmm_'+pdbid+output_identifier+'TPX2.psf'
+psf_file = 'step2_solvator.psf'
 
 padding = 11.0 * unit.angstroms
 nonbonded_cutoff = 9.0 * unit.angstroms
@@ -81,7 +81,7 @@ collision_rate = 5.0 / unit.picoseconds
 barostat_frequency = 50
 timestep = 2.0 * unit.femtoseconds
 nsteps = 50000 # number of steps to take for testing
-ionicStrength = 300 * unit.millimolar
+ionicStrength = 20 * unit.millimolar
 
 # Verbosity level
 verbose = True
@@ -105,7 +105,7 @@ tmp_path = output_path
 # Open file to write all exceptions that occur during execution.
 exception_outfile = open(exception_filename, 'a')
 run_index_outfile = open(run_index_filename, 'a')
-for name in range(2,5):
+for name in range(5):
     runs = name
     name = str(name)
     simulation = None
@@ -113,7 +113,7 @@ for name in range(2,5):
     if True:
         # Load the CHARMM files
         print('Loading CHARMM files...')
-        param_files = universal_parameter_files + charmm_parameter_files
+        param_files = universal_parameter_files #+ charmm_parameter_files
         params = CharmmParameterSet(*param_files)
         psf = CharmmPsfFile(psf_file)
         pdb = app.PDBFile(pdbfilename)
@@ -297,14 +297,6 @@ for name in range(2,5):
         del system
         del positions
 
-    #except Exception as e:
-    #    print(str(e))
-    #    exception_outfile.write("%s : %s\n" % (name, str(e)))
-    #    exception_outfile.flush()
-
-    #    # Clean up.
-    #    if simulation:
-    #        if simulation.context: del simulation.context        
 
 exception_outfile.close()
 run_index_outfile.close()
