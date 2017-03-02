@@ -36,7 +36,7 @@ print("Input PDB structure: 1OL5")
 pdbid = '1OL5'
 runs = 0
 
-output_path = '/Users/albaness/github/AURKA_UMN/charmm-gui-output/1OL5-phos-tpx2'
+output_path = '1OL5-phos-tpx2'
 
 # Source PDB
 pdbfilename = 'step2_solvator.pdb'
