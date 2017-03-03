@@ -35,7 +35,7 @@ from parmed import unit as u ### ???
 parser = argparse.ArgumentParser(description="Script to setup FAH projects from openMM ")
 parser.add_argument('--input', required=True, dest='pdb_file',
                     help='THe pdb file that you would like to run through this program')
-parser.add_argument('--output', required=True , default='output.pdb', dest='output',
+parser.add_argument('--output', required=True, dest='output',
                     help='the name of the output file')
 parser.add_argument('--run', dest='run_number', action='store', required=False, default=0,
                     help='number of run being set up. Default is 0')
