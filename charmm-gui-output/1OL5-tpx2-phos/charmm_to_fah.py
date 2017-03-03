@@ -20,8 +20,8 @@ import pdbfixer
 from simtk import openmm, unit
 from simtk.openmm import app
 import mdtraj as md
+
 import sys
-import argparse
 
 # ParmEd Imports
 #from parmed.charmm import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
@@ -29,26 +29,14 @@ from simtk.openmm.app import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
 
 from parmed import unit as u ### ???
 
-##########
-# Parser #
-##########
-parser = argparse.ArgumentParser(description="Script to setup FAH projects from openMM ")
-parser.add_argument('--input', required=True, dest='pdb_file',
-                    help='THe pdb file that you would like to run through this program')
-parser.add_argument('--output', required=True , default='output.pdb', dest='output',
-                    help='the name of the output file')
-parser.add_argument('--run', dest='run_number', action='store', required=False, default=0,
-                    help='number of run being set up. Default is 0')
-parser.add_argument('--id', dest='content', action='store', require=False, default='empty'
-                    help='text to be written out in the file in run')
-args = parser.parse_args()
+#
 
 
+print("Input PDB structure: 1OL5")
+pdbid = '1OL5'
+runs = 0
 
-print("Input PDB structure: %s" % args.pdb_file)
-runs = args.run_number
-
-output_path = args.output
+output_path = '1OL5-phos-tpx2'
 
 # Source PDB
 pdbfilename = 'step2_solvator.pdb'
@@ -324,10 +312,6 @@ state = simulation.context.getState(getPositions=True, getVelocities=True, getFo
 state_filename = os.path.join(workdir, 'state.xml')
 serialized = openmm.XmlSerializer.serialize(state)
 write_file(state_filename, serialized)
-
-# Write txt file
-text_filename = os.path.join(workdir, 'run-info.txt')
-write_file(text_filename, args.content)
 
 # If everything worked, add this RUN.
 run_name = 'RUN%d' % runs
