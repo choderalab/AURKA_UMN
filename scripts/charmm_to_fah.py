@@ -39,7 +39,7 @@ parser.add_argument('--output', required=True , default='output.pdb', dest='outp
                     help='the name of the output file')
 parser.add_argument('--run', dest='run_number', action='store', required=False, default=0,
                     help='number of run being set up. Default is 0')
-parser.add_argument('--id', dest='content', action='store', require=False, default='empty',
+parser.add_argument('--id', dest='content', action='store', required=False, default='empty',
                     help='text to be written out in the file in run')
 args = parser.parse_args()
 
