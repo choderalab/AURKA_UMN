@@ -95,7 +95,7 @@ if __name__ == '__main__':
     pressure = 1.0 * unit.atmospheres
     collision_rate = 90.0 / unit.picoseconds
     barostat_frequency = 50
-    timestep = 1.0 * unit.femtoseconds
+    timestep = .1 * unit.femtoseconds
     nsteps = 50000 # number of steps to take for testing
     ionicStrength = 20 * unit.millimolar
 
@@ -146,9 +146,9 @@ if __name__ == '__main__':
         max_crds[1] = max(max_crds[1], coord[1])
         max_crds[2] = max(max_crds[2], coord[2])
 
-    psf.setBox(max_crds[0]-min_crds[0],
-               max_crds[1]-min_crds[1],
-               max_crds[2]-min_crds[2],
+    psf.setBox(max_crds[0]-min_crds[0]+0.5,
+               max_crds[1]-min_crds[1]+0.5,
+               max_crds[2]-min_crds[2]+0.5,
                )
 
     # Create PDBFixer, retrieving PDB template
@@ -212,22 +212,22 @@ if __name__ == '__main__':
     simulation = None
 
     if verbose: print("Creating constrained OpenMM system to equillibrate")
-    coords = modeller.positions
-    min_crds = [coords[0][0], coords[0][1], coords[0][2]]
-    max_crds = [coords[0][0], coords[0][1], coords[0][2]]
+    #coords = modeller.positions
+    #min_crds = [coords[0][0], coords[0][1], coords[0][2]]
+    #max_crds = [coords[0][0], coords[0][1], coords[0][2]]
 
-    for coord in coords:
-        min_crds[0] = min(min_crds[0], coord[0])
-        min_crds[1] = min(min_crds[1], coord[1])
-        min_crds[2] = min(min_crds[2], coord[2])
-        max_crds[0] = max(max_crds[0], coord[0])
-        max_crds[1] = max(max_crds[1], coord[1])
-        max_crds[2] = max(max_crds[2], coord[2])
+    #for coord in coords:
+    #    min_crds[0] = min(min_crds[0], coord[0])
+    #    min_crds[1] = min(min_crds[1], coord[1])
+    #    min_crds[2] = min(min_crds[2], coord[2])
+    #    max_crds[0] = max(max_crds[0], coord[0])
+    #    max_crds[1] = max(max_crds[1], coord[1])
+    #    max_crds[2] = max(max_crds[2], coord[2])
 
-    psf.setBox(max_crds[0]-min_crds[0],
-               max_crds[1]-min_crds[1],
-               max_crds[2]-min_crds[2],
-    )
+    #psf.setBox(max_crds[0]-min_crds[0],
+    #           max_crds[1]-min_crds[1],
+    #           max_crds[2]-min_crds[2],
+    #           )
     system = psf.createSystem(params, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
     if verbose: print("Adding barostat...")
     barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
@@ -295,10 +295,6 @@ if __name__ == '__main__':
     nsteps = 50000 # number of steps to take for testing
     ionicStrength = 20 * unit.millimolar
 
-    # Change parameters in the barostat
-    if verbose: print("Changing to production barostat")
-    barostat.setFrequency(barostat_frequency)
-
     # Change parameters in the integrator
     if verbose: print("Changing to production integrator ")
     integrator.setStepSize(timestep)
@@ -339,7 +335,7 @@ if __name__ == '__main__':
     shutil.move(workdir, run_dir)
     run_index_outfile.write('%s %s\n' % (run_name, name))
     run_index_outfile.flush()
-    runs += 1
+
 
     # Clean up.
     del simulation.context
