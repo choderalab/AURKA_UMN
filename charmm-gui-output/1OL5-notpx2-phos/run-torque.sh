@@ -22,7 +22,7 @@
 ##PBS -V
 #
 # job name (default = name of script file)
-#PBS -N mtor-explicit
+#PBS -N charm_to_fah_1
 
 if [ -n "$PBS_O_WORKDIR" ]; then
     cd $PBS_O_WORKDIR
@@ -30,4 +30,4 @@ fi
 
 cat $PBS_GPUFILE
 
-python ../../scripts/charmm_to_fah.py --input 1OL5-notpx2-phos --output ../11431 --run 0 --id 1OL5-notpx2-phos
+python ../../scripts/charmm_to_fah.py --input 1OL5-notpx2-phos --output ../11431 --run 1 --id 1OL5-notpx2-phos

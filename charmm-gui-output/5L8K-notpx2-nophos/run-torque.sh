@@ -22,7 +22,7 @@
 ##PBS -V
 #
 # job name (default = name of script file)
-#PBS -N charmm_to_fah
+#PBS -N charmm_to_fah_8
 
 if [ -n "$PBS_O_WORKDIR" ]; then
     cd $PBS_O_WORKDIR
@@ -30,4 +30,4 @@ fi
 
 cat $PBS_GPUFILE
 
-python ../../scripts/charmm_to_fah.py --input 5L8K-notpx2-nophos --output ../11431 --run 0 --id 5L8K-notpx2-nophos
+python ../../scripts/charmm_to_fah.py --input 5L8K-notpx2-nophos --output ../11431 --run 8 --id 5L8K-notpx2-nophos
