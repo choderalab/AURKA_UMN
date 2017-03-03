@@ -330,7 +330,7 @@ if __name__ == '__main__':
     write_file(text_filename, args.content)
 
     # If everything worked, add this RUN.
-    run_name = 'RUN%d' % runs
+    run_name = 'RUN%s' % runs
     run_dir = os.path.join(output_path, run_name)
     shutil.move(workdir, run_dir)
     run_index_outfile.write('%s %s\n' % (run_name, name))
