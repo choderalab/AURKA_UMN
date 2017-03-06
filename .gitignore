@@ -1,4 +1,5 @@
 plots/
 output-*/
 *.pyc
+*.sh
 *.tar
