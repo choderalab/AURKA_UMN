@@ -146,9 +146,9 @@ if __name__ == '__main__':
         max_crds[1] = max(max_crds[1], coord[1])
         max_crds[2] = max(max_crds[2], coord[2])
 
-    psf.setBox(max_crds[0]-min_crds[0]+0.5 * unit.angstrom,
-               max_crds[1]-min_crds[1]+0.5 * unit.angstrom,
-               max_crds[2]-min_crds[2]+0.5 * unit.angstrom,
+    psf.setBox(max_crds[0]-min_crds[0]+1 * unit.angstrom,
+               max_crds[1]-min_crds[1]+1 * unit.angstrom,
+               max_crds[2]-min_crds[2]+1 * unit.angstrom,
                )
 
     # Create PDBFixer, retrieving PDB template
