@@ -22,7 +22,7 @@
 ##PBS -V
 #
 # job name (default = name of script file)
-#PBS -N mtor-explicit
+#PBS -N charmm_to_fah_10
 
 if [ -n "$PBS_O_WORKDIR" ]; then
     cd $PBS_O_WORKDIR
