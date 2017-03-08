@@ -212,22 +212,6 @@ if __name__ == '__main__':
     simulation = None
 
     if verbose: print("Creating constrained OpenMM system to equillibrate")
-    #coords = modeller.positions
-    #min_crds = [coords[0][0], coords[0][1], coords[0][2]]
-    #max_crds = [coords[0][0], coords[0][1], coords[0][2]]
-
-    #for coord in coords:
-    #    min_crds[0] = min(min_crds[0], coord[0])
-    #    min_crds[1] = min(min_crds[1], coord[1])
-    #    min_crds[2] = min(min_crds[2], coord[2])
-    #    max_crds[0] = max(max_crds[0], coord[0])
-    #    max_crds[1] = max(max_crds[1], coord[1])
-    #    max_crds[2] = max(max_crds[2], coord[2])
-
-    #psf.setBox(max_crds[0]-min_crds[0],
-    #           max_crds[1]-min_crds[1],
-    #           max_crds[2]-min_crds[2],
-    #           )
     system = psf.createSystem(params, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
     if verbose: print("Adding barostat...")
     barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
@@ -267,8 +251,6 @@ if __name__ == '__main__':
     positions = simulation.context.getState(getPositions=True).getPositions()
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
-    # Assign temperature
-    # simulation.context.setVelocitiesToTemperature(temperature)
 
     # Take a few steps to relax structure.
     if verbose: print("Taking a few steps to relax structure")
@@ -280,38 +262,26 @@ if __name__ == '__main__':
     positions = simulation.context.getState(getPositions=True).getPositions()
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
+    # Retrieve the periodic box vectors
+    v1, v2, v3 = simulation.context.getState().getPeriodicBoxVectors()
+    print(v1)
+    print(v2)
+    print(v3)
+    system.setDefaultPeriodicBoxVectors(v1, v2, v3)
 
     # Create production system
     if verbose: print("Creating production system now...")
-    padding = 11.0 * unit.angstroms
-    nonbonded_cutoff = 9.0 * unit.angstroms
-    nonbonded_method = app.PME
-    max_minimization_iterations = 10000
     temperature = 300.0 * unit.kelvin
     pressure = 1.0 * unit.atmospheres
     collision_rate = 5.0 / unit.picoseconds
     barostat_frequency = 50
     timestep = 2.0 * unit.femtoseconds
-    nsteps = 50000 # number of steps to take for testing
-    ionicStrength = 20 * unit.millimolar
 
     # Change parameters in the integrator
     if verbose: print("Changing to production integrator ")
     integrator.setStepSize(timestep)
     integrator.setTemperature(temperature)
     integrator.setFriction(collision_rate)
-
-    # Minimize energy.
-    if verbose: print("Final minimization")
-    potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
-    if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
-        raise Exception("Potential energy is NaN before minimization.")
-    if verbose: print("Initial potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole))
-    simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
-    potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
-    if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
-        raise Exception("Potential energy is NaN after minimization.")
-    if verbose: print("Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole))
 
     # Serialize to XML files.
     if verbose: print("Serializing to XML...")
