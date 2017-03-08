@@ -264,11 +264,11 @@ if __name__ == '__main__':
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
     # Retrieve the periodic box vectors
-    v1 = simulation.context.getState().getPeriodicBoxVectors()
+    v1, v2, v3 = simulation.context.getState().getPeriodicBoxVectors()
     print(v1)
-    #print(v2)
-    #print(v3)
-    system.setDefaultPeriodicBoxVectors(v1)
+    print(v2)
+    print(v3)
+    system.setDefaultPeriodicBoxVectors(v1, v2, v3)
     updated_vectors = system.getDefaultPeriodicBoxVectors()
     print(updated_vectors)
 
