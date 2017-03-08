@@ -96,8 +96,7 @@ if __name__ == '__main__':
     collision_rate = 90.0 / unit.picoseconds
     barostat_frequency = 50
     timestep = .1 * unit.femtoseconds
-    #nsteps = 50000 # number of steps to take for testing
-    nsteps = 10  # number of steps to take for testing
+    nsteps = 50000 # number of steps to take for testing
     ionicStrength = 20 * unit.millimolar
 
     # Verbosity level
@@ -265,12 +264,8 @@ if __name__ == '__main__':
 
     # Retrieve the periodic box vectors
     v1, v2, v3 = simulation.context.getState().getPeriodicBoxVectors()
-    print(v1)
-    print(v2)
-    print(v3)
     system.setDefaultPeriodicBoxVectors(v1, v2, v3)
-    updated_vectors = system.getDefaultPeriodicBoxVectors()
-    print(updated_vectors)
+
 
     # Create production system
     if verbose: print("Creating production system now...")
