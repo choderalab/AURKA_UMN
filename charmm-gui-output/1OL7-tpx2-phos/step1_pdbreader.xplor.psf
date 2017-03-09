@@ -1,8 +1,8 @@
 PSF CMAP CHEQ XPLOR
 
        2 !NTITLE
-* PROA 284 180 60 90 SELECTED                                                   
-*  DATE:     3/ 6/17     10:57: 9      CREATED BY USER: apache                  
+* PROA 284 -60 -60 -90 SELECTED                                                 
+*  DATE:     3/ 9/17     15:51: 6      CREATED BY USER: apache                  
 
     5043 !NATOM
        1 PROA 127  GLN  N    NH3   -0.300000       14.0070           0   0.00000     -0.301140E-02

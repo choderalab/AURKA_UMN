@@ -30,4 +30,4 @@ fi
 
 cat $PBS_GPUFILE
 
-python ../../scripts/charmm_to_fah.py --input 1OL7-tpx2-phos --output ../11431 --run 7 --id 1OL7-tpx2-phos
+python ../../scripts/charmm_to_fah.py --input 1OL7-tpx2-nophos --output ../11431 --run 7 --id 1OL7-tpx2-nophos
