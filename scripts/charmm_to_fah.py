@@ -257,7 +257,7 @@ if __name__ == '__main__':
 
     # Take a few steps to relax structure.
     if verbose: print("Taking a few steps to relax structure")
-    #simulation.step(nsteps)
+    simulation.step(nsteps)
 
     # Write initial positions.
     if verbose: print("Writing positions...")
