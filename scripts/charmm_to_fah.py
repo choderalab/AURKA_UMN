@@ -223,9 +223,6 @@ if __name__ == '__main__':
     # Create simulation.
     if verbose: print("Creating simulation...")
     integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
-    #platform = openmm.Platform.getPlatformByName('CPU')
-    #platform = openmm.Platform.getPlatformByName('OpenCL')
-    #platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
     simulation = app.Simulation(modeller.topology, system, integrator)
     simulation.context.setPositions(modeller.positions)
 
@@ -268,6 +265,11 @@ if __name__ == '__main__':
     # Retrieve the periodic box vectors
     v1, v2, v3 = simulation.context.getState().getPeriodicBoxVectors()
     system.setDefaultPeriodicBoxVectors(v1, v2, v3)
+    positions = simulation.context.getState(getPositions=True).getPositions()
+
+    del (integrator)
+    del (simulation.context)
+    del (simulation)
 
 
     # Create production system
@@ -280,9 +282,10 @@ if __name__ == '__main__':
 
     # Change parameters in the integrator
     if verbose: print("Changing to production integrator ")
-    integrator.setStepSize(timestep)
-    integrator.setTemperature(temperature)
-    integrator.setFriction(collision_rate)
+    integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+    simulation = app.Simulation(modeller.topology, system, integrator)
+    simulation.context.setPositions(positions)
+
     simulation.step(nsteps)
 
 
