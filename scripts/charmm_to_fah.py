@@ -274,17 +274,17 @@ if __name__ == '__main__':
     if verbose: print("Creating production system now...")
     temperature = 300.0 * unit.kelvin
     pressure = 1.0 * unit.atmospheres
-    collision_rate = 90.0 / unit.picoseconds
+    collision_rate = 5.0 / unit.picoseconds
     barostat_frequency = 50
-    timestep = .1 * unit.femtoseconds
+    timestep = 2 * unit.femtoseconds
 
     # Change parameters in the integrator
     if verbose: print("Changing to production integrator ")
     integrator.setStepSize(timestep)
     integrator.setTemperature(temperature)
     integrator.setFriction(collision_rate)
-    simulation.context.setVelocitiesToTemperature(temperature)
     simulation.step(nsteps)
+
 
 
     # Serialize to XML files.
@@ -293,7 +293,6 @@ if __name__ == '__main__':
     integrator_filename = os.path.join(workdir, 'integrator.xml')
     write_file(system_filename, openmm.XmlSerializer.serialize(system))
     write_file(integrator_filename, openmm.XmlSerializer.serialize(integrator))
-    #simulation.context.setVelocitiesToTemperature(temperature)
     state = simulation.context.getState(getPositions=True, getVelocities=True, getForces=True, getEnergy=True, getParameters=True, enforcePeriodicBox=True)
     state_filename = os.path.join(workdir, 'state.xml')
     serialized = openmm.XmlSerializer.serialize(state)
