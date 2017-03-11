@@ -65,27 +65,30 @@ if __name__ == '__main__':
     #
 
     universal_parameter_files = [
-        'toppar/par_all36_prot.prm',
-        'toppar/par_all36_na.prm',
         'toppar/top_all36_prot.rtf',
-        'toppar/toppar_all36_na_nad_ppi.str',
+        'toppar/par_all36_prot.prm',
+        'toppar/toppar_all36_prot_retinol.str',
+        'toppar/toppar_all36_na_rna_modified.str',
+        'toppar/toppar_all36_prot_fluoro_alkanes.str',
+        'toppar/toppar_all36_prot_na_combined.str',
         'toppar/toppar_water_ions.str',
+        'toppar/toppar_all36_na_nad_ppi.str',
+        'toppar/toppar_dum_noble_gases.str',
+        'toppar/toppar_all36_label_spin.str',
+        'toppar/par_all36_na.prm',
+        'toppar/top_all36_na.rtf'
+    ]
+
+    charmm_parameter_files = [
         'step2_solvator.str',
         'step2.2_ions.prm',
         'step2.1_waterbox.prm',
         'step1_pdbreader.str',
         'step1_labelrot.str',
-        'toppar/toppar_all36_label_spin.str',
         'step1_pdbreader.str',
-        'toppar/top_all36_cgenff.rtf',
-        'toppar/top_all36_na.rtf',
-        'toppar/toppar_all36_na_rna_modified.str',
-        'toppar/toppar_all36_prot_na_combined.str',
-        'toppar/par_all36_cgenff.prm',
-        'toppar/par_all36_na.prm',
     ]
 
-    psf_file = 'step2_solvator.psf'
+    psf_file = 'step2_solvator.xplor.psf'
 
     padding = 11.0 * unit.angstroms
     nonbonded_cutoff = 9.0 * unit.angstroms
@@ -122,19 +125,19 @@ if __name__ == '__main__':
     exception_outfile = open(exception_filename, 'a')
     run_index_outfile = open(run_index_filename, 'a')
 
-
     name = str(runs)
     simulation = None
 
 
     # Load the CHARMM files
     print('Loading CHARMM files...')
-    param_files = universal_parameter_files #+ charmm_parameter_files
+    param_files = universal_parameter_files + charmm_parameter_files
     params = CharmmParameterSet(*param_files)
     psf = CharmmPsfFile(psf_file)
     pdb = app.PDBFile(pdbfilename)
+    system_coords = CharmmCrdFile('step2_solvator.crd')
 
-    coords = pdb.positions
+    coords = system_coords.positions
     min_crds = [coords[0][0], coords[0][1], coords[0][2]]
     max_crds = [coords[0][0], coords[0][1], coords[0][2]]
 
@@ -146,14 +149,14 @@ if __name__ == '__main__':
         max_crds[1] = max(max_crds[1], coord[1])
         max_crds[2] = max(max_crds[2], coord[2])
 
-    psf.setBox(max_crds[0]-min_crds[0]+1 * unit.angstrom,
-               max_crds[1]-min_crds[1]+1 * unit.angstrom,
-               max_crds[2]-min_crds[2]+1 * unit.angstrom,
+    psf.setBox(max_crds[0]-min_crds[0]+3 * unit.angstrom,
+               max_crds[1]-min_crds[1]+3 * unit.angstrom,
+               max_crds[2]-min_crds[2]+3 * unit.angstrom,
                )
 
     # Create PDBFixer, retrieving PDB template
     print("creating Modeller...")
-    modeller = app.Modeller(pdb.topology, pdb.positions)
+    modeller = app.Modeller(psf.topology, system_coords.positions)
 
     # Create directory to store files in.
     workdir = os.path.join(tmp_path, 'RUN'+name)
@@ -178,9 +181,9 @@ if __name__ == '__main__':
     if verbose: print("Creating simulation...")
     integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
     #platform = openmm.Platform.getPlatformByName('CPU')
-    platform = openmm.Platform.getPlatformByName('OpenCL')
-    platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
-    simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
+    #platform = openmm.Platform.getPlatformByName('OpenCL')
+    #platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+    simulation = app.Simulation(modeller.topology, system, integrator)
     try:
         simulation.context.setPositions(modeller.positions)
     except Exception as e:
@@ -206,7 +209,7 @@ if __name__ == '__main__':
 
     del(system)
     del(integrator)
-    del(platform)
+    #del(platform)
     del(simulation.context)
     del(simulation)
     simulation = None
@@ -221,9 +224,9 @@ if __name__ == '__main__':
     if verbose: print("Creating simulation...")
     integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
     #platform = openmm.Platform.getPlatformByName('CPU')
-    platform = openmm.Platform.getPlatformByName('OpenCL')
-    platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
-    simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
+    #platform = openmm.Platform.getPlatformByName('OpenCL')
+    #platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
+    simulation = app.Simulation(modeller.topology, system, integrator)
     simulation.context.setPositions(modeller.positions)
 
     # Write modeller positions.
@@ -254,7 +257,7 @@ if __name__ == '__main__':
 
     # Take a few steps to relax structure.
     if verbose: print("Taking a few steps to relax structure")
-    simulation.step(nsteps)
+    #simulation.step(nsteps)
 
     # Write initial positions.
     if verbose: print("Writing positions...")
@@ -280,6 +283,9 @@ if __name__ == '__main__':
     integrator.setStepSize(timestep)
     integrator.setTemperature(temperature)
     integrator.setFriction(collision_rate)
+    simulation.context.setVelocitiesToTemperature(temperature)
+    simulation.step(nsteps)
+
 
     # Serialize to XML files.
     if verbose: print("Serializing to XML...")
