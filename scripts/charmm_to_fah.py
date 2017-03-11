@@ -274,9 +274,9 @@ if __name__ == '__main__':
     if verbose: print("Creating production system now...")
     temperature = 300.0 * unit.kelvin
     pressure = 1.0 * unit.atmospheres
-    collision_rate = 5.0 / unit.picoseconds
+    collision_rate = 90.0 / unit.picoseconds
     barostat_frequency = 50
-    timestep = 2 * unit.femtoseconds
+    timestep = .1 * unit.femtoseconds
 
     # Change parameters in the integrator
     if verbose: print("Changing to production integrator ")
