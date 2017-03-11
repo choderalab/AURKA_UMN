@@ -99,7 +99,7 @@ if __name__ == '__main__':
     collision_rate = 90.0 / unit.picoseconds
     barostat_frequency = 50
     timestep = .1 * unit.femtoseconds
-    nsteps = 50000 # number of steps to take for testing
+    nsteps = 200000 # number of steps to take for testing
     ionicStrength = 20 * unit.millimolar
 
     # Verbosity level
@@ -276,9 +276,10 @@ if __name__ == '__main__':
     if verbose: print("Creating production system now...")
     temperature = 300.0 * unit.kelvin
     pressure = 1.0 * unit.atmospheres
-    collision_rate = 90.0 / unit.picoseconds
+    collision_rate = 5.0 / unit.picoseconds
     barostat_frequency = 50
-    timestep = .1 * unit.femtoseconds
+    timestep = 2 * unit.femtoseconds
+    nsteps = 50000  # number of steps to take for testing
 
     # Change parameters in the integrator
     if verbose: print("Changing to production integrator ")
