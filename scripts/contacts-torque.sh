@@ -15,7 +15,7 @@
 #
 # nodes: number of nodes
 #   ppn: number of processes per node
-#PBS -l nodes=5:ppn=4
+#PBS -l nodes=5:ppn=5
 #
 # specify memory 
 #
@@ -44,6 +44,7 @@
 
 # Change to working directory used for job submission
 cd $PBS_O_WORKDIR
+source activate py27
 
 # Launch MPI job.
 mpirun -rmk pbs python analyze-C-helix.py
