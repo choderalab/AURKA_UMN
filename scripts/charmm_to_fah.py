@@ -234,16 +234,16 @@ if __name__ == '__main__':
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
     # Minimize energy.
-    if verbose: print("Minimizing energy...")
-    potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
-    if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
-        raise Exception("Potential energy is NaN before minimization.")
-    if verbose: print("Initial potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole))
-    simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
-    potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
-    if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
-        raise Exception("Potential energy is NaN after minimization.")
-    if verbose: print("Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole))
+    #if verbose: print("Minimizing energy...")
+    #potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+    #if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+    #    raise Exception("Potential energy is NaN before minimization.")
+    #if verbose: print("Initial potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole))
+    #simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
+    #potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
+    #if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
+    #    raise Exception("Potential energy is NaN after minimization.")
+    #if verbose: print("Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole))
 
 
     # Write initial positions.
