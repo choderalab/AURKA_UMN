@@ -19,7 +19,7 @@ size = MPI.COMM_WORLD.size
 if rank==0: print('rank = %d, size = %d' % (rank, size))
 
 project_basepath = '/cbio/jclab/projects/fah/fah-data/munged3/no-solvent' # location of FAH trajectories
-output_basepath = 'C-helix-analysis'
+output_basepath = '../data/C-helix-analysis'
 
 if not os.path.exists(output_basepath):
     os.makedirs(output_basepath)
