@@ -25,7 +25,7 @@ if not os.path.exists(output_basepath):
     os.makedirs(output_basepath)
 
 # Load reference structure for comparison of alphaC RMSD
-reference_pdbfile = '../../fah-setup/1OL5-WT-pdbfixer.pdb'
+reference_pdbfile = '../fah-setup/1OL5-WT-pdbfixer.pdb'
 reference = md.load(reference_pdbfile)
 alignment_selection_dsl = '(resSeq >= 123) and (resSeq <= 388) and (name CA)'
 alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
