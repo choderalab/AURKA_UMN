@@ -66,7 +66,7 @@ for project in projects:
         # Gather data to root and write it
         gathered_rmsds = MPI.COMM_WORLD.gather(rmsds, root=0)
         if rank==0:
-            rmsds = np.empty([nclones, nframes], np.float32)
+            rmsds = np.zeros([nclones, nframes], np.float32) - 1
             for clone in range(nclones):
                 rmsd = gathered_rmsds[clone % size][clone / size]
                 N = len(rmsd)
