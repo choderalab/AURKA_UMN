@@ -175,7 +175,7 @@ if __name__ == '__main__':
     if verbose: print("Creating OpenMM system for initial minimization")
     system = psf.createSystem(params, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
     if verbose: print("Adding barostat...")
-    system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
+    #system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
 
     # Create simulation.
     if verbose: print("Creating simulation...")
