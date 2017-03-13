@@ -36,7 +36,7 @@ rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 nclones = 50 # number of CLONEs per RUN
 nframes = 2000 # max frames / trajectory
 #projects = ['11414', '11419', '11418', '11423']
-projects = ['11428', '11429']
+projects = ['11428', '11429', '11414', '11419', '11418']
 nruns = 6 # number of runs per project
 for project in projects:
     for run in range(nruns):
