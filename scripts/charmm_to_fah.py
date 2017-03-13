@@ -284,6 +284,10 @@ if __name__ == '__main__':
     # Change parameters in the integrator
     if verbose: print("Changing to production integrator ")
     integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+    barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
+    barostat_index = system.addForce(barostat)
+
+
     simulation = app.Simulation(modeller.topology, system, integrator)
     simulation.context.setPositions(positions)
 
