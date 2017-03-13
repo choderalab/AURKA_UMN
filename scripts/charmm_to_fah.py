@@ -217,8 +217,8 @@ if __name__ == '__main__':
     if verbose: print("Creating constrained OpenMM system to equillibrate")
     system = psf.createSystem(params, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
     if verbose: print("Adding barostat...")
-    barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
-    barostat_index = system.addForce(barostat)
+    #barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
+    #barostat_index = system.addForce(barostat)
 
     # Create simulation.
     if verbose: print("Creating simulation...")
