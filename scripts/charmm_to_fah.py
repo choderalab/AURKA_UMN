@@ -217,8 +217,8 @@ if __name__ == '__main__':
     if verbose: print("Creating constrained OpenMM system to equillibrate")
     system = psf.createSystem(params, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
     if verbose: print("Adding barostat...")
-    barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
-    barostat_index = system.addForce(barostat)
+    #barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
+    #barostat_index = system.addForce(barostat)
 
     # Create simulation.
     if verbose: print("Creating simulation...")
@@ -284,6 +284,10 @@ if __name__ == '__main__':
     # Change parameters in the integrator
     if verbose: print("Changing to production integrator ")
     integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+    barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
+    barostat_index = system.addForce(barostat)
+
+
     simulation = app.Simulation(modeller.topology, system, integrator)
     simulation.context.setPositions(positions)
 
