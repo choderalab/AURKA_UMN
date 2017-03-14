@@ -112,10 +112,6 @@ if __name__ == '__main__':
     exception_filename = os.path.join(output_path, 'exceptions.out') # to store exceptions
     run_index_filename = os.path.join(output_path, 'run-index.txt') # to store index of which mutants are which
 
-    # Create output directory.
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-
     # Create temporary directory.
     tmp_path = tempfile.mkdtemp()
     print("Working in temporary directory: %s" % tmp_path)
