@@ -34,7 +34,7 @@ rmsd_selection_dsl = '(resSeq >= 175) and (resSeq <= 188) and (name CA)'
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 
 nclones = 50 # number of CLONEs per RUN
-nframes = 2040 # max frames / trajectory
+nframes = 204a0 # max frames / trajectory
 projects = ['11414', '11419', '11418', '11428', '11429']
 #projects = ['11428', '11429']
 nruns = 7 # number of runs per project

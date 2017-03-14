@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     psf_file = 'step2_solvator.xplor.psf'
 
-    padding = 11.0 * unit.angstroms
+
     nonbonded_cutoff = 9.0 * unit.angstroms
     nonbonded_method = app.PME
     max_minimization_iterations = 10000
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     collision_rate = 90.0 / unit.picoseconds
     barostat_frequency = 50
     timestep = .1 * unit.femtoseconds
-    nsteps = 200000 # number of steps to take for testing
+    nsteps = 400000 # number of steps to take for testing
     ionicStrength = 20 * unit.millimolar
 
     # Verbosity level
