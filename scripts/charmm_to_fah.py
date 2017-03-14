@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     psf_file = 'step2_solvator.xplor.psf'
 
-    padding = 11.0 * unit.angstroms
+
     nonbonded_cutoff = 9.0 * unit.angstroms
     nonbonded_method = app.PME
     max_minimization_iterations = 10000
