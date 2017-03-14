@@ -239,13 +239,13 @@ if __name__ == '__main__':
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
 
-    # Take steps at NVT to equillibrated
+    # Take steps at NVT to equilibrated
     if verbose: print("Performing NVT equillibration")
     simulation.step(nsteps)
 
     # Write initial positions.
     if verbose: print("Writing positions...")
-    filename = os.path.join(workdir, 'equillibrated-NVT.pdb')
+    filename = os.path.join(workdir, 'equilibrated-NVT.pdb')
     positions = simulation.context.getState(getPositions=True).getPositions()
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     del (simulation)
 
 
-    # Create NPT system and equillibrate
+    # Create NPT system and equilibrate
     if verbose: print("Creating NPT equillibration system now...")
     temperature = 300.0 * unit.kelvin
     pressure = 1.0 * unit.atmospheres
@@ -279,7 +279,7 @@ if __name__ == '__main__':
     simulation.step(nsteps)
 
     if verbose: print("Writing positions...")
-    filename = os.path.join(workdir, 'equillibrated-NPT.pdb')
+    filename = os.path.join(workdir, 'equilibrated-NPT.pdb')
     positions = simulation.context.getState(getPositions=True).getPositions()
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
