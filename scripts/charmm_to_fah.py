@@ -145,9 +145,9 @@ if __name__ == '__main__':
         max_crds[1] = max(max_crds[1], coord[1])
         max_crds[2] = max(max_crds[2], coord[2])
 
-    psf.setBox(max_crds[0]-min_crds[0]+3 * unit.angstrom,
-               max_crds[1]-min_crds[1]+3 * unit.angstrom,
-               max_crds[2]-min_crds[2]+3 * unit.angstrom,
+    psf.setBox(max_crds[0]-min_crds[0] + (3 * unit.angstrom),
+               max_crds[1]-min_crds[1] + (3 * unit.angstrom),
+               max_crds[2]-min_crds[2] + (3 * unit.angstrom),
                )
 
     # Create PDBFixer, retrieving PDB template
@@ -169,17 +169,20 @@ if __name__ == '__main__':
 
     # Create OpenMM system.
     if verbose: print("Creating OpenMM system for initial minimization")
-    system = psf.createSystem(params, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=None)
-    if verbose: print("Adding barostat...")
+    system = psf.createSystem(params, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+    #if verbose: print("Adding barostat...")
     #system.addForce(openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency))
 
-    # Create simulation.
-    if verbose: print("Creating simulation...")
+    # Create simulation for NVT minimization and equilibration.
+    if verbose: print("Creating NVT system for equillibration")
     integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
-    #platform = openmm.Platform.getPlatformByName('CPU')
-    #platform = openmm.Platform.getPlatformByName('OpenCL')
-    #platform.setPropertyDefaultValue('OpenCLPrecision', 'double') # use double precision
-    simulation = app.Simulation(modeller.topology, system, integrator)
+    platform = openmm.Platform.getPlatformByName('CUDA')
+    try:
+        platform.setPropertyDefaultValue('Precision', 'mixed') # use double precision
+        print('Using mixed precision')
+    except:
+        pass
+    simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
     try:
         simulation.context.setPositions(modeller.positions)
     except Exception as e:
@@ -199,28 +202,28 @@ if __name__ == '__main__':
         raise Exception("Potential energy is NaN after minimization.")
     if verbose: print("Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole))
 
-    del(modeller)
-    positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
-    modeller = app.Modeller(simulation.topology, positions)
-
-    del(system)
-    del(integrator)
-    #del(platform)
-    del(simulation.context)
-    del(simulation)
-    simulation = None
-
-    if verbose: print("Creating constrained OpenMM system to equillibrate")
-    system = psf.createSystem(params, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
-    if verbose: print("Adding barostat...")
-    #barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
-    #barostat_index = system.addForce(barostat)
-
-    # Create simulation.
-    if verbose: print("Creating simulation...")
-    integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
-    simulation = app.Simulation(modeller.topology, system, integrator)
-    simulation.context.setPositions(modeller.positions)
+    # del(modeller)
+    # positions = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+    # modeller = app.Modeller(simulation.topology, positions)
+    #
+    # del(system)
+    # del(integrator)
+    # #del(platform)
+    # del(simulation.context)
+    # del(simulation)
+    # simulation = None
+    #
+    # if verbose: print("Creating constrained OpenMM system to equilibrate")
+    # system = psf.createSystem(params, nonbondedMethod=nonbonded_method, nonbondedCutoff=nonbonded_cutoff, constraints=app.HBonds)
+    # if verbose: print("Adding barostat...")
+    # #barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
+    # #barostat_index = system.addForce(barostat)
+    #
+    # # Create simulation.
+    # if verbose: print("Creating simulation...")
+    # integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+    # simulation = app.Simulation(modeller.topology, system, integrator)
+    # simulation.context.setPositions(modeller.positions)
 
     # Write modeller positions.
     if verbose: print("Writing modeller output...")
@@ -229,18 +232,6 @@ if __name__ == '__main__':
     print(abs(positions / unit.nanometers).max())
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
-    # Minimize energy.
-    #if verbose: print("Minimizing energy...")
-    #potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
-    #if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
-    #    raise Exception("Potential energy is NaN before minimization.")
-    #if verbose: print("Initial potential energy : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole))
-    #simulation.minimizeEnergy(maxIterations=max_minimization_iterations)
-    #potential_energy = simulation.context.getState(getEnergy=True).getPotentialEnergy()
-    #if numpy.isnan(potential_energy / unit.kilocalories_per_mole):
-    #    raise Exception("Potential energy is NaN after minimization.")
-    #if verbose: print("Final potential energy:  : %10.3f kcal/mol" % (potential_energy / unit.kilocalories_per_mole))
-
 
     # Write initial positions.
     filename = os.path.join(workdir, 'minimized.pdb')
@@ -248,19 +239,19 @@ if __name__ == '__main__':
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
 
-    # Take a few steps to relax structure.
-    if verbose: print("Taking a few steps to relax structure")
+    # Take steps at NVT to equillibrated
+    if verbose: print("Performing NVT equillibration")
     simulation.step(nsteps)
 
     # Write initial positions.
     if verbose: print("Writing positions...")
-    filename = os.path.join(workdir, 'equillibrated.pdb')
+    filename = os.path.join(workdir, 'equillibrated-NVT.pdb')
     positions = simulation.context.getState(getPositions=True).getPositions()
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
-    # Retrieve the periodic box vectors
-    v1, v2, v3 = simulation.context.getState().getPeriodicBoxVectors()
-    system.setDefaultPeriodicBoxVectors(v1, v2, v3)
+    # Retrieve the periodic box vectors and positions
+    #v1, v2, v3 = simulation.context.getState().getPeriodicBoxVectors()
+    #system.setDefaultPeriodicBoxVectors(v1, v2, v3)
     positions = simulation.context.getState(getPositions=True).getPositions()
 
     del (integrator)
@@ -268,11 +259,42 @@ if __name__ == '__main__':
     del (simulation)
 
 
-    # Create production system
+    # Create NPT system and equillibrate
+    if verbose: print("Creating NPT equillibration system now...")
+    temperature = 300.0 * unit.kelvin
+    pressure = 1.0 * unit.atmospheres
+    collision_rate = 90.0 / unit.picoseconds
+    barostat_frequency = 50
+    timestep = 2 * unit.femtoseconds
+    nsteps = 400000  # number of steps to take for testing
+
+    # Change parameters in the integrator
+    if verbose: print("Changing to NPT integrator ")
+    integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
+    barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
+    barostat_index = system.addForce(barostat)
+
+    simulation = app.Simulation(modeller.topology, system, integrator, platform)
+    simulation.context.setPositions(positions)
+    simulation.step(nsteps)
+
+    if verbose: print("Writing positions...")
+    filename = os.path.join(workdir, 'equillibrated-NPT.pdb')
+    positions = simulation.context.getState(getPositions=True).getPositions()
+    app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
+
+    # Get positions to pass on to next simulation
+    positions = simulation.context.getState(getPositions=True).getPositions()
+
+    del (integrator)
+    del (simulation.context)
+    del (simulation)
+
+    # Create production system and test
     if verbose: print("Creating production system now...")
     temperature = 300.0 * unit.kelvin
     pressure = 1.0 * unit.atmospheres
-    collision_rate = 5.0 / unit.picoseconds
+    collision_rate = 90.0 / unit.picoseconds
     barostat_frequency = 50
     timestep = 2 * unit.femtoseconds
     nsteps = 50000  # number of steps to take for testing
@@ -283,16 +305,13 @@ if __name__ == '__main__':
     barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
     barostat_index = system.addForce(barostat)
 
-
-    simulation = app.Simulation(modeller.topology, system, integrator)
+    simulation = app.Simulation(modeller.topology, system, integrator, platform=platform)
     simulation.context.setPositions(positions)
-
+    if verbose: print("Taking a few steps to test the structure at production conditions")
     simulation.step(nsteps)
 
-
-
     # Serialize to XML files.
-    if verbose: print("Serializing to XML...")
+    if verbose: print("This system passed the test! Serializing to XML...")
     system_filename = os.path.join(workdir, 'system.xml')
     integrator_filename = os.path.join(workdir, 'integrator.xml')
     write_file(system_filename, openmm.XmlSerializer.serialize(system))
