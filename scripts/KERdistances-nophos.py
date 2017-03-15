@@ -113,7 +113,7 @@ def stat_analyze(distances, window, cutoff):
     for n in range(ntraj):
         if len(distances[n]) > tmax:
             tmax = len(distances[n])
-            print 'The value you are looking for is: %d' % len(distances[n])
+            print('The maximum time is: %d' % len(distances[n]))
     # Compute the contact fraction
     contact_fraction = np.zeros([tmax - window], np.float64)
     contact_fraction_stderr = np.zeros([tmax - window], np.float64)
