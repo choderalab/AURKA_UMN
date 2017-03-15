@@ -104,7 +104,7 @@ if __name__ == '__main__':
     psf_file = 'step2_solvator.psf'
 
     #
-    # Minimization and low-temperature NVT relaxation
+    # Minimization and low-temperature NVT relaxation (50 ps)
     #
 
     nonbonded_cutoff = 9.0 * unit.angstroms
@@ -258,7 +258,7 @@ if __name__ == '__main__':
     del (simulation)
 
     #
-    # NPT box size equilibration
+    # NPT box size equilibration (1 ns)
     #
 
     # Create NPT system and equilibrate
@@ -285,7 +285,9 @@ if __name__ == '__main__':
     positions = simulation.context.getState(getPositions=True).getPositions()
     app.PDBFile.writeFile(simulation.topology, positions, open(filename, 'w'))
 
-    # Get positions to pass on to next simulation
+    # Retrieve the periodic box vectors and positions
+    v1, v2, v3 = simulation.context.getState().getPeriodicBoxVectors()
+    system.setDefaultPeriodicBoxVectors(v1, v2, v3)
     positions = simulation.context.getState(getPositions=True).getPositions()
 
     del (integrator)
@@ -293,22 +295,19 @@ if __name__ == '__main__':
     del (simulation)
 
     #
-    # NPT production test and FAH packaging
+    # NPT production test and FAH packaging (1 ns)
     #
 
     # Create production system and test
     if verbose: print("Creating production system now...")
     temperature = 300.0 * unit.kelvin
-    pressure = 1.0 * unit.atmospheres
     collision_rate = 5.0 / unit.picoseconds
-    barostat_frequency = 50
     timestep = 2 * unit.femtoseconds
-    nsteps = 50000  # number of steps to take for testing
+    nsteps = 500000  # number of steps to take for testing
 
     # Change parameters in the integrator
     if verbose: print("Changing to production integrator ")
     integrator = openmm.LangevinIntegrator(temperature, collision_rate, timestep)
-    barostat = openmm.MonteCarloBarostat(pressure, temperature, barostat_frequency)
 
     simulation = app.Simulation(modeller.topology, system, integrator)
     simulation.context.setPositions(positions)
