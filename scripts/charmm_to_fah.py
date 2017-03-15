@@ -48,6 +48,7 @@ def write_file(filename, contents):
     with open(filename, 'w') as outfile:
         outfile.write(contents)
 
+
 def fix_charmm_impropers(system):
     print('Repairing CHARMM impropers...')
     for (force_index, force) in enumerate(system.getForces()):

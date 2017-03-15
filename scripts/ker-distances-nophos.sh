@@ -43,7 +43,7 @@
 
 # Change to working directory used for job submission
 cd $PBS_O_WORKDIR
-source activate py27
+#source activate py27
 
 # Launch job.
 python ./KERdistances-nophos.py AURKA_nophos_tpx2 AURKA
