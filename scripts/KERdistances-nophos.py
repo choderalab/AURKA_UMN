@@ -58,10 +58,17 @@ def shukla_coords(traj, KER):
     :return: two flattened numpy arrays
     """
 
-    min_frame = 200
+    min_frame = 0
     end_frame = len(traj)
-
+    flat_KER= new = [item for sublist in KER for item in sublist]
+    sidechains = []
     short_traj = traj.slice(range(min_frame, end_frame), copy=False)
+
+    for resid in flat_KER:
+        atoms = short_traj.topology.select("resid %s and sidechain" % resid)
+        sidechains.extend(atoms.tolist())
+
+    short_traj.atom_slice(sidechains, inplace=True)
 
     [k2187e2195, res_list_one] = md.compute_contacts(short_traj, [KER[0]])
     [e2195r2430, res_list_two] = md.compute_contacts(short_traj, [KER[1]])
