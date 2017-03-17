@@ -60,7 +60,7 @@ def shukla_coords(traj, KER):
 
     min_frame = 0
     end_frame = len(traj)
-    flat_KER= new = [item for sublist in KER for item in sublist]
+    flat_KER  = [item for sublist in KER for item in sublist]
     sidechains = []
     short_traj = traj.slice(range(min_frame, end_frame), copy=False)
 
