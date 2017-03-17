@@ -71,8 +71,8 @@ def shukla_coords(traj, KER):
 
     short_traj.atom_slice(sidechains, inplace=True)
 
-    [k2187e2195, res_list_one] = md.compute_contacts(short_traj, [0,1])
-    [e2195r2430, res_list_two] = md.compute_contacts(short_traj, [1,2])
+    [k2187e2195, res_list_one] = md.compute_contacts(short_traj, [[0,1]])
+    [e2195r2430, res_list_two] = md.compute_contacts(short_traj, [[1,2]])
 
     # Append difference and individual distances
     K_E = np.multiply(k2187e2195, 10)
