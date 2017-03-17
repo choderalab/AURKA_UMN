@@ -40,7 +40,7 @@ KER_hbond = {'SRC': [[28, 43], [43, 142]],
              'MTOR': [[5, 8], [8, 248]],
              'MTOR_long': [[811, 814], [814, 1054]],
              'AURKA' : [[39, 58], [58, 157]],
-             'AURKA_phos': [[57, 165], [57, 165]]
+             'AURKA_phos': [[57, 165], [57, 166]]
              }
 
 
@@ -68,10 +68,11 @@ def shukla_coords(traj, KER):
         atoms = short_traj.topology.select("resid %s and sidechain" % resid)
         sidechains.extend(atoms.tolist())
 
+
     short_traj.atom_slice(sidechains, inplace=True)
 
-    [k2187e2195, res_list_one] = md.compute_contacts(short_traj, [KER[0]])
-    [e2195r2430, res_list_two] = md.compute_contacts(short_traj, [KER[1]])
+    [k2187e2195, res_list_one] = md.compute_contacts(short_traj, [0,1])
+    [e2195r2430, res_list_two] = md.compute_contacts(short_traj, [1,2])
 
     # Append difference and individual distances
     K_E = np.multiply(k2187e2195, 10)
@@ -79,37 +80,6 @@ def shukla_coords(traj, KER):
 
     # flatten list of arrays
     return [R_E, K_E]
-
-
-def plot(kinase, mutgroup, project):
-    RE_graph = []
-    KE_graph = []
-    for index in Mut_group[mutgroup]:
-        trajectories = dataset.MDTrajDataset(
-            "/cbio/jclab/projects/fah/fah-data/munged2/no-solvent/%s/run%d-clone*.h5" % (project, index))
-        for i, traj in enumerate(trajectories):
-            if i == 0:
-                [RE, KE] = shukla_coords(traj, KER_hbond[kinase])
-                RE_graph = list(RE[:, 0])
-                KE_graph = list(KE[:, 0])
-            else:
-                [RE, KE] = shukla_coords(traj, KER_hbond[kinase])
-                np.hstack((RE_graph, RE[:, 0]))
-                np.hstack((KE_graph, KE[:, 0]))
-
-    # y_max = max(KE)
-    # x_max = max(RE)
-    ax = plt.gca()
-    ax.set_xlim(0, 20)
-    ax.set_ylim(0, 20)
-    plt.hexbin(RE_graph, KE_graph, gridsize=36, cmap='jet')
-    plt.xlabel('d(E2195-R2430) ($\AA$)')
-    plt.ylabel('d(K2187-E2195) ($\AA$)')
-    plt.colorbar()
-    plt.title('%s sims - %s' % (mutgroup, project))
-
-    plt.savefig('Hexbin_%s_%s_%s.png' % (kinase, project, mutgroup), dpi=500)
-    plt.close()
 
 
 def stat_analyze(distances, window, cutoff):
@@ -143,7 +113,7 @@ def stat_analyze(distances, window, cutoff):
 
 if __name__ == "__main__":
 
-    sliding_window = 40
+    sliding_window = 20
     cutoff_dist = 4
     list_of_runs = [0]
     RE_total = []
