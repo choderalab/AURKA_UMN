@@ -40,7 +40,7 @@ KER_hbond = {'SRC': [[28, 43], [43, 142]],
              'MTOR': [[5, 8], [8, 248]],
              'MTOR_long': [[811, 814], [814, 1054]],
              'AURKA' : [[39, 58], [58, 157]],
-             'AURKA_phos': [[57, 165], [57, 165]]
+             'AURKA_phos': [[57, 165], [57, 166]]
              }
 
 
@@ -58,13 +58,21 @@ def shukla_coords(traj, KER):
     :return: two flattened numpy arrays
     """
 
-    min_frame = 200
+    min_frame = 0
     end_frame = len(traj)
-
+    flat_KER  = [item for sublist in KER for item in sublist]
+    sidechains = []
     short_traj = traj.slice(range(min_frame, end_frame), copy=False)
 
-    [k2187e2195, res_list_one] = md.compute_contacts(short_traj, [KER[0]])
-    [e2195r2430, res_list_two] = md.compute_contacts(short_traj, [KER[1]])
+    for resid in flat_KER:
+        atoms = short_traj.topology.select("resid %s and sidechain" % resid)
+        sidechains.extend(atoms.tolist())
+
+
+    short_traj.atom_slice(sidechains, inplace=True)
+
+    [k2187e2195, res_list_one] = md.compute_contacts(short_traj, [[0,1]])
+    [e2195r2430, res_list_two] = md.compute_contacts(short_traj, [[1,2]])
 
     # Append difference and individual distances
     K_E = np.multiply(k2187e2195, 10)
