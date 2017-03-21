@@ -141,7 +141,7 @@ if __name__ == '__main__':
     # Load the CHARMM files
     print('Loading CHARMM files...')
     param_files = universal_parameter_files + charmm_parameter_files
-    params = CharmmParameterSet(*param_files)
+    params = CharmmParameterSet(param_files)
     psf = CharmmPsfFile(psf_file)
     pdb = app.PDBFile(pdbfilename)
     system_coords = CharmmCrdFile('step2_solvator.crd')
