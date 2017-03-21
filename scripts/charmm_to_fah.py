@@ -21,7 +21,7 @@ import argparse
 
 # ParmEd Imports
 #from simtk.openmm.app import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
-from parmed import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
+from parmed.charmm import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
 
 
 
