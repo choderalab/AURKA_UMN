@@ -29,5 +29,5 @@ if [ -n "$PBS_O_WORKDIR" ]; then
 fi
 
 cat $PBS_GPUFILE
-
+source activate openmm6.3
 python ../../scripts/charmm_to_fah.py --input 1OL5-tpx2-phos --output ../11431 --run 3 --id 1OL5-tpx2-phos

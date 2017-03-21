@@ -10,25 +10,19 @@ Set up AurKA mutant simulations
 from __future__ import division, print_function
 
 import os, os.path
-import copy
 import numpy
 import shutil
 import tempfile
-import numpy as np
-from math import pi
 
-import pdbfixer
+from math import pi
 from simtk import openmm, unit
 from simtk.openmm import app
-import mdtraj as md
-import sys
 import argparse
 
 # ParmEd Imports
-#from parmed.charmm import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
 from simtk.openmm.app import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
 
-from parmed import unit as u ### ???
+
 
 ##########
 # Parser #
@@ -43,6 +37,7 @@ parser.add_argument('--run', dest='run_number', action='store', required=False, 
 parser.add_argument('--id', dest='content', action='store', required=False, default='empty',
                     help='text to be written out in the file in run')
 args = parser.parse_args()
+
 
 def write_file(filename, contents):
     with open(filename, 'w') as outfile:
@@ -59,6 +54,7 @@ def fix_charmm_impropers(system):
             energy_function += 'dtheta = theta - theta0;'
             energy_function += 'pi = %f;' % pi
             force.setEnergyFunction(energy_function)
+
 
 if __name__ == '__main__':
 
