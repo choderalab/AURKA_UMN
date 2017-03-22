@@ -46,8 +46,8 @@ cd $PBS_O_WORKDIR
 #source activate py27
 
 # Launch job.
-python ./KERdistances.py 11428 AURKA
-python ./KERdistances.py 11429 AURKA
+#python ./KERdistances.py 11428 AURKA
+#python ./KERdistances.py 11429 AURKA
 python ./KERdistances.py 11428 AURKA_phos
 python ./KERdistances.py 11429 AURKA_phos
 

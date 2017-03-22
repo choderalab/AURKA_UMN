@@ -114,7 +114,7 @@ def stat_analyze(distances, window, cutoff):
 if __name__ == "__main__":
 
     sliding_window = 20
-    cutoff_dist = 4
+    cutoff_dist = 5
     list_of_runs = [0]
     RE_total = []
     KE_total = []
