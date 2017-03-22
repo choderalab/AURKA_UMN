@@ -30,7 +30,7 @@ reference = md.load(reference_pdbfile)
 alignment_selection_dsl = '(resSeq >= 123) and (resSeq <= 387) and (name CA)'
 alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
 
-rmsd_selection_dsl = '(resSeq >= 280) and (resSeq <= 293) and (name CA)'
+rmsd_selection_dsl = '(resSeq >= 286) and (resSeq <= 293) and (name CA)'
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 
 nclones = 50 # number of CLONEs per RUN
