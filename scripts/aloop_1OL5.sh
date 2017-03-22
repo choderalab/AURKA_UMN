@@ -15,11 +15,11 @@
 #
 # nodes: number of nodes
 #   ppn: number of processes per node
-#PBS -l nodes=5:ppn=5
+#PBS -l nodes=5:ppn=1
 #
 # specify memory 
 #
-#PBS -l mem=100GB
+#PBS -l mem=40GB
 #
 # export all my environment variables to the job
 #PBS -V
