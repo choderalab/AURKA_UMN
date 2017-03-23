@@ -104,7 +104,7 @@ if __name__ == "__main__":
     dist_list3 = []
     #dist_list4 = []
     trajectories = dataset.MDTrajDataset(
-        "/cbio/jclab/home/albaness/trajectories/%s/*/*.h5" % (project_num, run))
+        "/cbio/jclab/home/albaness/trajectories/%s/*/*.h5" % project_num)
     for traj_in in trajectories:
         [distance1, distance2, distance3] = spine_distances(traj_in, spine[kinase_definition])
         dist_list1.append(distance1[:, 0])
