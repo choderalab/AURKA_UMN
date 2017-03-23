@@ -25,8 +25,7 @@ kinase_definition = sys.argv[2]
 
 
 # Define hydrogen bond coordinates (0-indexed)
-spine = {'MTOR': [[17, 43], [176, 17], [154, 176], [43, 176]],
-         'MTOR_long': [[982, 960], [982, 823], [849, 982], [849, 861]]}
+spine = {'AURKA': [[73, 62], [62, 152], [152, 131]]}
 
 
 
@@ -37,24 +36,31 @@ def spine_distances(traj, spine):
     :param spine: the residues involved
     :return: two flattened numpy arrays
     """
-    min_frame = 200
+    min_frame = 0
     end_frame = len(traj)
-
+    flat_spine = [item for sublist in spine for item in sublist]
+    sidechains = []
     short_traj = traj.slice(range(min_frame, end_frame), copy=False)
 
-    [d2358_2202, res_list_one] = md.compute_contacts(short_traj, [spine[0]])
-    [d2202_2222, res_list_two] = md.compute_contacts(short_traj, [spine[1]])
-    [d2222_2326, res_list_two] = md.compute_contacts(short_traj, [spine[2]])
-    [dist4_nm, res_list_three] = md.compute_contacts(short_traj, [spine[3]])
+    for resid in flat_spine:
+        atoms = short_traj.topology.select("resid %s and sidechain" % resid)
+        sidechains.extend(atoms.tolist())
+
+    short_traj.atom_slice(sidechains, inplace=True)
+
+    [d2358_2202, res_list_one] = md.compute_contacts(short_traj, [[1,0]])
+    [d2202_2222, res_list_two] = md.compute_contacts(short_traj, [[0,3]])
+    [d2222_2326, res_list_two] = md.compute_contacts(short_traj, [[3,2]])
+    #[dist4_nm, res_list_three] = md.compute_contacts(short_traj, [spine[3]])
 
     # Append difference and individual distances
     dist1= np.multiply(d2358_2202, 10)
     dist2 = np.multiply(d2202_2222, 10)
     dist3 = np.multiply(d2222_2326, 10)
-    dist4 = np.multiply(dist4_nm, 10)
+    #dist4 = np.multiply(dist4_nm, 10)
 
     # flatten list of arrays
-    return [dist1, dist2, dist3, dist4]
+    return [dist1, dist2, dist3]
 
 
 def stat_analyze(distances, window, cutoff):
@@ -89,42 +95,31 @@ def stat_analyze(distances, window, cutoff):
 
 if __name__ == "__main__":
 
-    # Create mutant index for labeling
-    if kinase_definition == 'MTOR':
-        text_file = open('../run-index.txt')
-    elif kinase_definition =="MTOR_long":
-        text_file = open('../run-index-fatmtor.txt')
-    lines = text_file.readlines()  # read all lines
-    mutations = list()  # mutations[index] is the mutation code for mutant `index`
-    for line in lines:
-        elements = line.split() # split the line into components separated by whitespace
-        mutation = elements[1] # get the mutation code
-        mutations.append(mutation) # append the mutation code to the list
-
     sliding_window = 40
     cutoff_dist = 4
-    for run in range(len(mutations)):
+    list_of_runs = [0]
+    for run in list_of_runs:
         dist_list1 = []
         dist_list2 = []
         dist_list3 = []
-        dist_list4 = []
+        #dist_list4 = []
         trajectories = dataset.MDTrajDataset(
             "/cbio/jclab/projects/fah/fah-data/munged3/no-solvent/%s/run%s-clone*.h5" % (project_num, run))
         for traj_in in trajectories:
-            [distance1, distance2, distance3, distance4] = spine_distances(traj_in, spine[kinase_definition])
+            [distance1, distance2, distance3] = spine_distances(traj_in, spine[kinase_definition])
             dist_list1.append(distance1[:, 0])
             dist_list2.append(distance2[:, 0])
             dist_list3.append(distance3[:, 0])
-            dist_list4.append(distance4[:, 0])
+            #dist_list4.append(distance4[:, 0])
         [dist1_fraction, dist1_stderr] = stat_analyze(dist_list1, sliding_window, cutoff_dist)
         [dist2_fraction, dist2_stderr] = stat_analyze(dist_list2, sliding_window, cutoff_dist)
         [dist3_fraction, dist3_stderr] = stat_analyze(dist_list3, sliding_window, cutoff_dist)
-        [dist4_fraction, dist4_stderr] = stat_analyze(dist_list4, sliding_window, cutoff_dist)
+        #[dist4_fraction, dist4_stderr] = stat_analyze(dist_list4, sliding_window, cutoff_dist)
         np.save('../data/%s_%s_dist1_fraction_%s.npy' % (project_num, mutations[run], cutoff_dist), dist1_fraction)
         np.save('../data/%s_%s_dist1_stderr_%s.npy' % (project_num, mutations[run], cutoff_dist), dist1_stderr)
         np.save('../data/%s_%s_dist2_fraction_%s.npy' % (project_num, mutations[run], cutoff_dist), dist2_fraction)
         np.save('../data/%s_%s_dist2_stderr_%s.npy' % (project_num, mutations[run], cutoff_dist), dist2_stderr)
         np.save('../data/%s_%s_dist3_fraction_%s.npy' % (project_num, mutations[run], cutoff_dist), dist3_fraction)
         np.save('../data/%s_%s_dist3_stderr_%s.npy' % (project_num, mutations[run], cutoff_dist), dist3_stderr)
-        np.save('../data/%s_%s_dist4_fraction_%s.npy' % (project_num, mutations[run], cutoff_dist), dist4_fraction)
-        np.save('../data/%s_%s_dist4_stderr_%s.npy' % (project_num, mutations[run], cutoff_dist), dist4_stderr)
+        #np.save('../data/%s_%s_dist4_fraction_%s.npy' % (project_num, mutations[run], cutoff_dist), dist4_fraction)
+        #np.save('../data/%s_%s_dist4_stderr_%s.npy' % (project_num, mutations[run], cutoff_dist), dist4_stderr)
