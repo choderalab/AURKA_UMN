@@ -38,19 +38,13 @@ def spine_distances(traj, spine):
     """
     min_frame = 0
     end_frame = len(traj)
-    flat_spine = [item for sublist in spine for item in sublist]
-    sidechains = []
+
     short_traj = traj.slice(range(min_frame, end_frame), copy=False)
 
-    for resid in flat_spine:
-        atoms = short_traj.topology.select("resid %s and sidechain" % resid)
-        sidechains.extend(atoms.tolist())
-
-    short_traj.atom_slice(sidechains, inplace=True)
-
-    [d2358_2202, res_list_one] = md.compute_contacts(short_traj, [[1,0]])
-    [d2202_2222, res_list_two] = md.compute_contacts(short_traj, [[0,3]])
-    [d2222_2326, res_list_two] = md.compute_contacts(short_traj, [[3,2]])
+    [d2358_2202, res_list_one] = md.compute_contacts(short_traj, [spine[0]])
+    [d2202_2222, res_list_two] = md.compute_contacts(short_traj, [spine[1]])
+    [d2222_2326, res_list_two] = md.compute_contacts(short_traj, [spine[2]])
+    [dist4_nm, res_list_three] = md.compute_contacts(short_traj, [spine[3]])
     #[dist4_nm, res_list_three] = md.compute_contacts(short_traj, [spine[3]])
 
     # Append difference and individual distances
