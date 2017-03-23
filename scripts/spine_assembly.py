@@ -44,8 +44,7 @@ def spine_distances(traj, spine):
     [d2358_2202, res_list_one] = md.compute_contacts(short_traj, [spine[0]])
     [d2202_2222, res_list_two] = md.compute_contacts(short_traj, [spine[1]])
     [d2222_2326, res_list_two] = md.compute_contacts(short_traj, [spine[2]])
-    [dist4_nm, res_list_three] = md.compute_contacts(short_traj, [spine[3]])
-    #[dist4_nm, res_list_three] = md.compute_contacts(short_traj, [spine[3]])
+
 
     # Append difference and individual distances
     dist1= np.multiply(d2358_2202, 10)
