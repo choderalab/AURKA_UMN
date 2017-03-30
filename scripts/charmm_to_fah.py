@@ -50,9 +50,8 @@ def fix_charmm_impropers(system):
     for (force_index, force) in enumerate(system.getForces()):
         if (force.__class__.__name__ in ['CustomTorsionForce']):
             print(force_index, force.__class__.__name__)
-            energy_function  = 'k*dtheta_torus^2;'
-            energy_function += 'dtheta_torus = dtheta - floor(dtheta/(2*pi)+0.5)*(2*pi);'
-            energy_function += 'dtheta = theta - theta0;'
+            energy_function = 'k*min(dtheta^2, (2*pi-dtheta)^2);'
+            energy_function += 'dtheta = abs(theta - theta0);'
             energy_function += 'pi = %f;' % pi
             force.setEnergyFunction(energy_function)
 
