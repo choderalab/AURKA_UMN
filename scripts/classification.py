@@ -11,9 +11,6 @@ import pyemma.coordinates
 from glob import glob
 
 
-
-
-
 def FeaturizeContactsAndClassify():
     Xs = []
     Ys = []
@@ -65,6 +62,17 @@ def FeaturizeContactsAndClassify():
 
     return [X, Y, le, feat]
 
+def plot():
+    ax = plt.gca()
+    # how does the accuracy increase as we include more features
+    plt.plot(np.cumsum(sorted(clf.feature_importances_[clf.feature_importances_ != 0])[::-1]) * clf.score(X, y), marker='o')
+    plt.hlines(dt.score(X,y),0,sum(dt.feature_importances_!=0),linestyles='--')
+    plt.xlabel('# of Contacts used')
+    plt.ylabel('Fraction of state identities explained')
+    plt.title('Discriminating AURKA Phosphorylation State')
+    plt.savefig('id_explained_contacts.pdf', dpi=500)
+    plt.close()
+
 if __name__ == "__main__":
     fnames_phos = glob('/cbio/jclab/home/albaness/trajectories/AURKA/AURKA_phos_notpx2/*/run0-*.h5')
     print(len(fnames_phos), fnames_phos[0])
@@ -72,6 +80,8 @@ if __name__ == "__main__":
     print(len(fnames_nophos), fnames_nophos[0])
 
     [X, y, le, feat] = FeaturizeContactsAndClassify()
+    np.save('contacts.npy', X)
+    np.save('run_labels.npy', y)
     clf = RandomForestClassifier(n_estimators=10, max_depth=None,
                                  min_samples_split=2, random_state=0)
     clf = clf.fit(X, y)
@@ -79,14 +89,7 @@ if __name__ == "__main__":
     print(scores)
     print(clf.score(X, y))
     print(clf.feature_importances_)
-    # how does the accuracy increase as we include more features
-    plt.plot(np.cumsum(sorted(clf.feature_importances_[clf.feature_importances_ != 0])[::-1]) * clf.score(X, y),
-             marker='o')
-    # plt.hlines(dt.score(X,y),0,sum(dt.feature_importances_!=0),linestyles='--')
-    plt.xlabel('# of Contacts used')
-    plt.ylabel('Fraction of state identities explained')
-    plt.title('Discriminating AURKA Phosphorylation State')
-    plt.savefig('id_explained_contacts.pdf', dpi=300)
+    plot()
     print(len(clf.feature_importances_[clf.feature_importances_ != 0]))
     sorted_importance = sorted(clf.feature_importances_[clf.feature_importances_!=0])
     sorted_non_zero_indices = []
