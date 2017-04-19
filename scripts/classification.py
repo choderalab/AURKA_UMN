@@ -16,7 +16,8 @@ def FeaturizeContactsAndClassify():
     Ys = []
 
     feat = pyemma.coordinates.featurizer(fnames_phos[0])
-    feat.add_residue_mindist(threshold=5.0)
+    #feat.add_residue_mindist(threshold=5.0)
+    feat.add_distances_ca()
     # feat.add_chi1_torsions(cossin=True)
     # feat.add_backbone_torsions(cossin=True)
     # feat.add_dihedrals(cossin=True)
@@ -80,8 +81,8 @@ if __name__ == "__main__":
     print(len(fnames_nophos), fnames_nophos[0])
 
     [X, y, le, feat] = FeaturizeContactsAndClassify()
-    np.save('contacts.npy', X)
-    np.save('run_labels.npy', y)
+    np.save('distances.npy', X)
+    np.save('run_labels_dist.npy', y)
     clf = RandomForestClassifier(n_estimators=10, max_depth=None,
                                  min_samples_split=2, random_state=0)
     clf = clf.fit(X, y)
