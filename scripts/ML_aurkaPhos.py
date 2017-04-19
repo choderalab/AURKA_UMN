@@ -33,7 +33,7 @@ y = np.load('/cbio/jclab/home/albaness/github/AURKA_UMN/scripts/run_labels_dist.
 # print(scores)
 
 ensemble_clfs = [ ("RandomForestClassifier, max_features=None",RandomForestClassifier(warm_start=True, max_features=None,
-                                                                                      oob_score=True, n_jobs=-1, verbose=2))]
+                                                                                      oob_score=True, n_jobs=-1, verbose=10))]
 
 
 error_rate = OrderedDict((label, []) for label, _ in ensemble_clfs)
@@ -44,6 +44,7 @@ max_estimators = 200000
 
 for label, clf in ensemble_clfs:
     for i in range(min_estimators, max_estimators + 1, 100):
+        print('Testing model with {0} trees'.format(i))
         clf.set_params(n_estimators=i)
         clf.fit(X, y)
         oob_error = 1 - clf.oob_score_
