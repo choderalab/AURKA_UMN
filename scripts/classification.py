@@ -12,13 +12,9 @@ from glob import glob
 def FeaturizeContactsAndClassify():
     Xs = []
     Ys = []
-
+    min_frame = 400
     feat = pyemma.coordinates.featurizer(fnames_phos[0])
-    #feat.add_residue_mindist(threshold=5.0)
     feat.add_distances_ca()
-    # feat.add_chi1_torsions(cossin=True)
-    # feat.add_backbone_torsions(cossin=True)
-    # feat.add_dihedrals(cossin=True)
     print(feat.dimension())
 
     for filename in fnames_nophos:
@@ -26,7 +22,9 @@ def FeaturizeContactsAndClassify():
 
         try:
             traj = md.load(filename)
-            x = feat.transform(traj)
+            end_frame = len(traj)
+            short_traj = traj.slice(range(min_frame, end_frame), copy=False)
+            x = feat.transform(short_traj)
             Xs.append(x)  # needed to use list(x) at one point to convert to numpy array later
             Ys.append(state_string * len(x))
         except:
@@ -37,7 +35,9 @@ def FeaturizeContactsAndClassify():
 
         try:
             traj = md.load(filename)
-            x = feat.transform(traj)
+            end_frame = len(traj)
+            short_traj = traj.slice(range(min_frame, end_frame), copy=False)
+            x = feat.transform(short_traj)
             Xs.append(x)  # needed to use list(x) at one point to convert to numpy array later
             Ys.append(state_string * len(x))
         except:
