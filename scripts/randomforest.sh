@@ -14,11 +14,11 @@
 #
 # nodes: number of nodes
 #   ppn: number of processes per node
-#PBS -l nodes=2:ppn=4
+#PBS -l nodes=2:ppn=8
 #
 # specify memory 
 #
-#PBS -l mem=10GB
+#PBS -l mem=5GB
 #
 # export all my environment variables to the job
 #PBS -V
@@ -34,7 +34,7 @@
 # a: send mail if job is aborted
 # b: send mail when job begins execution
 # e: send mail when job terminates
-#PBS -m a
+#PBS -m bea
 #
 # filename for standard output (default = <job_name>.o<job_id>)
 # at end of job, it is in directory from which qsub was executed
