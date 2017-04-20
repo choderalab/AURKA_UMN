@@ -40,10 +40,10 @@ error_rate = OrderedDict((label, []) for label, _ in ensemble_clfs)
 
 
 min_estimators = 2000
-max_estimators = 10000
+max_estimators = 8000
 
 for label, clf in ensemble_clfs:
-    for i in range(min_estimators, max_estimators + 1, 200):
+    for i in range(min_estimators, max_estimators + 1, 500):
         print('Testing model with {0} trees'.format(i))
         clf.set_params(n_estimators=i)
         clf.fit(X, y)

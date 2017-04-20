@@ -14,7 +14,7 @@
 #
 # nodes: number of nodes
 #   ppn: number of processes per node
-#PBS -l nodes=4:ppn=4
+#PBS -l nodes=8:ppn=4
 #
 # specify memory 
 #
