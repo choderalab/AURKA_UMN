@@ -26,14 +26,14 @@ y = np.load('/cbio/jclab/home/albaness/github/AURKA_UMN/scripts/run_labels_dist.
 
 # # Let's build the randomforest
 # clf = RandomForestClassifier(n_estimators=20000, max_depth=None, max_features="log2", min_samples_split=2, random_state=0,
-#                              n_jobs=-1, verbose=1, oob_score=True)
+#                              n_jobs=-1, verbose=1)
 # clf = clf.fit(X, y)
 # joblib.dump(clf, 'filename.pkl')
 # scores = cross_val_score(clf, X, y)
 # print(scores)
 
-ensemble_clfs = [ ("RandomForestClassifier, max_features=None",RandomForestClassifier(warm_start=True, max_features=None,
-                                                                                      oob_score=True, n_jobs=-1, verbose=10))]
+ensemble_clfs = [ ("RandomForestClassifier, max_features=None",RandomForestClassifier(warm_start=True, max_features="log2",
+                                                                                      oob_score=True, n_jobs=-1, verbose=1))]
 
 
 error_rate = OrderedDict((label, []) for label, _ in ensemble_clfs)
