@@ -25,10 +25,10 @@ X = np.load('/cbio/jclab/home/albaness/github/AURKA_UMN/scripts/distances.npy') 
 y = np.load('/cbio/jclab/home/albaness/github/AURKA_UMN/scripts/run_labels_dist.npy') # same shape, contains data labels
 
 # Let's build the randomforest
-clf = RandomForestClassifier(n_estimators=20000, max_depth=None, max_features="log2", min_samples_split=2, random_state=0,
+clf = RandomForestClassifier(n_estimators=2000, max_depth=None, max_features="log2", min_samples_split=2, random_state=0,
                              n_jobs=-1, verbose=1)
 clf = clf.fit(X, y)
-joblib.dump(clf, 'filename.pkl')
+joblib.dump(clf, 'randomforest_2000trees.pkl')
 scores = cross_val_score(clf, X, y)
 print(scores)
 
