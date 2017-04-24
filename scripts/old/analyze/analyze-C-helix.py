@@ -25,7 +25,7 @@ if not os.path.exists(output_basepath):
     os.makedirs(output_basepath)
 
 # Load reference structure for comparison of alphaC RMSD
-reference_pdbfile = '../fah-prep/1OL5-WT-pdbfixer.pdb'
+reference_pdbfile = '../../fah-setup/1OL5-WT-pdbfixer.pdb'
 reference = md.load(reference_pdbfile)
 alignment_selection_dsl = '(resSeq >= 123) and (resSeq <= 388) and (name CA)'
 alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
@@ -35,8 +35,9 @@ rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 
 nclones = 50 # number of CLONEs per RUN
 nframes = 2000 # max frames / trajectory
-projects = ['11414', '11419', '11418', '11423']
-nruns = 7 # number of runs per project
+#projects = ['11414', '11419', '11418', '11423']
+projects = ['11428', '11429']
+nruns = 6 # number of runs per project
 for project in projects:
     for run in range(nruns):
         h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (project, run, 0))
