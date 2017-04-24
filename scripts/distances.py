@@ -43,7 +43,7 @@ def alpha_distances(traj, residue_pair):
     atom1 = short_traj.topology.select("residue %s and name == 'CA'" % residue_pair[0])
     atom2 = short_traj.topology.select("residue %s and name == 'CA'" % residue_pair[1])
 
-    dists = md.compute_distances(short_traj, [atom1, atom2])
+    dists = md.compute_distances(short_traj, [[atom1, atom2]])
 
 
 
