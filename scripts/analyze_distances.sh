@@ -46,6 +46,6 @@ cd $PBS_O_WORKDIR
 #source activate py27
 
 # Launch job.
-python ./KERdistances.py AURKA AURKA_phos_notpx2
-python ./KERdistances.py AURKA AURKA_nophos_notpx2
+python ./distances.py AURKA AURKA_phos_notpx2
+python ./distances.py AURKA AURKA_nophos_notpx2
 
