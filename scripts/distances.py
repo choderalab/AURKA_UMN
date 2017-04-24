@@ -25,7 +25,7 @@ kinase_definition = sys.argv[1]
 
 # Define Alpha carbon coordinates (1-indexed), give me residue numbers here
 res_pairs = {'AURKA': [[243, 259], [328, 362], [188, 342], [191, 301], [223, 266], [212, 288], [142, 200], [141, 254],
-                       [159, 160], [137, 154]]}
+                       [150, 160], [137, 154], [233,238], [203, 343], [123, 236], [236,269], [155, 223]]}
 
 
 
