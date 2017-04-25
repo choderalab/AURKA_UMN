@@ -20,9 +20,6 @@ if rank == 0: print('rank = %d, size = %d' % (rank, size))
 project_basepath = '/cbio/jclab/home/albaness/trajectories/AURKA'  # location of FAH trajectories
 output_basepath = '../data/e-fret'
 
-if not os.path.exists(output_basepath):
-    os.makedirs(output_basepath)
-
 nclones = 5  # number of CLONEs per RUN
 nframes = 2040  # max frames / trajectory
 conditions = ['AURKA_nophos_notpx2', 'AURKA_phos_notpx2']
