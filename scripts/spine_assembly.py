@@ -16,7 +16,7 @@ import seaborn as sns
 sns.set_style("whitegrid")
 sns.set_context("poster")
 
-# Define project.
+# Define condition.
 project_num = sys.argv[1]
 
 # Define kinase.
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         dist_list3 = []
         #dist_list4 = []
         trajectories = dataset.MDTrajDataset(
-            "/cbio/jclab/projects/fah/fah-data/munged3/no-solvent/%s/run%s-clone*.h5" % (project_num, run))
+            "/cbio/jclab/conditions/fah/fah-data/munged3/no-solvent/%s/run%s-clone*.h5" % (project_num, run))
         for traj_in in trajectories:
             [distance1, distance2, distance3] = spine_distances(traj_in, spine[kinase_definition])
             dist_list1.append(distance1[:, 0])

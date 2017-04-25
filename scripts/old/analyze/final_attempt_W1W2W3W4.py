@@ -105,7 +105,7 @@ def find_hbonds_between_waters():
             start = len(WB_total)
     HB_total = dict()
     for clone in range(start,end):
-        trajectory = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%s-clone%s.h5" % (project, clone/50, clone%50))
+        trajectory = md.load("/cbio/jclab/conditions/fah/fah-data/munged3/all-atoms/%s/run%s-clone%s.h5" % (project, clone/50, clone%50))
         if clone == start or clone%50 == 0:
             print('Now loading trajectories for RUN%s' % str(clone/50))
             del(HB_total)
@@ -179,7 +179,7 @@ for project, WB_total in WB_dict.items():
     if os.path.exists('%s/data/%s_%s_1234-IntraWater-sig.npy' % (project_dir, project, 0)):
         long_bonds = np.load('%s/data/%s_%s_1234-IntraWater-sig.npy' % (project_dir, project, 0))
     else:
-        print('Tracking bonds in project %s' % project)
+        print('Tracking bonds in condition %s' % project)
         bond_lifes = dict()
         for clone, traj in enumerate(WB_total):
             for frame_id, frame in enumerate(traj):
@@ -204,7 +204,7 @@ for project, WB_total in WB_dict.items():
         if not anchors.has_key(project):
             protein_and_adp = find_anchors(traj.top)
             anchors[project] = protein_and_adp
-        traj = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%s-clone%s.h5" % (project, bond.clone/50, bond.clone%50))
+        traj = md.load("/cbio/jclab/conditions/fah/fah-data/munged3/all-atoms/%s/run%s-clone%s.h5" % (project, bond.clone/50, bond.clone%50))
         for water in bond.oxygens:
             if not static_positions[bond.clone].has_key(water):
                 static_positions[bond.clone][water] = dict()
@@ -227,7 +227,7 @@ for project, WB_total in WB_dict.items():
         del(traj)
     unique_positions = set(position_definitions)
     to_save_position_info = list()
-    print('All identified significantly maintained positions for project %s' % project)
+    print('All identified significantly maintained positions for condition %s' % project)
     print('Atoms involved, how many times this position was seen')
     print('(may occur multiple times within one clone)')
     for position in unique_positions:

@@ -49,7 +49,7 @@ for project in projects:
             mutant = entry.split(' ')[1]
             run = run[3:]
             run_guide.append([project, run])
-            #mutants[(project, run)] = mutant
+            #mutants[(condition, run)] = mutant
         except:
             pass
 print(run_guide)
@@ -151,7 +151,7 @@ for project in projects:
         HB_274_total = []
         HB_275_total = []
         HB_162_total = []
-        trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%s-clone*.h5" % (project, run))
+        trajectories = dataset.MDTrajDataset("/cbio/jclab/conditions/fah/fah-data/munged3/all-atoms/%s/run%s-clone*.h5" % (project, run))
         for i,traj in enumerate(trajectories):
             print(i)
             if charmm and i == 0:

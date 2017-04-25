@@ -18,7 +18,7 @@ projects = ['11410','11411','11418']
 project_dirs = {'11410':'%s/../output-1OL5' % local_path,'11411':'%s/../output-1OL7' % local_path,'11418':'%s/../output1OL5-TPX2' % local_path}
 system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed'}
 
-with open('/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
+with open('/cbio/jclab/conditions/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
 
 mutant = dict()
@@ -43,7 +43,7 @@ for project in projects:
             for clone_id, hbonds_traj in enumerate(HB_total):
                 num_frames = len(hbonds_traj)
                 if clone_id == 0:
-                    topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, fake_run))
+                    topology = md.load('/cbio/jclab/conditions/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, fake_run))
                     for res in topology.top.residues:
                         if str(res) == res_names[residue]+str(residue):
                             print(str(res))

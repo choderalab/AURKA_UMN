@@ -86,7 +86,7 @@ def count_and_plot_res_waters(residue, HB_res_total, ADP_bound = None, compare_t
     bound = 0
     for clone, traj in enumerate(HB_res_total):
         if clone == 0:
-            topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, run))
+            topology = md.load('/cbio/jclab/conditions/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, run))
         for index in range(offset,2000):
             x_axis[clone][index-offset] = index*0.25
             if USE_ADP and not ADP_bound[clone][index]:
@@ -107,7 +107,7 @@ def count_and_plot_res_waters(residue, HB_res_total, ADP_bound = None, compare_t
                 hbond_count[clone][index-offset] = len(waters)
                 column_count[(index-offset-0.25)/40] += 1
             #if residue == 181 and index%10 == 0 and index-offset < 200 and hbond_count[clone][index-offset] > 4:
-            #    print('PROJECT %s: FOUND A CLONE WITH TOO MANY WATERS: CLONE %s AT FRAME %s' % (project, clone, index))
+            #    print('PROJECT %s: FOUND A CLONE WITH TOO MANY WATERS: CLONE %s AT FRAME %s' % (condition, clone, index))
             #    return
     print('%s frames found unbound' % unbound)
     print('%s frames found bound' % bound)

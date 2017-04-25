@@ -25,29 +25,29 @@ import argparse
 
 parser = argparse.ArgumentParser(description="""Make initial plots of your kinase simulations:  > python make_summary_pdf.py --proje
 ct 11401""")
-parser.add_argument("--project", help="the FAH project you want to analyze, e.g. 11401", action="store", default=False, type=int)
+parser.add_argument("--condition", help="the FAH condition you want to analyze, e.g. 11401", action="store", default=False, type=int)
 parser.add_argument("--byruns", help="use this if you want to add the plots by run", action="store_true", default=False)
 args = parser.parse_args()
 
-with open('projects.json', 'r') as fp:
+with open('conditions.json', 'r') as fp:
     projects = json.load(fp)
 
 if args.project:
     myproject = args.project
     protein =  projects.keys()[projects.values().index(myproject)]
-    files = "/cbio/jclab/projects/fah/fah-data/munged3/no-solvent/%s/*.h5" %args.project
+    files = "/cbio/jclab/conditions/fah/fah-data/munged3/no-solvent/%s/*.h5" %args.project
     
-    # make new results folder with project name
+    # make new results folder with condition name
     newpath = "./results/%s" %args.project
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
     if args.byruns:
-        print "*** kinalysis: analyzing project %s (%s) BY RUNS ***" % (args.project,protein)
+        print "*** kinalysis: analyzing condition %s (%s) BY RUNS ***" % (args.project,protein)
     else:
-        print "*** kinalysis: analyzing project %s (%s) ***" % (args.project,protein)
+        print "*** kinalysis: analyzing condition %s (%s) ***" % (args.project,protein)
 else:
-    myproject = 'no project'
+    myproject = 'no condition'
     protein = 'AURKA'
     files = "trajectories/*.h5"
     newpath = "./results/%s" %protein

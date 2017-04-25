@@ -105,7 +105,7 @@ for project in projects:
         HB_adp_water = list()
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
-        trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%s-clone*.h5" % (project, run))
+        trajectories = dataset.MDTrajDataset("/cbio/jclab/conditions/fah/fah-data/munged3/all-atoms/%s/run%s-clone*.h5" % (project, run))
         for i,traj in enumerate(trajectories):
             if i == 0:
                 for residue in traj.topology.residues:

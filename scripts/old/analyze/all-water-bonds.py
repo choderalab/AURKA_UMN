@@ -15,7 +15,7 @@ project_dirs = {'11410':'%s/../output-1OL5' % local_path,'11411':'%s/../output-1
 system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed'}
 runs = range(5)
 
-with open('/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
+with open('/cbio/jclab/conditions/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
 
 mutant = dict()
@@ -111,7 +111,7 @@ for project in projects:
             if len(all_water_hbonds) == 50:
                 if verbose:
                     print('Existing data file was complete. Moving on...')
-                traj = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%d-clone0.h5" % (project, run))
+                traj = md.load("/cbio/jclab/conditions/fah/fah-data/munged3/all-atoms/%s/run%d-clone0.h5" % (project, run))
                 run_protein_atoms[str(project)+str(run)] = find_protein_atoms(traj)
                 run_water_atoms[str(project)+str(run)] = traj.top.select("water")
                 run_all_water_hbonds[str(project)+str(run)] = all_water_hbonds
@@ -123,7 +123,7 @@ for project in projects:
         if verbose:
             print("Loading Project %s RUN%s..." % (project, run))
         for clone in range(start,50):
-            traj = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%d-clone%s.h5" % (project, run, clone))
+            traj = md.load("/cbio/jclab/conditions/fah/fah-data/munged3/all-atoms/%s/run%d-clone%s.h5" % (project, run, clone))
             if clone == start:
                 haystack = traj.top.select("water")
                 run_water_atoms[str(project)+str(run)] = haystack
@@ -188,9 +188,9 @@ for project in projects:
         run_hbonds[str(project)+str(run)] = hbonds
 
 #for key, all_water_bonds in run_significant_bonds.items():
-#    project = key[:-1]
+#    condition = key[:-1]
 #    run = key[-1]
-#    project_dir = project_dirs[project]
+#    project_dir = project_dirs[condition]
 #    every_water = set(chain.from_iterable(all_water_bonds.values()))
 #    topology = md.load("%s/RUN0/system.pdb" % project_dir)
 #    for protein, water_list in all_water_bonds.items():

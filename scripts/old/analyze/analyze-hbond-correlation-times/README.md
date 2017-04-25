@@ -1,5 +1,5 @@
 ## AURKA_UMN/analyze/analyze-hbond-correlation-times/
-Original home of scripts: `/cbio/jclab/projects/behrj/AURKA_UMN/analyze/analyze-hbond-correlation-times`
+Original home of scripts: `/cbio/jclab/conditions/behrj/AURKA_UMN/analyze/analyze-hbond-correlation-times`
 
 All scripts include pointers to relevant data files; to run any of these scripts, simply use 
 ```
@@ -46,4 +46,4 @@ begins at [line 298](https://github.com/choderalab/AURKA_UMN/blob/master/analyze
 Reads in saved numpy arrays from other scripts and recreates plots (intended to simplify 
 making stylistic changes with the same data)
 * requires numpy arrays from previous runs to be in local directory
-* Julie's existing arrays live at `/cbio/jclab/projects/behrj/AURKA_UMN/analyze/analyze-hbond-correlation-times/output-tail` for the tail data and `/cbio/jclab/projects/behrj/AURKA_UMN/analyze/analyze-hbond-correlation-times/output-full` for the full data
+* Julie's existing arrays live at `/cbio/jclab/conditions/behrj/AURKA_UMN/analyze/analyze-hbond-correlation-times/output-tail` for the tail data and `/cbio/jclab/conditions/behrj/AURKA_UMN/analyze/analyze-hbond-correlation-times/output-full` for the full data

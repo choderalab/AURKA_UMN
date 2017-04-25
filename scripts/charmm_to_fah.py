@@ -28,7 +28,7 @@ from simtk.openmm.app import CharmmPsfFile, CharmmCrdFile, CharmmParameterSet
 ##########
 # Parser #
 ##########
-parser = argparse.ArgumentParser(description="Script to setup FAH projects from openMM ")
+parser = argparse.ArgumentParser(description="Script to setup FAH conditions from openMM ")
 parser.add_argument('--input', required=True, dest='pdb_file',
                     help='THe pdb file that you would like to run through this program')
 parser.add_argument('--output', required=True, dest='output',

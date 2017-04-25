@@ -2,7 +2,7 @@
 #
 # Right now the syntax is pretty silly but for now this is how it works:
 #
-#     python plotting_Shukla.py <project> <kinase> <ref_kinase>
+#     python plotting_Shukla.py <condition> <kinase> <ref_kinase>
 #  Example: python plotting_Shukla.py 11401 'SRC'
 #
 # The only kinases currently availabe are 'SRC', 'ABL', and 'DDR1', but it should be simple to add your own.
@@ -25,7 +25,7 @@ import seaborn as sns
 sns.set_style("whitegrid")
 sns.set_context("poster")
 
-# Define project.
+# Define condition.
 project_num = sys.argv[1]
 
 # Define kinase.

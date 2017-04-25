@@ -9,12 +9,12 @@ John D. Chodera
 import numpy as np
 import os
 
-W1TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-11419/data/W1-274NandW2-oxygen-indices.npy"
-W2TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-11419/data/W2-181185-or275-andW1-oxygen-indices.npy"
-W1_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-11418/data/W1-274NandW2-oxygen-indices.npy"
-W2_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-11418/data/W2-181185-or275-andW1-oxygen-indices.npy"
+W1TPX_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-11419/data/W1-274NandW2-oxygen-indices.npy"
+W2TPX_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-11419/data/W2-181185-or275-andW1-oxygen-indices.npy"
+W1_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-11418/data/W1-274NandW2-oxygen-indices.npy"
+W2_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-11418/data/W2-181185-or275-andW1-oxygen-indices.npy"
 
-#W2TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-11414/data/W2-181or162-oxygen-indices.npy"
+#W2TPX_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-11414/data/W2-181or162-oxygen-indices.npy"
 W1TPX = list(np.load(W1TPX_filename))
 W2TPX = list(np.load(W2TPX_filename))
 W1 = np.load(W1_filename)

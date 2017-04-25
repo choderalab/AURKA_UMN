@@ -69,15 +69,15 @@ for mutant, file_id in corresponding_mutants.items():
     project = file_id[1][0]
     run = file_id[1][1]
 
-#    W1TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-%s/data/RUN%s-W1-274NandW2-oxygen-indices.npy" % (project_TPX, run_TPX)
-#    W2TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-%s/data/RUN%s-W2-181185-or275-andW1-oxygen-indices.npy" % (project_TPX, run_TPX)
-#    W1_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-%s/data/RUN%s-W1-274NandW2-oxygen-indices.npy" % (project, run)
-#    W2_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-%s/data/RUN%s-W2-181185-or275-andW1-oxygen-indices.npy" % (project, run)
+#    W1TPX_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-%s/data/RUN%s-W1-274NandW2-oxygen-indices.npy" % (project_TPX, run_TPX)
+#    W2TPX_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-%s/data/RUN%s-W2-181185-or275-andW1-oxygen-indices.npy" % (project_TPX, run_TPX)
+#    W1_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-%s/data/RUN%s-W1-274NandW2-oxygen-indices.npy" % (condition, run)
+#    W2_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-%s/data/RUN%s-W2-181185-or275-andW1-oxygen-indices.npy" % (condition, run)
 
-    W1TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-%s/data/RUN%s-274N-oxygen-indices.npy" % (project_TPX, run_TPX)
-    W2TPX_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-%s/data/RUN%s-W2-181185-or275-oxygen-indices.npy" % (project_TPX, run_TPX)
-    W1_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-%s/data/RUN%s-274N-oxygen-indices.npy" % (project, run)
-    W2_filename = "/cbio/jclab/projects/behrj/AURKA_UMN/output-%s/data/RUN%s-W2-181185-or275-oxygen-indices.npy" % (project, run)
+    W1TPX_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-%s/data/RUN%s-274N-oxygen-indices.npy" % (project_TPX, run_TPX)
+    W2TPX_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-%s/data/RUN%s-W2-181185-or275-oxygen-indices.npy" % (project_TPX, run_TPX)
+    W1_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-%s/data/RUN%s-274N-oxygen-indices.npy" % (project, run)
+    W2_filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/output-%s/data/RUN%s-W2-181185-or275-oxygen-indices.npy" % (project, run)
 
     W1TPX_run = list(np.load(W1TPX_filename))[:50]
     W2TPX_run = list(np.load(W2TPX_filename))[:50]

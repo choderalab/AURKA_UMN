@@ -15,7 +15,7 @@ import seaborn as sns
 sns.set_style("whitegrid")
 sns.set_context("poster")
 
-# Define project.
+# Define condition.
 condition = sys.argv[2]
 
 # Define kinase.
