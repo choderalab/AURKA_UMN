@@ -47,7 +47,7 @@ if __name__ == "__main__":
     conditions = ['AURKA_nophos_notpx2/11418', 'AURKA_phos_notpx2/11429']
     save_file_label = ['NoPhos', 'Phos']
     for i,condition in enumerate(conditions):
-        trajectories = dataset.MDTrajDataset(os.path.join(project_basepath, '%s/run0-clone0.h5' % condition))
+        trajectories = dataset.MDTrajDataset(os.path.join(project_basepath, '%s/run0-clone*.h5' % condition))
         data = analyze(trajectories)
         np.save("../data/e-fret/%s.npy" % save_file_label[i], data)
 
