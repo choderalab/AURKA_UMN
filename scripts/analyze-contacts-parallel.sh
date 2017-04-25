@@ -44,7 +44,7 @@
 
 # Change to working directory used for job submission
 cd $PBS_O_WORKDIR
-#source activate py27
+source activate py27
 
 # Launch MPI job.
 mpirun -rmk pbs python compute_contacts_parallel.py
