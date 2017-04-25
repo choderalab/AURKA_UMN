@@ -23,7 +23,7 @@ output_basepath = '../data/e-fret'
 if not os.path.exists(output_basepath):
     os.makedirs(output_basepath)
 
-nclones = 50  # number of CLONEs per RUN
+nclones = 5  # number of CLONEs per RUN
 nframes = 2040  # max frames / trajectory
 conditions = ['AURKA_nophos_notpx2', 'AURKA_phos_notpx2']
 nruns = 1
@@ -52,13 +52,13 @@ for condition in conditions:
 
         # Gather data to root and write it
         gathered_dist = MPI.COMM_WORLD.gather(distances, root=0)
-        # if rank == 0:
+        if rank == 0:
         #     rmsds = np.zeros([nclones, nframes], np.float32) - 1
         #     for clone in range(nclones):
         #         rmsd = gathered_rmsds[clone % size][clone / size]
         #         N = len(rmsd)
         #         rmsds[clone, 0:N] = rmsd[0:N]
-        #     output_filename = os.path.join(output_basepath, '%s-run%d-alphaC-rmsd.npy' % (condition, run))
-        #     np.save(output_filename, rmsds)
+            output_filename = os.path.join(output_basepath, '%s-run%d-contacts.npy' % (condition, run))
+            np.save(output_filename, gathered_dist)
 
 
