@@ -26,18 +26,13 @@ conditions = ['AURKA_nophos_notpx2', 'AURKA_phos_notpx2']
 nruns = 1
 for condition in conditions:
     for run in range(nruns):
-        h5_filename = os.path.join(project_basepath, '%s/*/run%d-clone%d.h5' % (condition, run, 0))
-        if not os.path.exists(h5_filename):
-            continue
-
         if rank == 0: print('PROJECT %s RUN %d' % (condition, run))
-
         # Process trajectories
         distances = list()
         for clone in range(rank, nclones, size):
             # Read trajectory
 
-            h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (condition, run, clone))
+            h5_filename = os.path.join(project_basepath, '%s/*/run%d-clone%d.h5' % (condition, run, clone))
             t = md.load(h5_filename)
             min_frame = 400
             end_frame = t.n_frames
