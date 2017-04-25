@@ -22,7 +22,7 @@ output_basepath = '../data/e-fret'
 
 nclones = 5  # number of CLONEs per RUN
 nframes = 2040  # max frames / trajectory
-conditions = ['AURKA_nophos_notpx2', 'AURKA_phos_notpx2']
+conditions = ['AURKA_nophos_notpx2/11418', 'AURKA_phos_notpx2/11429']
 nruns = 1
 for condition in conditions:
     for run in range(nruns):
@@ -32,7 +32,7 @@ for condition in conditions:
         for clone in range(rank, nclones, size):
             # Read trajectory
 
-            h5_filename = os.path.join(project_basepath, '%s/*/run%d-clone%d.h5' % (condition, run, clone))
+            h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (condition, run, clone))
             t = md.load(h5_filename)
             min_frame = 400
             end_frame = t.n_frames
