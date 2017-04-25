@@ -23,8 +23,9 @@ output_basepath = '../data/e-fret'
 nclones = 5  # number of CLONEs per RUN
 nframes = 2040  # max frames / trajectory
 conditions = ['AURKA_nophos_notpx2/11418', 'AURKA_phos_notpx2/11429']
+save_file_label = ['NoPhos', 'Phos']
 nruns = 1
-for condition in conditions:
+for i, condition in enumerate(conditions):
     for run in range(nruns):
         if rank == 0: print('PROJECT %s RUN %d' % (condition, run))
         # Process trajectories
@@ -45,7 +46,7 @@ for condition in conditions:
         # Gather data to root and write it
         gathered_dist = MPI.COMM_WORLD.gather(distances, root=0)
         if rank == 0:
-            output_filename = os.path.join(output_basepath, '%s-run%d-contacts.npy' % (condition, run))
+            output_filename = os.path.join(output_basepath, '%s-run%d-contacts.npy' % (save_file_label[i], run))
             np.save(output_filename, gathered_dist)
 
 
