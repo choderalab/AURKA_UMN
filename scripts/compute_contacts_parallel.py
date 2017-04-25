@@ -1,56 +1,53 @@
+# Compute Contacts Script
+# Steven Albanese, Chodera Lab
 
-"""
-Analyze C-helix
+# Global Imports
 
-"""
-
-from mpi4py import MPI
+import matplotlib.pyplot as plt
 import mdtraj as md
 import numpy as np
-import sys
-import math
+from mpi4py import MPI
+from msmbuilder import dataset
+import argparse
 import os
-import time
-import mdtraj as md
-rank = MPI.COMM_WORLD.rank
-size = MPI.COMM_WORLD.size
 
-if rank == 0: print('rank = %d, size = %d' % (rank, size))
 
-project_basepath = '/cbio/jclab/home/albaness/trajectories/AURKA'  # location of FAH trajectories
-output_basepath = '../data/e-fret'
+def analyze(trajectories):
+    """ Main Analysis function
 
-nclones = 25  # number of CLONEs per RUN
-nframes = 2040  # max frames / trajectory
-conditions = ['AURKA_nophos_notpx2/11418', 'AURKA_phos_notpx2/11429']
-save_file_label = ['NoPhos', 'Phos']
-nruns = 1
-for i, condition in enumerate(conditions):
-    for run in range(nruns):
-        h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (condition, run, 0))
-        if not os.path.exists(h5_filename):
-            continue
+    :param trajectory: trajectory contact map will be calculated from
+    :return: a symmetrical square numpy.array of distances and residue pairs
 
-        if rank == 0: print('PROJECT %s RUN %d' % (condition, run))
-        # Process trajectories
-        distances = list()
-        for clone in range(rank, nclones, size):
-            # Read trajectory
+    """
 
-            h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (condition, run, clone))
-            t = md.load(h5_filename)
-            min_frame = 400
-            end_frame = t.n_frames
-            print('  CLONE %5d : %5d frames' % (clone, t.n_frames))
+    min_frame = 400
+    distances = list()
+    for i,traj in enumerate(trajectories):
+        # Various variables to be used later on in script
+        end_frame = len(traj)
 
-            short_traj = t.slice(range(min_frame, end_frame), copy=False)
-            [distance, res_list] = md.compute_contacts(short_traj, scheme='ca')
-            distances.append(distance)
+        short_traj = traj.slice(range(min_frame, end_frame), copy=False)
 
-        # Gather data to root and write it
-        gathered_dist = MPI.COMM_WORLD.gather(distances, root=0)
-        if rank == 0:
-            output_filename = os.path.join(output_basepath, '%s-run%d-contacts.npy' % (save_file_label[i], run))
-            np.save(output_filename, gathered_dist)
+        # Calculate the contact map
+        [distance_trajectory, contact_list] = md.compute_contacts(short_traj, contacts='all', scheme='ca')
+        distances.append(distance_trajectory)
+        distances = np.asarray(distances)
 
+    return distances
+
+
+################################
+#        Data Analysis         #
+################################
+
+if __name__ == "__main__":
+
+    n_runs = 1
+    project_basepath = '/cbio/jclab/home/albaness/trajectories/AURKA'
+    conditions = ['AURKA_nophos_notpx2/11418', 'AURKA_phos_notpx2/11429']
+    save_file_label = ['NoPhos', 'Phos']
+    for i,condition in enumerate(conditions):
+        trajectories = dataset.MDTrajDataset(os.path.join(project_basepath, '%s/run0-clone0.h5' % condition))
+        data = analyze(trajectories)
+        np.save("../data/e-fret/%s.npy" % save_file_label[i], data)
 
