@@ -17,7 +17,7 @@ size = MPI.COMM_WORLD.size
 
 if rank == 0: print('rank = %d, size = %d' % (rank, size))
 
-project_basepath = '/cbio/jclab/albaness/trajectories  # location of FAH trajectories
+project_basepath = '/cbio/jclab/home/albaness/trajectories/AURKA'  # location of FAH trajectories
 output_basepath = '../data/e-fret'
 
 if not os.path.exists(output_basepath):
@@ -53,11 +53,6 @@ for condition in conditions:
         # Gather data to root and write it
         gathered_dist = MPI.COMM_WORLD.gather(distances, root=0)
         if rank == 0:
-        #     rmsds = np.zeros([nclones, nframes], np.float32) - 1
-        #     for clone in range(nclones):
-        #         rmsd = gathered_rmsds[clone % size][clone / size]
-        #         N = len(rmsd)
-        #         rmsds[clone, 0:N] = rmsd[0:N]
             output_filename = os.path.join(output_basepath, '%s-run%d-contacts.npy' % (condition, run))
             np.save(output_filename, gathered_dist)
 
