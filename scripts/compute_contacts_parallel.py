@@ -1,8 +1,8 @@
 
-    """
-    Analyze C-helix
+"""
+Analyze C-helix
 
-    """
+"""
 
 from mpi4py import MPI
 import mdtraj as md
