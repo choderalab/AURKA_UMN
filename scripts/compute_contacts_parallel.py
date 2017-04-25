@@ -27,6 +27,10 @@ save_file_label = ['NoPhos', 'Phos']
 nruns = 1
 for i, condition in enumerate(conditions):
     for run in range(nruns):
+        h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (project, run, 0))
+        if not os.path.exists(h5_filename):
+            continue
+
         if rank == 0: print('PROJECT %s RUN %d' % (condition, run))
         # Process trajectories
         distances = list()
