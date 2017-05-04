@@ -58,7 +58,7 @@ print(run_guide)
 
 
 projects = ['11414','11419']
-#projects = ['11418','11423']
+#conditions = ['11418','11423']
 
 offset = plot_function.OFFSET
 bin_x = plot_function.BIN_X

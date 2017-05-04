@@ -1,7 +1,8 @@
 #!/bin/bash
 #
+#
 # walltime : maximum wall clock time (hh:mm:ss)
-#PBS -l walltime=72:00:00
+#PBS -l walltime=144:00:00
 #
 # join stdout and stderr
 #PBS -j oe
@@ -14,7 +15,7 @@
 #
 # nodes: number of nodes
 #   ppn: number of processes per node
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=5:ppn=1
 #
 # specify memory 
 #
@@ -24,7 +25,7 @@
 #PBS -V
 #
 # job name (default = name of script file)
-#PBS -N distances
+#PBS -N compute_contacts
 #
 # specify email for notifications
 #PBS -M steven.albanese@choderalab.org
@@ -34,18 +35,16 @@
 # a: send mail if job is aborted
 # b: send mail when job begins execution
 # e: send mail when job terminates
-#PBS -m abe
+#PBS -m ae
 #
 # filename for standard output (default = <job_name>.o<job_id>)
 # at end of job, it is in directory from which qsub was executed
 # remove extra ## from the line below if you want to name your own file
-#PBS -o AURKA_distances
+##PBS -o AURKA_a-loop-1OL7
 
 # Change to working directory used for job submission
 cd $PBS_O_WORKDIR
-#source activate py27
+source activate py27
 
-# Launch job.
-python ./distances.py AURKA AURKA_phos_notpx2
-python ./distances.py AURKA AURKA_nophos_notpx2
-
+# Launch MPI job.
+mpirun -rmk pbs python compute_contacts_parallel.py

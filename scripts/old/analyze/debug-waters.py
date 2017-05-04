@@ -24,7 +24,7 @@ projects = ['11410','11411','11418']
 project_dirs = {'11410':'%s/../output-1OL5' % local_path,'11411':'%s/../output-1OL7' % local_path,'11418':'%s/../output1OL5-TPX2' % local_path}
 system = {'11410':'with TPX2','11411':'without TPX2','11418': 'with TPX2 removed'}
 
-with open('/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
+with open('/cbio/jclab/conditions/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
 mutant = dict()
 for entry in run_index.split('\n'):
@@ -54,8 +54,8 @@ def find_hbonds_between_waters(HB_total):
     for clone, traj in enumerate(HB_res_total):
         if clone%50 == 0:
             print('Now loading trajectories for RUN%s' % str(clone/50))
-            trajectories = dataset.MDTrajDataset("/cbio/jclab/projects/fah/fah-data/munged2/all-atoms/%s/run%d-clone*.h5" % (project, clone/50))
-            topology = md.load('/cbio/jclab/projects/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
+            trajectories = dataset.MDTrajDataset("/cbio/jclab/conditions/fah/fah-data/munged2/all-atoms/%s/run%d-clone*.h5" % (project, clone/50))
+            topology = md.load('/cbio/jclab/conditions/AURKA_UMN/trajectories/%s_RUN%s.pdb' % (project, 0))
         trajectory = trajectories[clone%50]
         old_chunk = 0
         hbonds = None

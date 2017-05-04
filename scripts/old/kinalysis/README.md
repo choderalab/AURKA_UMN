@@ -1,5 +1,5 @@
 ## kinalysis
-location on cluster: `/cbio/jclab/projects/behrj/AURKA_UMN/kinalysis`
+location on cluster: `/cbio/jclab/conditions/behrj/AURKA_UMN/kinalysis`
 
 ```
  python inputs.py

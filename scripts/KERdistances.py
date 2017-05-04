@@ -2,7 +2,7 @@
 #
 # Right now the syntax is pretty silly but for now this is how it works:
 #
-#     python plotting_Shukla.py <project> <kinase> <ref_kinase>
+#     python plotting_Shukla.py <condition> <kinase> <ref_kinase>
 #  Example: python plotting_Shukla.py 11401 'SRC'
 #
 # The only kinases currently availabe are 'SRC', 'ABL', and 'DDR1', but it should be simple to add your own.
@@ -25,7 +25,7 @@ import seaborn as sns
 sns.set_style("whitegrid")
 sns.set_context("poster")
 
-# Define project.
+# Define condition.
 project_num = sys.argv[1]
 
 # Define kinase.
@@ -87,7 +87,7 @@ def plot(kinase, mutgroup, project):
     KE_graph = []
     for index in Mut_group[mutgroup]:
         trajectories = dataset.MDTrajDataset(
-            "/cbio/jclab/projects/fah/fah-data/munged2/no-solvent/%s/run%d-clone*.h5" % (project, index))
+            "/cbio/jclab/conditions/fah/fah-data/munged2/no-solvent/%s/run%d-clone*.h5" % (project, index))
         for i, traj in enumerate(trajectories):
             if i == 0:
                 [RE, KE] = shukla_coords(traj, KER_hbond[kinase])
@@ -151,7 +151,7 @@ if __name__ == "__main__":
         RE_total = []
         KE_total = []
         trajectories = dataset.MDTrajDataset(
-            "/cbio/jclab/projects/fah/fah-data/munged3/no-solvent/%s/run%s-clone*.h5" % (project_num, run))
+            "/cbio/jclab/conditions/fah/fah-data/munged3/no-solvent/%s/run%s-clone*.h5" % (project_num, run))
         for traj_in in trajectories:
             [RE_dist, KE_dist] = shukla_coords(traj_in, KER_hbond[kinase_definition])
             RE_total.append(RE_dist[:, 0])

@@ -9,7 +9,7 @@ import mdtraj as md
 
 """
 Extract all trajectories and associated waters meeting W1/W2 definition for that trajectory.
-Requires /cbio/jclab/projects/behrj/AURKA_UMN/output-{project#}/data/{project#}_{run#}_{residue#}_distHBonds.npy files
+Requires /cbio/jclab/conditions/behrj/AURKA_UMN/output-{condition#}/data/{condition#}_{run#}_{residue#}_distHBonds.npy files
 
 """
 
@@ -19,8 +19,8 @@ size = MPI.COMM_WORLD.size
 
 if rank==0: print('rank = %d, size = %d' % (rank, size))
 
-project_basepath = '/cbio/jclab/projects/fah/fah-data/munged3/all-atoms' # location of FAH all-atom trajectories
-hbond_basepath = '/cbio/jclab/projects/behrj/AURKA_UMN/'
+project_basepath = '/cbio/jclab/conditions/fah/fah-data/munged3/all-atoms' # location of FAH all-atom trajectories
+hbond_basepath = '/cbio/jclab/conditions/behrj/AURKA_UMN/'
 output_basepath = 'trajectories-with-key-waters'
 
 if not os.path.exists(output_basepath):
@@ -91,7 +91,7 @@ def atom_mapping(atomslice):
 
 nclones = 50 # number of CLONEs per RUN
 projects = ['11414', '11419', '11418', '11423']
-nruns = 7 # number of runs per project
+nruns = 7 # number of runs per condition
 resid = 185 # residue number 
 for project in projects:
     for run in range(nruns):
@@ -175,7 +175,7 @@ for project in projects:
             if rank==0: print('      Slicing trajectory for protein...')
             initial_time = time.time()
             solute = t.topology.select('not water')            
-            write_trajectory(t.atom_slice(solute, inplace=False), prefix=os.path.join(output_basepath, 'project%s-run%d-clone%d-protein' % (project, run, clone)))
+            write_trajectory(t.atom_slice(solute, inplace=False), prefix=os.path.join(output_basepath, 'condition%s-run%d-clone%d-protein' % (project, run, clone)))
             if rank==0: print('          completed in %8.3f s' % (time.time() - initial_time))
 
             # Determine major and minor waters for W1 and W2
@@ -190,10 +190,10 @@ for project in projects:
             (W1_major_waters, W1_minor_waters) = split_major_minor(W1_molecule_frames)
             (W2_major_waters, W2_minor_waters) = split_major_minor(W2_molecule_frames)            
             # Slice out major and minor water populations
-            write_trajectory(t.atom_slice(W1_major_waters, inplace=False), prefix=os.path.join(output_basepath, 'project%s-run%d-clone%d-W1-major' % (project, run, clone)))
-            write_trajectory(t.atom_slice(W1_minor_waters, inplace=False), prefix=os.path.join(output_basepath, 'project%s-run%d-clone%d-W1-minor' % (project, run, clone)))
-            write_trajectory(t.atom_slice(W2_major_waters, inplace=False), prefix=os.path.join(output_basepath, 'project%s-run%d-clone%d-W2-major' % (project, run, clone)))
-            write_trajectory(t.atom_slice(W2_minor_waters, inplace=False), prefix=os.path.join(output_basepath, 'project%s-run%d-clone%d-W2-minor' % (project, run, clone)))
+            write_trajectory(t.atom_slice(W1_major_waters, inplace=False), prefix=os.path.join(output_basepath, 'condition%s-run%d-clone%d-W1-major' % (project, run, clone)))
+            write_trajectory(t.atom_slice(W1_minor_waters, inplace=False), prefix=os.path.join(output_basepath, 'condition%s-run%d-clone%d-W1-minor' % (project, run, clone)))
+            write_trajectory(t.atom_slice(W2_major_waters, inplace=False), prefix=os.path.join(output_basepath, 'condition%s-run%d-clone%d-W2-major' % (project, run, clone)))
+            write_trajectory(t.atom_slice(W2_minor_waters, inplace=False), prefix=os.path.join(output_basepath, 'condition%s-run%d-clone%d-W2-minor' % (project, run, clone)))
             if rank==0: print('          completed in %8.3f s' % (time.time() - initial_time))
             
             MPI.COMM_WORLD.Barrier()

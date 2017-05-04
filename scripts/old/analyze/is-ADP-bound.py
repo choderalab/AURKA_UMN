@@ -29,7 +29,7 @@ system = {
 
 runs = range(5)
 
-with open('/cbio/jclab/projects/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
+with open('/cbio/jclab/conditions/behrj/AURKA_UMN/output-1OL7/run-index.txt','r') as fi:
     run_index = fi.read()
 
 mutant = dict()
@@ -73,7 +73,7 @@ for project in projects:
             mutant = entry.split(' ')[1]
             run = run[3:]
             run_guide[project] += 1
-            #mutants[(project, run)] = mutant
+            #mutants[(condition, run)] = mutant
         except:
             pass
 print(run_guide)
@@ -107,7 +107,7 @@ def plot_initial_adp(project_adp_active):
                 ADPs[clone] = 0
             weights[clone] = 1.00
         title = 'Is ADP bound in initial frame in WT AURKA %s' % system[project]
-        filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/ADP-frame0-binding-%s.png" % project
+        filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/plots/ADP-frame0-binding-%s.png" % project
         key = 'ADP0'
         plot_2dhist(key, x_axis, ADPs, weights, title, filename)
 
@@ -170,7 +170,7 @@ def plot_adp_active(project_adp_active):
         ADPs = ADPs.flatten()
         weights = weights.flatten()
         title = 'Frames with ADP bound in WT AURKA %s' % system[project]
-        filename = "/cbio/jclab/projects/behrj/AURKA_UMN/plots/ADP-binding-%s.png" % project
+        filename = "/cbio/jclab/conditions/behrj/AURKA_UMN/plots/ADP-binding-%s.png" % project
         key = 'ADP'
         plot_2dhist(key, x_axis, ADPs, weights, title, filename)
 
@@ -265,7 +265,7 @@ for project in projects:
             print("Loading Project %s RUN%s..." % (project, run))
         for i in range(50):
             try:
-                traj = md.load("/cbio/jclab/projects/fah/fah-data/munged3/all-atoms/%s/run%s-clone%s.h5" % (project, run, i))
+                traj = md.load("/cbio/jclab/conditions/fah/fah-data/munged3/all-atoms/%s/run%s-clone%s.h5" % (project, run, i))
             except:
                 break
             if i == 0:

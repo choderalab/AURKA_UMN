@@ -15,7 +15,7 @@ import seaborn as sns
 sns.set_style("whitegrid")
 sns.set_context("poster")
 
-# Define project.
+# Define condition.
 condition = sys.argv[2]
 
 # Define kinase.
@@ -25,7 +25,7 @@ kinase_definition = sys.argv[1]
 
 # Define Alpha carbon coordinates (1-indexed), give me residue numbers here
 res_pairs = {'AURKA': [[243, 259], [328, 362], [188, 342], [191, 301], [223, 266], [212, 288], [142, 200], [141, 254],
-                       [159, 160], [137, 154]]}
+                       [150, 160], [137, 154], [233,238], [203, 343], [123, 236], [236,269], [155, 223]]}
 
 
 
@@ -38,12 +38,13 @@ def alpha_distances(traj, residue_pair):
     """
     min_frame = 400
     end_frame = len(traj)
-
     short_traj = traj.slice(range(min_frame, end_frame), copy=False)
     atom1 = short_traj.topology.select("residue %s and name == 'CA'" % residue_pair[0])
     atom2 = short_traj.topology.select("residue %s and name == 'CA'" % residue_pair[1])
-
-    dists = md.compute_distances(short_traj, [atom1, atom2])
+    list_of_atoms = [atom1, atom2]
+    atom_array = np.asanyarray(list_of_atoms)
+    atom_array = atom_array.reshape(1,2)
+    dists = md.compute_distances(short_traj, atom_array)
 
 
 
@@ -59,13 +60,13 @@ if __name__ == "__main__":
     trajectories = dataset.MDTrajDataset(
         '/cbio/jclab/home/albaness/trajectories/AURKA/%s/*/run0-*.h5' % condition)
     master_dist_list = []
-    for pair in range(len(res_pairs)):
+    for pair in range(len(res_pairs[kinase_definition])):
         dist_list = []
-        pair_id = res_pairs[pair]
-        res1 = pair_id[0]
-        res2 = pair_id[1]
-        print(pair_id)
+        pair_list = res_pairs[kinase_definition][pair]
+        res1 = pair_list[0]
+        res2 = pair_list[1]
+        print(pair_list)
         for traj_in in trajectories:
-            distance1 = alpha_distances(traj_in, res_pairs[pair])
+            distance1 = alpha_distances(traj_in, pair_list)
             dist_list.extend(distance1)
-        np.save('../data/probe_analysis/distances_%s_%s-pair%s-%s.npy' % (kinase_definition, condition, res1, res2))
+        np.save('../data/probe_analysis/distances_%s_%s-pair%s-%s.npy' % (kinase_definition, condition, res1, res2), dist_list)

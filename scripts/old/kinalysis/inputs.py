@@ -1,5 +1,5 @@
 
-# This dictionary defines which project you are running by your protein name.
+# This dictionary defines which condition you are running by your protein name.
 # This will have to be hardcorded.
 
 projects = dict()
@@ -60,7 +60,7 @@ print Aloop_def
 # Here we store these dictionaries as JSON files.
 
 import json
-with open('projects.json', 'w') as fp:
+with open('conditions.json', 'w') as fp:
     json.dump(projects, fp)
 with open('DFG.json', 'w') as fp:
     json.dump(DFG, fp)

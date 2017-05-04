@@ -1,5 +1,5 @@
 # AURKA_UMN
-original location: `/cbio/jclab/projects/behrj/AURKA_UMN`
+original location: `/cbio/jclab/conditions/behrj/AURKA_UMN`
 
 Correlation timeplot scripts found at `AURKA_UMN/analyze/analyze-hbond-correlation-times/`
 
@@ -34,5 +34,5 @@ Projects to be analyzed for manuscript:
   * RUN5: C247A
   * RUN6: C247L
   
-Additionally, all projects have an `output-{project #}/` directory which includes `run-index.txt`
+Additionally, all projects have an `output-{condition #}/` directory which includes `run-index.txt`
 

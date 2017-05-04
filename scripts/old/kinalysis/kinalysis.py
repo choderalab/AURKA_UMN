@@ -289,7 +289,7 @@ def pdf_summary(protein,sim_num,sim_tot,sim_time,project):
    \usepackage{subcaption}
    \renewcommand{\familydefault}{\sfdefault}
    \begin{document}
-   \textbf{{\huge PDF Summary of %(protein)s kinase} Project: %(project)s \\}
+   \textbf{{\huge PDF Summary of %(protein)s kinase} Project: %(condition)s \\}
    \\
 
    \begin{figure}[!hbp]
@@ -332,7 +332,7 @@ def pdf_summary(protein,sim_num,sim_tot,sim_time,project):
    '''
 
    parser = argparse.ArgumentParser()
-   parser.add_argument('-j', '--project', default='%s' %project )
+   parser.add_argument('-j', '--condition', default='%s' %project )
    parser.add_argument('-a', '--sim_num', default='%s' %sim_num )
    parser.add_argument('-b', '--sim_tot', default='%s' %sim_tot )
    parser.add_argument('-t', '--time', default='%s' % ''.join(map(str, sim_time)) )

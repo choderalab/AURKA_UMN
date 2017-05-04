@@ -17,7 +17,7 @@ Generate publication figures.
 
 """
 
-#hbond_basepath = '/cbio/jclab/projects/behrj/AURKA_UMN/'
+#hbond_basepath = '/cbio/jclab/conditions/behrj/AURKA_UMN/'
 hbond_basepath = 'data' # location of extracted trajectory features
 output_basepath = 'figures'
 
@@ -27,7 +27,7 @@ if not os.path.exists(output_basepath):
 # Parameters
 nclones = 50 # number of CLONEs per RUN
 projects = ['11414', '11419', '11418', '11423']
-nruns = 7 # number of runs per project
+nruns = 7 # number of runs per condition
 resid = 185 # residue number used in constructing paths
 
 # location of simulation data for each mutant
@@ -69,7 +69,7 @@ def retrieve_data(key):
     Parameters
     ----------
     key : str
-        The key into 'simulations' to identify projects and RUNs associated with the simulation data.
+        The key into 'simulations' to identify conditions and RUNs associated with the simulation data.
 
     Returns
     -------
