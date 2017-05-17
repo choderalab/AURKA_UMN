@@ -18,7 +18,7 @@
 #
 # specify memory 
 #
-#PBS -l mem=80GB
+#PBS -l mem=100GB
 #
 # export all my environment variables to the job
 #PBS -V
