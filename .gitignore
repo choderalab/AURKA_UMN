@@ -3,3 +3,6 @@ output-*/
 *.pyc
 *.tar
 data/*
+*.xml
+*.tgz
+*/11431/*
