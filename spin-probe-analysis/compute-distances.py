@@ -59,10 +59,15 @@ def process_clone(clone_path):
     # Read trajectory
     traj = md.load(clone_path)
 
-    # Determine spin probe oxygen atom indices
+    # Determine spin probe NO oxygen atom indices
     oxygens = traj.top.select('resn CYR and name ON')
     if len(oxygens) != 2:
-        raise Exception('Selection for O-O distance did not return exactly two atoms')
+        raise Exception('Selection for spin probe ON-ON distance did not return exactly two atoms')
+
+    # Determine spin probe CA distances
+    alpha_carbons = traj.top.select('resn CYR and name CA')
+    if len(alpha_carbons) != 2:
+        raise Exception('Selection for spin probe CA-CA distance did not return exactly two atoms')
 
     # Determine R255 CZ - T288 CA distance
     RT = traj.top.select('(resSeq %d and resname ARG and name CZ) or (resSeq %d and resname THR and name CA)' % (255 - offset + 1, 288 - offset + 1))
@@ -70,7 +75,7 @@ def process_clone(clone_path):
         raise Exception('Selection for R255 CZ - T288 CA distance did not return exactly two atoms')
 
     # Compute distances
-    distances = md.compute_distances(traj, [oxygens, RT])
+    distances = md.compute_distances(traj, [oxygens, alpha_carbons, RT])
 
     # Clean up
     del traj
