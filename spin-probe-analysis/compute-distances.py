@@ -10,11 +10,29 @@ John D. Chodera
 import numpy as np
 import mdtraj as md
 import os, os.path
+import re
 import glob
 
 fahdata_path = '/cbio/jclab/projects/fah/fah-data/munged4/11431/'
 output_path = 'data' # location for output data
 nthreads = 16
+
+# offset_index[run] is the ACTUAL first residue number in the AurA protein sequence of the first residue of the topology PDB
+# THIS IS A MASSIVE HACK DUE TO A FAILURE TO PRESERVE PROVENANCE INFORMATION IN PROTEIN SEQID
+offset_index = {
+    0 : 123, # 1OL5
+    1 : 123,
+    2 : 123,
+    3 : 123,
+    4 : 127, # 1OL7
+    5 : 127,
+    6 : 127,
+    7 : 127,
+    8 : 126, # 5L8K
+    9 : 126,
+    10 : 126,
+    11 : 126,
+}
 
 if not os.path.exists(output_path):
     os.makedirs(output_path)
@@ -31,15 +49,28 @@ def process_clone(clone_path):
     """
     print('Processing %s...' % clone_path)
 
+    # Determine offset for first residue
+    filename = os.path.basename(clone_path)
+    [prefix, extension] = os.path.splitext(filename)
+    match = re.match('run(\d+)-clone(\d+)', prefix)
+    run = int(match[1])
+    offset = offset_index[run]
+
     # Read trajectory
     traj = md.load(clone_path)
 
-    # Determine spin probe oxygens
+    # Determine spin probe oxygen atom indices
     oxygens = traj.top.select('resn CYR and name ON')
+    if len(oxygens) != 2:
+        raise Exception('Selection for O-O distance did not return exactly two atoms')
+
+    # Determine R255 CZ - T288 CA distance
+    RT = traj.top.select('(resSeq %d and resname ARG and name CZ) or (resSeq %d and resname THR and name CA)' % (255 - offset + 1, 288 - offset + 1))
+    if len(RT) != 2:
+        raise Exception('Selection for R255 CZ - T288 CA distance did not return exactly two atoms')
 
     # Compute distances
-    distances = md.compute_distances(traj, [oxygens])
-    distances = distances[:,0] # squeeze out unnecessary coordinates
+    distances = md.compute_distances(traj, [oxygens, RT])
 
     # Clean up
     del traj
