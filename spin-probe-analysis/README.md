@@ -9,6 +9,8 @@ This section contains analysis scripts and processed datafiles for simulations w
   * index 0 : spin probe (CYR) NO group oxygen-oxygen distances
   * index 1 : spin probe (CYR) alpha carbon distances
   * index 2 : R255 CZ - T288 CA distance
+  * index 3 : F275 CZ - I193 CG2 distance (low in DFG-in)
+  * index 4 : W277 CE2 - I193 CG2 distance (low in DFG-out)
 
 ## Run index
 

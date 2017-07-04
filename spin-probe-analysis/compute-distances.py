@@ -74,8 +74,18 @@ def process_clone(clone_path):
     if len(RT) != 2:
         raise Exception('Selection for R255 CZ - T288 CA distance did not return exactly two atoms')
 
+    # Determine F275 CZ - I193 CG2 distance
+    DFG_PHE_ILE = traj.top.select('(resSeq %d and resname PHE and name CZ) or (resSeq %d and resname ILE and name CG2)' % (275 - offset + 1, 193 - offset + 1))
+    if len(DFG_PHE_ILE) != 2:
+        raise Exception('Selection for F275 CZ - I193 CG2 distance did not return exactly two atoms')
+
+    # Determine W277 CE2 - I193 CG2 distance
+    DFG_TRP_ILE = traj.top.select('(resSeq %d and resname TRP and name CE2) or (resSeq %d and resname ILE and name CG2)' % (277 - offset + 1, 193 - offset + 1))
+    if len(DFG_TRP_ILE) != 2:
+        raise Exception('Selection for W277 CE2 - I193 CG2 distance did not return exactly two atoms')
+
     # Compute distances
-    distances = md.compute_distances(traj, [oxygens, alpha_carbons, RT])
+    distances = md.compute_distances(traj, [oxygens, alpha_carbons, RT, DFG_PHE_ILE, DFG_TRP_ILE])
 
     # Clean up
     del traj
