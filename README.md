@@ -37,15 +37,15 @@ Projects to be analyzed for manuscript:
 Additionally, all projects have an `output-{condition #}/` directory which includes `run-index.txt`
 
 * 11431: Spin probe labeled AURKA -  pdbs (all in rcsb direcotry): 1OL7-tpx2-new_03082017.pdb, 5L8K-tpx2-new_03072017.pdb, 1ol5-prepped.pdb
-RUN0 1OL5-notpx2-nophos
-RUN1 1OL5-notpx2-phos
-RUN2 1OL5-tpx2-nophos
-RUN3 1OL5-tpx2-phos
-RUN4 1OL7-notpx2-nophos
-RUN5 1OL7-notpx2-phos
-RUN6 1OL7-tpx2-nophos
-RUN7 1OL7-tpx2-phos
-RUN8 5L8K-notpx2-nophos
-RUN9  5L8K-notpx2-phos
-RUN10 5L8K-tpx2-nophos
-RUN11 5L8K-tpx2-phos
+ * RUN0 1OL5-notpx2-nophos
+ * RUN1 1OL5-notpx2-phos
+ * RUN2 1OL5-tpx2-nophos
+ * RUN3 1OL5-tpx2-phos
+ * RUN4 1OL7-notpx2-nophos
+ * RUN5 1OL7-notpx2-phos
+ * RUN6 1OL7-tpx2-nophos
+ * RUN7 1OL7-tpx2-phos
+ * RUN8 5L8K-notpx2-nophos
+ * RUN9  5L8K-notpx2-phos
+ * RUN10 5L8K-tpx2-nophos
+ * RUN11 5L8K-tpx2-phos
