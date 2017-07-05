@@ -1,7 +1,7 @@
 RUNS matched to condition: 
 
 
-* 0: 1OL5-tpx2-phos
+* 0: 1OL5-notpx2-nophos
 * 1: 1OL5-notpx2-phos
 * 2: 1OL5-tpx2-nophos
 * 3: 1OL5-tpx2-phos
