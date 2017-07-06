@@ -60,9 +60,9 @@ def process_clone(clone_path):
     traj = md.load(clone_path)
 
     # Determine spin probe NO oxygen atom indices
-    oxygens = traj.top.select('resn CYR and name ON')
+    oxygens = traj.top.select('resn CYR and name NN')
     if len(oxygens) != 2:
-        raise Exception('Selection for spin probe ON-ON distance did not return exactly two atoms')
+        raise Exception('Selection for spin probe NN-NN distance did not return exactly two atoms')
 
     # Determine spin probe CA distances
     alpha_carbons = traj.top.select('resn CYR and name CA')

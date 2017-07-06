@@ -6,7 +6,7 @@ This section contains analysis scripts and processed datafiles for simulations w
 
 * `compute-distances.py` - compute spin probe inter-oxygen distances in parallel using multiprocessing
 * `data/run*.npy` - numpy-format lists of distance arrays (in nm); `distances[clone,index]` is distance array for `clone` in nanometers
-  * index 0 : spin probe (CYR) NO group oxygen-oxygen distances
+  * index 0 : spin probe (CYR) NO group nitrogen-nitrogen (atom name NN) distances
   * index 1 : spin probe (CYR) alpha carbon distances
   * index 2 : R255 CZ - T288 CA distance
   * index 3 : F275 CZ - I193 CG2 distance (low in DFG-in)
