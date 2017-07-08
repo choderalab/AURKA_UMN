@@ -1,12 +1,13 @@
-RUN7 7
-RUN9 9
-RUN10 10
-RUN11 11
-RUN5 5
-RUN1 1
-RUN8 8
-RUN3 3
-RUN6 6
-RUN4 4
-RUN0 0
-RUN2 2
+RUN0 1OL5-notpx2-nophos
+RUN1 1OL5-notpx2-phos
+RUN2 1OL5-tpx2-nophos
+RUN3 1OL5-tpx2-phos
+RUN4 1OL7-notpx2-nophos
+RUN5 1OL7-notpx2-phos
+RUN6 1OL7-tpx2-nophos
+RUN7 1OL7-tpx2-phos
+RUN8 5L8K-notpx2-nophos
+RUN9  5L8K-notpx2-phos
+RUN10 5L8K-tpx2-nophos
+RUN11 5L8K-tpx2-phos
+
