@@ -1,7 +1,14 @@
 # AURKA_UMN
+
 original location: `/cbio/jclab/conditions/behrj/AURKA_UMN`
 
 Correlation timeplot scripts found at `AURKA_UMN/analyze/analyze-hbond-correlation-times/`
+
+## Manifest
+
+* `spin-probe-analysis/` - analysis of spin probes (`PROJ11431`)
+
+## FAH project index
 
 Projects to be analyzed for manuscript:
 (in all cases, crystallographic waters were preserved for initial setup)
@@ -33,10 +40,8 @@ Projects to be analyzed for manuscript:
   * RUN4: Q185H
   * RUN5: C247A
   * RUN6: C247L
-  
-Additionally, all projects have an `output-{condition #}/` directory which includes `run-index.txt`
-
 * 11431: Spin probe labeled AURKA -  pdbs: 1OL7-tpx2-new_03082017.pdb, 5L8K-tpx2-new_03072017.pdb, 1ol5-prepped.pdb
+(Note that each source PDB starts with a different residue number)
   * RUN0 1OL5-notpx2-nophos
   * RUN1 1OL5-notpx2-phos
   * RUN2 1OL5-tpx2-nophos
@@ -49,3 +54,6 @@ Additionally, all projects have an `output-{condition #}/` directory which inclu
   * RUN9  5L8K-notpx2-phos
   * RUN10 5L8K-tpx2-nophos
   * RUN11 5L8K-tpx2-phos
+
+
+Additionally, all projects have an `output-{condition #}/` directory which includes `run-index.txt`
