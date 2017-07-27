@@ -48,5 +48,5 @@ source activate py27
 
 # Launch MPI job.
 mpirun -rmk pbs python analyze-A-loop_1OL5.py
-#mpirun -rmk pbs python rmsd_kinase.py
-#mpirun -rmk pbs python rmsd-nloop.py
+mpirun -rmk pbs python rmsd_kinase.py
+mpirun -rmk pbs python rmsd-nloop.py
