@@ -25,7 +25,7 @@
 #PBS -V
 #
 # job name (default = name of script file)
-#PBS -N compute_contacts
+#PBS -N aurka-rmsd
 #
 # specify email for notifications
 #PBS -M steven.albanese@choderalab.org
@@ -49,4 +49,4 @@ source activate py27
 # Launch MPI job.
 mpirun -rmk pbs python analyze-A-loop_1OL5.py
 mpirun -rmk pbs python rmsd_kinase.py
-mpirun -rmk pbs python rmsd_nloop.py
+mpirun -rmk pbs python rmsd-nloop.py
