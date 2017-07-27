@@ -33,8 +33,8 @@ alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
 rmsd_selection_dsl = '(resSeq >= 280) and (resSeq <= 293) and (name CA)'
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 
-nclones = 250 # number of CLONEs per RUN
-nframes = 2040 # max frames / trajectory
+nclones = 50 # number of CLONEs per RUN
+nframes = 2440 # max frames / trajectory
 projects = ['11414', '11419', '11418', '11428', '11429']
 #conditions = ['11428', '11429']
 nruns = 7 # number of runs per condition
