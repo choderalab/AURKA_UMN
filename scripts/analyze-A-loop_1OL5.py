@@ -30,10 +30,10 @@ reference = md.load(reference_pdbfile)
 alignment_selection_dsl = '(resSeq >= 123) and (resSeq <= 387) and (name CA)'
 alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
 
-rmsd_selection_dsl = '(resSeq >= 286) and (resSeq <= 293) and (name CA)'
+rmsd_selection_dsl = '(resSeq >= 280) and (resSeq <= 293) and (name CA)'
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 
-nclones = 50 # number of CLONEs per RUN
+nclones = 250 # number of CLONEs per RUN
 nframes = 2040 # max frames / trajectory
 projects = ['11414', '11419', '11418', '11428', '11429']
 #conditions = ['11428', '11429']
@@ -71,7 +71,7 @@ for project in projects:
                 rmsd = gathered_rmsds[clone % size][clone / size]
                 N = len(rmsd)
                 rmsds[clone,0:N] = rmsd[0:N]
-            output_filename = os.path.join(output_basepath, '%s-run%d-aloop-rmsd_1OL5.npy' % (project, run))
+            output_filename = os.path.join(output_basepath, '%s-run%d-fullaloop-rmsd_1OL5.npy' % (project, run))
             np.save(output_filename, rmsds)
 
         
