@@ -18,7 +18,7 @@ size = MPI.COMM_WORLD.size
 
 if rank==0: print('rank = %d, size = %d' % (rank, size))
 
-project_basepath = '/cbio/jclab/conditions/fah/fah-data/munged3/no-solvent' # location of FAH trajectories
+project_basepath = '/cbio/jclab/projects/fah/fah-data/munged3/no-solvent' # location of FAH trajectories
 output_basepath = '../data/C-helix-analysis'
 
 if not os.path.exists(output_basepath):
@@ -33,7 +33,7 @@ alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
 rmsd_selection_dsl = '(resSeq >= 280) and (resSeq <= 293) and (name CA)'
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 
-nclones = 50 # number of CLONEs per RUN
+nclones = 250 # number of CLONEs per RUN
 nframes = 2040 # max frames / trajectory
 projects = ['11414', '11419', '11418', '11428', '11429']
 #conditions = ['11428', '11429']
