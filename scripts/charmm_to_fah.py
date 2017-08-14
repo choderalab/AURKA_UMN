@@ -83,7 +83,6 @@ if __name__ == '__main__':
         'toppar/toppar_water_ions.str',
         'toppar/toppar_all36_na_nad_ppi.str',
         'toppar/toppar_dum_noble_gases.str',
-        'toppar/toppar_all36_label_spin.str',
         'toppar/par_all36_na.prm',
         'toppar/top_all36_na.rtf'
     ]
