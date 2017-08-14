@@ -76,13 +76,8 @@ if __name__ == '__main__':
     universal_parameter_files = [
         'toppar/top_all36_prot.rtf',
         'toppar/par_all36_prot.prm',
-        'toppar/toppar_all36_prot_retinol.str',
-        'toppar/toppar_all36_na_rna_modified.str',
-        'toppar/toppar_all36_prot_fluoro_alkanes.str',
         'toppar/toppar_all36_prot_na_combined.str',
         'toppar/toppar_water_ions.str',
-        'toppar/toppar_all36_na_nad_ppi.str',
-        'toppar/toppar_dum_noble_gases.str',
         'toppar/par_all36_na.prm',
         'toppar/top_all36_na.rtf'
     ]
@@ -95,7 +90,7 @@ if __name__ == '__main__':
         'step1_pdbreader.str',
 
     ]
-    
+
     adp_paramter_files = [
         'adp/adp.rtf',
         'adp/adp.prm',
