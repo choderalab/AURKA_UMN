@@ -76,8 +76,12 @@ if __name__ == '__main__':
     universal_parameter_files = [
         'toppar/top_all36_prot.rtf',
         'toppar/par_all36_prot.prm',
+        'toppar/toppar_all36_prot_retinol.str',
+        'toppar/toppar_all36_prot_fluoro_alkanes.str',
         'toppar/toppar_all36_prot_na_combined.str',
         'toppar/toppar_water_ions.str',
+        'toppar/toppar_all36_na_nad_ppi.str',
+        'toppar/toppar_dum_noble_gases.str',
         'toppar/par_all36_na.prm',
         'toppar/top_all36_na.rtf'
     ]
@@ -91,12 +95,6 @@ if __name__ == '__main__':
 
     ]
 
-    adp_paramter_files = [
-        'adp/adp.rtf',
-        'adp/adp.prm',
-        'adp/adp_g.rtf',
-        'adp/ndihe.str'
-    ]
 
     #psf_file = 'step2_solvator.xplor.psf'
     psf_file = 'step2_solvator.psf'
@@ -140,7 +138,7 @@ if __name__ == '__main__':
 
     # Load the CHARMM files
     print('Loading CHARMM files...')
-    param_files = universal_parameter_files + charmm_parameter_files +adp_paramter_files
+    param_files = universal_parameter_files + charmm_parameter_files
     params = CharmmParameterSet(*param_files)
     psf = CharmmPsfFile(psf_file)
     pdb = app.PDBFile(pdbfilename)
