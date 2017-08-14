@@ -113,7 +113,7 @@ if __name__ == '__main__':
     barostat_frequency = 50
     timestep = 1.0 * unit.femtoseconds
     nsteps = 50000
-    ionicStrength = 20 * unit.millimolar
+    ionicStrength = 300 * unit.millimolar
 
     # Verbosity level
     verbose = True

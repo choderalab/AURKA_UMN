@@ -1,0 +1,4 @@
+RUN0 WT_tpx2_phos
+RUN1 WT_tpx2_nophos
+RUN2 WT_notpx2_phos
+RUN3 WT_notpx2_nophos
