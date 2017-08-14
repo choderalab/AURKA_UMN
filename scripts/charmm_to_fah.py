@@ -94,7 +94,8 @@ if __name__ == '__main__':
         'step1_pdbreader.str',
         'step1_pdbreader.str',
 
-
+    ]
+    
     adp_paramter_files = [
         'adp/adp.rtf',
         'adp/adp.prm',
