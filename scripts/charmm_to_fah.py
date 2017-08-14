@@ -92,7 +92,7 @@ if __name__ == '__main__':
         'step2_solvator.str',
         'step2.2_ions.prm',
         'step2.1_waterbox.prm',
-        'step1_pdbreader.str',:
+        'step1_pdbreader.str',
         'step1_pdbreader.str',
     ]
 
