@@ -93,6 +93,13 @@ if __name__ == '__main__':
         'step2.1_waterbox.prm',
         'step1_pdbreader.str',
         'step1_pdbreader.str',
+
+
+    adp_paramter_files = [
+        'adp/adp.rtf',
+        'adp/adp.prm',
+        'adp/adp_g.rtf',
+        'adp/ndihe.str'
     ]
 
     #psf_file = 'step2_solvator.xplor.psf'
@@ -137,7 +144,7 @@ if __name__ == '__main__':
 
     # Load the CHARMM files
     print('Loading CHARMM files...')
-    param_files = universal_parameter_files + charmm_parameter_files
+    param_files = universal_parameter_files + charmm_parameter_files +adp_paramter_files
     params = CharmmParameterSet(*param_files)
     psf = CharmmPsfFile(psf_file)
     pdb = app.PDBFile(pdbfilename)
