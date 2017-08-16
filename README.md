@@ -54,6 +54,8 @@ Projects to be analyzed for manuscript:
   * RUN9  5L8K-notpx2-phos
   * RUN10 5L8K-tpx2-nophos
   * RUN11 5L8K-tpx2-phos
-
-
-Additionally, all projects have an `output-{condition #}/` directory which includes `run-index.txt`
+* 11432: WT CHARMM AURKA, all from pdb 1OL5 
+  * RUN0 TPX2 Phos 
+  * RUN1 TPX2 noPhos
+  * RUN2 noTPX2 Phos
+  * RUN3 noTPX2 noPhos
