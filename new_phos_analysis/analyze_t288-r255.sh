@@ -48,4 +48,5 @@ cd $PBS_O_WORKDIR
 # Launch job.
 python ./t288-R255.py AURKA AURKA_phos_tpx2
 python ./t288-R255.py AURKA AURKA_nophos_tpx2
-
+python ./T288-R180.py AURKA AURKA_phos_notpx2
+python ./T288-R180.py AURKA AURKA_nophos_notpx2
