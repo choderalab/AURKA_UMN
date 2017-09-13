@@ -77,13 +77,11 @@ if __name__ == '__main__':
         'toppar/top_all36_prot.rtf',
         'toppar/par_all36_prot.prm',
         'toppar/toppar_all36_prot_retinol.str',
-        'toppar/toppar_all36_na_rna_modified.str',
         'toppar/toppar_all36_prot_fluoro_alkanes.str',
         'toppar/toppar_all36_prot_na_combined.str',
         'toppar/toppar_water_ions.str',
         'toppar/toppar_all36_na_nad_ppi.str',
         'toppar/toppar_dum_noble_gases.str',
-        'toppar/toppar_all36_label_spin.str',
         'toppar/par_all36_na.prm',
         'toppar/top_all36_na.rtf'
     ]
@@ -93,9 +91,10 @@ if __name__ == '__main__':
         'step2.2_ions.prm',
         'step2.1_waterbox.prm',
         'step1_pdbreader.str',
-        'step1_labelrot.str',
         'step1_pdbreader.str',
+
     ]
+
 
     #psf_file = 'step2_solvator.xplor.psf'
     psf_file = 'step2_solvator.psf'
@@ -113,7 +112,7 @@ if __name__ == '__main__':
     barostat_frequency = 50
     timestep = 1.0 * unit.femtoseconds
     nsteps = 50000
-    ionicStrength = 20 * unit.millimolar
+    ionicStrength = 300 * unit.millimolar
 
     # Verbosity level
     verbose = True
