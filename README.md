@@ -9,6 +9,7 @@ Correlation timeplot scripts found at `AURKA_UMN/analyze/analyze-hbond-correlati
 * `spin-probe-analysis/` - analysis of spin probes (`PROJ11431`)
 * `spin-probe_charmm_setup/` - setup files for the spin probe FAH simulations 
 * `wt_charmm_setup/` - setup files for the WT +/- Phos +/- TPX2 data using CHARMM 
+* `new_phos_analysis` - analysis of WT AMBER data, with the most complete dataset 
 
 ## FAH project index
 
