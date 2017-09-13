@@ -40,11 +40,11 @@
 # filename for standard output (default = <job_name>.o<job_id>)
 # at end of job, it is in directory from which qsub was executed
 # remove extra ## from the line below if you want to name your own file
-##PBS -o AURKA_a-loop-1OL7
+##PBS -o chelix
 
 # Change to working directory used for job submission
 cd $PBS_O_WORKDIR
 source activate py27
 
 # Launch MPI job.
-mpirun -rmk pbs python analyze-A-loop_1OL7.py
+mpirun -rmk pbs python analyze-C-helix.py
