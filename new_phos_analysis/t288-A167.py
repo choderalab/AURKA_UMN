@@ -68,4 +68,4 @@ if __name__ == "__main__":
         for traj_in in trajectories:
             distance1 = alpha_distances(traj_in, pair_list)
             dist_list.extend(distance1)
-        np.save('./data/levinson-coord-data/distances_%s_%s-pair%s-%s.npy' % (kinase_definition, condition, res1, res2), dist_list)
+        np.save('./data/distances/distances_%s_%s-pair%s-%s.npy' % (kinase_definition, condition, res1, res2), dist_list)
