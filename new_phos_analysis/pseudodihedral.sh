@@ -34,7 +34,7 @@
 # a: send mail if job is aborted
 # b: send mail when job begins execution
 # e: send mail when job terminates
-#PBS -m
+#PBS -m ae
 #
 # filename for standard output (default = <job_name>.o<job_id>)
 # at end of job, it is in directory from which qsub was executed
