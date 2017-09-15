@@ -40,7 +40,7 @@ if __name__ == "__main__":
     for traj_in in trajectories:
         torsion1 = compute_torsion(traj_in, *['(resSeq %d and name CA)' % resSeq for resSeq in (282, 283, 284, 285)])
         torsion1_list.extend(torsion1)
-        torsionw = compute_torsion(traj_in,
+        torsion2 = compute_torsion(traj_in,
                                    *['(resSeq %d and name CA)' % resSeq for resSeq in (283, 284, 285, 286)])
         torsion2_list.extend(torsion2)
     np.save('./data/dihedral/dihedral_%s-%s-%s.npy' % (condition, 282, 285), torsion1_list)
