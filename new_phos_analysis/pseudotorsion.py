@@ -14,7 +14,7 @@ condition = sys.argv[1]
 def get_atom_index(traj, selection):
     indices = traj.top.select(selection)
     if len(indices) != 1:
-        msg = '%s : Selection "%s" did not match a unique atom.' % (clone_path, selection)
+        msg = 'Selection "%s" did not match a unique atom.' % (selection)
         raise Exception(msg)
 
     return indices[0]
@@ -25,9 +25,11 @@ def compute_torsion(traj, *args):
     Compute the specified torsion.
     """
     indices = [get_atom_index(traj, selection) for selection in args]
-
+    min_frame = 400
+    end_frame = len(traj)
+    short_traj = traj.slice(range(min_frame, end_frame), copy=False)
     # Compute torsion in degrees
-    torsions = md.compute_dihedrals(traj, [indices]).squeeze() * (180.0 / np.pi)
+    torsions = md.compute_dihedrals(short_traj, [indices]).squeeze() * (180.0 / np.pi)
 
     return torsions
 
