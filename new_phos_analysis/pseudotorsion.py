@@ -36,7 +36,7 @@ def compute_torsion(traj, *args):
 
 if __name__ == "__main__":
     trajectories = dataset.MDTrajDataset(
-        '/cbio/jclab/home/albaness/trajectories/AURKA/%s/*/run0-*.h5' % condition)
+        '/cbio/jclab/home/albaness/trajectories2/AURKA/%s/*/*.h5' % condition)
     torsion1_list = []
     torsion2_list = []
     for traj_in in trajectories:

@@ -57,7 +57,7 @@ def alpha_distances(traj, residue_pair):
 
 if __name__ == "__main__":
     trajectories = dataset.MDTrajDataset(
-        '/cbio/jclab/home/albaness/trajectories/AURKA/%s/*/run0-*.h5' % condition)
+        '/cbio/jclab/home/albaness/trajectories2/AURKA/%s/*/*.h5' % condition)
     master_dist_list = []
     for pair in range(len(res_pairs[kinase_definition])):
         dist_list = []
