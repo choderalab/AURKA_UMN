@@ -46,6 +46,6 @@ cd $PBS_O_WORKDIR
 #source activate py27
 
 # Launch job.
-python ./t288-R255.py AURKA AURKA_phos_notpx2
-python ./t288-R255.py AURKA AURKA_nophos_notpx2
+python ./t288-R255.py AURKA AURKA_phos_tpx2
+python ./t288-R255.py AURKA AURKA_nophos_tpx2
 
