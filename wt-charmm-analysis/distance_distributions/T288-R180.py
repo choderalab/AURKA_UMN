@@ -10,7 +10,7 @@ from msmbuilder import dataset
 condition = sys.argv[1]
 
 # Define kinase offset.
-offset = sys.arv[2]
+offset = sys.argv[2]
 
 # Define Alpha carbon coordinates (1-indexed), give me residue numbers here
 res_pairs = {'AURKA': [[288, 180]]}
