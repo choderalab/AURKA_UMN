@@ -26,7 +26,8 @@ def alpha_distances(traj, residue_pair):
     """
     min_frame = 400
     end_frame = len(traj)
-    short_traj = traj.slice(range(min_frame, end_frame), copy=False)
+    frames_to_slice = list(range(min_frame, end_frame))
+    short_traj = traj.slice(frames_to_slice, copy=False)
     atom1 = short_traj.topology.select("residue %s and name == 'CB'" % residue_pair[0])
     atom2 = short_traj.topology.select("residue %s and name == 'CZ'" % residue_pair[1])
     list_of_atoms = [atom1, atom2]
@@ -54,7 +55,7 @@ if __name__ == "__main__":
         pair_list = res_pairs['AURKA'][pair]
         res1 = pair_list[0] - offset
         res2 = pair_list[1] - offset
-        print(pair_list)
+        pair_list = [res1, res2]
         for traj_in in trajectories:
             distance1 = alpha_distances(traj_in, pair_list)
             dist_list.extend(distance1)
