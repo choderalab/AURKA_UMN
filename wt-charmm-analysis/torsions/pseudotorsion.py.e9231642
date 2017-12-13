@@ -1,0 +1,7 @@
+import: unable to open X server `' @ error/import.c/ImportImageCommand/368.
+import: unable to open X server `' @ error/import.c/ImportImageCommand/368.
+import: unable to open X server `' @ error/import.c/ImportImageCommand/368.
+/var/spool/torque/mom_priv/jobs/9231642.hal-sched1.local.SC: line 5: from: command not found
+/var/spool/torque/mom_priv/jobs/9231642.hal-sched1.local.SC: line 11: condition: command not found
+/var/spool/torque/mom_priv/jobs/9231642.hal-sched1.local.SC: line 14: syntax error near unexpected token `('
+/var/spool/torque/mom_priv/jobs/9231642.hal-sched1.local.SC: line 14: `def get_atom_index(traj, selection):'
