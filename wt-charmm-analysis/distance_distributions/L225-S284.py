@@ -65,7 +65,7 @@ if __name__ == "__main__":
                 len_list.append(len(traj_in))
             else:
                 len_list.append(len(traj_in))
-            np.save('../data/distances/distances_CHARMM_AURKA_%s-pair%s-%s.npy' % (condition, pair_list[0], pair_list[1]),
-                    dist_list)
-            np.save('../data/distances/traj_length_CHARMM_AURKA_%s-pair%s-%s.npy' % (condition, pair_list[0], pair_list[1]),
-                    len_list)
+        np.save('../data/distances/distances_CHARMM_AURKA_%s-pair%s-%s.npy' % (condition, pair_list[0], pair_list[1]),
+                dist_list)
+        np.save('../data/distances/traj_length_CHARMM_AURKA_%s-pair%s-%s.npy' % (condition, pair_list[0], pair_list[1]),
+                len_list)
