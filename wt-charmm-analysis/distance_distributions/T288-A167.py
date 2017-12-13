@@ -28,8 +28,8 @@ def alpha_distances(traj, residue_pair):
     end_frame = len(traj)
     frames_to_slice = list(range(min_frame, end_frame))
     short_traj = traj.slice(frames_to_slice, copy=False)
-    atom1 = short_traj.topology.select("residue %s and name == 'CB'" % residue_pair[0])
-    atom2 = short_traj.topology.select("residue %s and name == 'CZ'" % residue_pair[1])
+    atom1 = short_traj.topology.select("residue %s and name == 'CA'" % residue_pair[0])
+    atom2 = short_traj.topology.select("residue %s and name == 'CA'" % residue_pair[1])
     list_of_atoms = [atom1, atom2]
     atom_array = np.asanyarray(list_of_atoms)
     atom_array = atom_array.reshape(1,2)
