@@ -29,8 +29,8 @@ def alpha_distances(traj, residue_pair):
     end_frame = len(traj)
     frames_to_slice = list(range(min_frame, end_frame))
     short_traj = traj.slice(frames_to_slice, copy=False)
-    atom1 = short_traj.topology.select("residue %s and name == 'CA'" % residue_pair[0])
-    atom2 = short_traj.topology.select("residue %s and name == 'CA'" % residue_pair[1])
+    atom1 = short_traj.topology.select("residue %s and name == 'CA' and chainid 0" % residue_pair[0])
+    atom2 = short_traj.topology.select("residue %s and name == 'CA' and chainid 0" % residue_pair[1])
     list_of_atoms = [atom1, atom2]
     atom_array = np.asarray(list_of_atoms)
     atom_array = atom_array.reshape(1,2)
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                 len_list.append(len(traj_in))
             else:
                 len_list.append(len(traj_in))
-        np.save('../data/distances/distances_CHARMM_AURKA_%s-pair%s-%s.npy' % (condition, pair_list[0], pair_list[1]),
+        np.save('../data/distances/225-284/distances_CHARMM_AURKA_%s-pair%s-%s.npy' % (condition, pair_list[0], pair_list[1]),
                 dist_list)
         np.save('../data/distances/traj_length_CHARMM_AURKA_%s-pair%s-%s.npy' % (condition, pair_list[0], pair_list[1]),
                 len_list)
