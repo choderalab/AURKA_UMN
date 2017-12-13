@@ -33,11 +33,11 @@ alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
 rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 
-nclones = 100 # number of CLONEs per RUN
+nclones = 1 # number of CLONEs per RUN
 nframes = 4000 # max frames / trajectory
 projects = ['11432']
 
-nruns = 4 # number of runs per condition
+nruns = 1 # number of runs per condition
 for project in projects:
     for run in range(nruns):
         h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (project, run, 0))
@@ -61,9 +61,9 @@ for project in projects:
             end_alignment = 387 - offset
             start_rmsd = 286 - offset
             end_rmsd = 293 - offset
-            alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment,
+            alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA) and chainid 0' % (start_alignment,
                                                                                            end_alignment)
-            rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
+            rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA) and chainid 0' % (start_rmsd, end_rmsd)
             alignment_trajectory_indices = t.topology.select(alignment_selection_dsl)
             t.superpose(reference, atom_indices=alignment_trajectory_indices,
                         ref_atom_indices=alignment_reference_indices, parallel=False)
