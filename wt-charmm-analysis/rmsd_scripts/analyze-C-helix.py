@@ -12,12 +12,6 @@ Analyze C-helix
 
 """
 
-from mpi4py import MPI
-rank = MPI.COMM_WORLD.rank
-size = MPI.COMM_WORLD.size
-
-if rank==0: print('rank = %d, size = %d' % (rank, size))
-
 project_basepath = '/cbio/jclab/projects/fah/fah-data/munged4' # location of FAH trajectories
 output_basepath = '../data/rmsd'
 
@@ -51,12 +45,11 @@ for project in projects:
         h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (project, run, 0))
         if not os.path.exists(h5_filename):
             continue
-        
-        if rank==0: print('PROJECT %s RUN %d' % (project, run))
 
         # Process trajectories
         rmsds = list()
-        for clone in range(rank,nclones,size):
+        for clone in range(nclones):
+            rmsds = list()
             # Read trajectory
             initial_time = time.time()
             h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (project, run, clone))
@@ -64,31 +57,27 @@ for project in projects:
             print('  CLONE %5d : %5d frames' % (clone, t.n_frames))
 
             # Align to reference using AurA CA atoms only
+            # Residue numbering corrected by the offset for the trajectories
             offset = 122
             start_alignment = 123 - offset
             end_alignment = 387 - offset
             start_rmsd = 175 - offset
             end_rmsd = 188 - offset
-
-            alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (
-                start_alignment, end_alignment)
+            alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment,
+                                                                                           end_alignment)
             rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
             alignment_trajectory_indices = t.topology.select(alignment_selection_dsl)
-            t.superpose(reference, atom_indices=alignment_trajectory_indices, ref_atom_indices=alignment_reference_indices, parallel=False)
+            t.superpose(reference, atom_indices=alignment_trajectory_indices,
+                        ref_atom_indices=alignment_reference_indices, parallel=False)
             # Compute the RMSD manually without additional alignment
             rmsd_trajectory_indices = t.topology.select(rmsd_selection_dsl)
-            rmsd = np.sqrt(3*np.mean((t.xyz[:, rmsd_trajectory_indices, :] - reference.xyz[:, rmsd_reference_indices, :])**2, axis=(1,2)))
+            rmsd = np.sqrt(
+                3 * np.mean((t.xyz[:, rmsd_trajectory_indices, :] - reference.xyz[:, rmsd_reference_indices, :]) ** 2,
+                            axis=(1, 2)))
             rmsds.append(rmsd)
 
-        # Gather data to root and write it
-        gathered_rmsds = MPI.COMM_WORLD.gather(rmsds, root=0)
-        if rank==0:
-            rmsds = np.zeros([nclones, nframes], np.float32) - 1
-            for clone in range(nclones):
-                rmsd = gathered_rmsds[clone % size][clone / size]
-                N = len(rmsd)
-                rmsds[clone,0:N] = rmsd[0:N]
-            output_filename = os.path.join(output_basepath, '%s-run%d-alphaC-rmsd.npy' % (project, run))
+            # Gather data to root and write it
+            output_filename = os.path.join(output_basepath, '%s-run%d-chelix-rmsd_1OL5.npy' % (project, run))
             np.save(output_filename, rmsds)
 
         
