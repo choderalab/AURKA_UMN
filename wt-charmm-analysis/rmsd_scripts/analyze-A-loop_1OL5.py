@@ -33,7 +33,7 @@ start_rmsd = 286 - offset
 end_rmsd = 293 - offset
 
 # Load reference structure for comparison of alphaC RMSD
-reference_pdbfile = '../../fah-setup/1OL5-WT-pdbfixer.pdb'
+reference_pdbfile = '../../wt_charmm_setup/input/1ol5-prepped.pdb'
 reference = md.load(reference_pdbfile)
 alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment, end_alignment)
 alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
