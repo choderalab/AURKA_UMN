@@ -63,9 +63,9 @@ for project in projects:
             end_alignment = 387 - offset
             start_rmsd = 175 - offset
             end_rmsd = 188 - offset
-            alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment,
+            alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA) and chainid 0' % (start_alignment,
                                                                                            end_alignment)
-            rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
+            rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA) and chainid 0' % (start_rmsd, end_rmsd)
             alignment_trajectory_indices = t.topology.select(alignment_selection_dsl)
             t.superpose(reference, atom_indices=alignment_trajectory_indices,
                         ref_atom_indices=alignment_reference_indices, parallel=False)
