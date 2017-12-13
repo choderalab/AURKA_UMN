@@ -42,10 +42,10 @@ if __name__ == "__main__":
     torsion2_list = []
     for traj_in in trajectories:
         if len(traj_in) > 400:
-            torsion1 = compute_torsion(traj_in, *['(resSeq %d and name CA)' % resSeq for resSeq in (160, 161, 162, 163)])
+            torsion1 = compute_torsion(traj_in, *['(resSeq %d and name CA and chainid 0)' % resSeq for resSeq in (160, 161, 162, 163)])
             torsion1_list.extend(torsion1)
             torsion2 = compute_torsion(traj_in,
-                                       *['(resSeq %d and name CA)' % resSeq for resSeq in (161, 162, 163, 164)])
+                                       *['(resSeq %d and name CA and chainid 0)' % resSeq for resSeq in (161, 162, 163, 164)])
             torsion2_list.extend(torsion2)
         else:
             pass
