@@ -24,9 +24,8 @@ output_basepath = '../data/rmsd'
 #if not os.path.exists(output_basepath):
 #    os.makedirs(output_basepath)
 
-# Residue numbering corrected by offset
-offset = 122
-
+# Residue numbering corrected by offset for the reference structure
+offset = 0
 start_alignment = 123 - offset
 end_alignment = 387 - offset
 start_rmsd = 286 - offset
@@ -37,9 +36,18 @@ reference_pdbfile = '../../wt_charmm_setup/input/1ol5-prepped.pdb'
 reference = md.load(reference_pdbfile)
 alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment, end_alignment)
 alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
-
 rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
+
+
+# Residue numbering corrected by the offset for the trajectories
+offset = 122
+start_alignment = 123 - offset
+end_alignment = 387 - offset
+start_rmsd = 286 - offset
+end_rmsd = 293 - offset
+alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment, end_alignment)
+rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
 
 nclones = 100 # number of CLONEs per RUN
 nframes = 4000 # max frames / trajectory

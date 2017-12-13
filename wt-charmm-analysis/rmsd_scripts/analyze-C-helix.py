@@ -25,7 +25,7 @@ output_basepath = '../data/rmsd'
 #    os.makedirs(output_basepath)
 
 # Residue numbering corrected by offset
-offset = 122
+offset = 0
 
 start_alignment = 123 - offset
 end_alignment = 387 - offset
@@ -40,6 +40,18 @@ alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
 
 rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
+
+
+# Residue numbering corrected by offset for trajectories
+offset = 122
+
+start_alignment = 123 - offset
+end_alignment = 387 - offset
+start_rmsd = 175 - offset
+end_rmsd = 188 - offset
+
+alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment, end_alignment)
+rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
 
 nclones = 100 # number of CLONEs per RUN
 nframes = 4000 # max frames / trajectory
