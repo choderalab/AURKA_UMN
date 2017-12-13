@@ -57,7 +57,9 @@ if __name__ == "__main__":
         res1 = pair_list[0] - offset
         res2 = pair_list[1] - offset
         pair_list = [res1, res2]
+        pair_list_offset = [res1, res2]
         for traj_in in trajectories:
-            distance1 = alpha_distances(traj_in, pair_list)
+            distance1 = alpha_distances(traj_in, pair_list_offset)
             dist_list.extend(distance1)
-        np.save('../data/distances/distances_CHARMM_AURKA_%s-pair%s-%s.npy' % (condition, res1, res2), dist_list)
+        np.save('../data/distances/distances_CHARMM_AURKA_%s-pair%s-%s.npy' % (condition, pair_list[0], pair_list[1]),
+                dist_list)
