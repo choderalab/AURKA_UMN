@@ -39,16 +39,6 @@ alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
 rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 
-
-# Residue numbering corrected by the offset for the trajectories
-offset = 122
-start_alignment = 123 - offset
-end_alignment = 387 - offset
-start_rmsd = 286 - offset
-end_rmsd = 293 - offset
-alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment, end_alignment)
-rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
-
 nclones = 100 # number of CLONEs per RUN
 nframes = 4000 # max frames / trajectory
 projects = ['11432']
@@ -72,6 +62,15 @@ for project in projects:
             print('  CLONE %5d : %5d frames' % (clone, t.n_frames))
 
             # Align to reference using AurA CA atoms only
+            # Residue numbering corrected by the offset for the trajectories
+            offset = 122
+            start_alignment = 123 - offset
+            end_alignment = 387 - offset
+            start_rmsd = 286 - offset
+            end_rmsd = 293 - offset
+            alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment,
+                                                                                           end_alignment)
+            rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
             alignment_trajectory_indices = t.topology.select(alignment_selection_dsl)
             t.superpose(reference, atom_indices=alignment_trajectory_indices,
                         ref_atom_indices=alignment_reference_indices, parallel=False)
