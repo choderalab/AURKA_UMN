@@ -15,11 +15,11 @@
 #
 # nodes: number of nodes
 #   ppn: number of processes per node
-#PBS -l nodes=5:ppn=1
+#PBS -l nodes=1:ppn=1
 #
 # specify memory 
 #
-#PBS -l mem=40GB
+#PBS -l mem=80GB
 #
 # export all my environment variables to the job
 #PBS -V
@@ -47,5 +47,5 @@ cd $PBS_O_WORKDIR
 source activate py27
 
 # Launch MPI job.
-mpirun -rmk pbs python analyze-A-loop_1OL5.py
-mpirun -rmk pbs python analyze-C-helix.py
+python analyze-A-loop_1OL5.py
+python analyze-C-helix.py
