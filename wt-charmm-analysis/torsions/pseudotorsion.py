@@ -49,6 +49,6 @@ if __name__ == "__main__":
             torsion2_list.extend(torsion2)
         else:
             pass
-    np.save('./data/dihedral/dihedral_%s-%s-%s.npy' % (condition, 282, 285), torsion1_list)
-    np.save('./data/dihedral/dihedral_%s-%s-%s.npy' % (condition, 283, 286),
+    np.save('../data/dihedral/dihedral_%s-%s-%s.npy' % (condition, 282, 285), torsion1_list)
+    np.save('../data/dihedral/dihedral_%s-%s-%s.npy' % (condition, 283, 286),
             torsion2_list)
