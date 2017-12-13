@@ -56,7 +56,6 @@ if __name__ == "__main__":
         pair_list = res_pairs['AURKA'][pair]
         res1 = pair_list[0] - offset
         res2 = pair_list[1] - offset
-        pair_list = [res1, res2]
         pair_list_offset = [res1, res2]
         for traj_in in trajectories:
             if len(traj_in) > 400:
