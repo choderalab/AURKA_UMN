@@ -19,25 +19,33 @@ size = MPI.COMM_WORLD.size
 if rank==0: print('rank = %d, size = %d' % (rank, size))
 
 project_basepath = '/cbio/jclab/projects/fah/fah-data/munged4' # location of FAH trajectories
-output_basepath = './data/C-helix-analysis'
+output_basepath = '../data/rmsd'
 
-if not os.path.exists(output_basepath):
-    os.makedirs(output_basepath)
+#if not os.path.exists(output_basepath):
+#    os.makedirs(output_basepath)
+
+# Residue numbering corrected by offset
+offset = 122
+
+start_alignment = 123 - offset
+end_alignment = 387 - offset
+start_rmsd = 175 - offset
+end_rmsd = 188 - offset
 
 # Load reference structure for comparison of alphaC RMSD
-reference_pdbfile = '../fah-setup/1OL5-WT-pdbfixer.pdb'
+reference_pdbfile = '../../fah-setup/1OL5-WT-pdbfixer.pdb'
 reference = md.load(reference_pdbfile)
-alignment_selection_dsl = '(resSeq >= 123) and (resSeq <= 387) and (name CA)'
+alignment_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_alignment, end_alignment)
 alignment_reference_indices = reference.topology.select(alignment_selection_dsl)
 
-rmsd_selection_dsl = '(resSeq >= 175) and (resSeq <= 188) and (name CA)'
+rmsd_selection_dsl = '(resSeq >= %s) and (resSeq <= %s) and (name CA)' % (start_rmsd, end_rmsd)
 rmsd_reference_indices = reference.topology.select(rmsd_selection_dsl)
 
-nclones = 250 # number of CLONEs per RUN
-nframes = 4000a # max frames / trajectory
-projects = ['11428', '11429']
-#conditions = ['11428', '11429']
-nruns = 7 # number of runs per condition
+nclones = 100 # number of CLONEs per RUN
+nframes = 4000 # max frames / trajectory
+projects = ['11432']
+
+nruns = 4 # number of runs per condition
 for project in projects:
     for run in range(nruns):
         h5_filename = os.path.join(project_basepath, '%s/run%d-clone%d.h5' % (project, run, 0))
